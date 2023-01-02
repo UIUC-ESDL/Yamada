@@ -9,4 +9,3 @@ imageio>=2.21.1
 pytest
 
 cypari~=2.4.1
-snappy~=3.1b1
