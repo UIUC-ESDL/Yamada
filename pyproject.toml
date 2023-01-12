@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0"] 
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "yamada"
-version = "0.0.1"
+name = "Yamada"
+version = "0.0.2"
 authors = [
   { name="Chad Peterson", email="cp44@illinois.edu" },
 ]
@@ -17,6 +17,15 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+dependencies = [
+"networkx~=2.8.5", 
+"matplotlib==3.5.3", 
+"numpy<=1.22.4",
+"pytest",
+"sphinx",
+"cypari~=2.4.1"
+]
+
 [project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+"Homepage" = "https://github.com/SPI2Py/Yamada"
+"Bug Tracker" = "https://github.com/SPI2Py/Yamada/issues"
