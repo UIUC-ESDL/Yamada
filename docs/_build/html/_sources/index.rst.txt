@@ -11,11 +11,14 @@ Welcome to Yamada's documentation!
    :caption: Contents:
 
    Getting Started <source/getting_started>
+   
    User Guide <source/user/index>
    API Reference <source/reference/index>
    Development <source/dev/index>
-   readme
-   modules
+   Yamada <source/yamada>
+   Modules <source/modules>
+   readme <source/README>
+
 
 
 

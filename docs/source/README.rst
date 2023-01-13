@@ -1,1 +1,3 @@
-.. include:: ../../README.rst
+################
+Yamada user guide
+################
