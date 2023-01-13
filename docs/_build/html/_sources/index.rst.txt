@@ -10,6 +10,7 @@ Welcome to Yamada's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   Getting Started <source/getting_started>
    User Guide <source/user/index>
    API Reference <source/reference/index>
    Development <source/dev/index>

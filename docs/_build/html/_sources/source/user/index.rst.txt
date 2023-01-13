@@ -1,7 +1,7 @@
 .. _user:
 
 ################
-NumPy user guide
+Yamada user guide
 ################
 
 This guide is an overview and explains the important features;
@@ -52,3 +52,5 @@ details are found in :ref:`reference`.
    ../glossary
    ../release
    ../license
+
+   
