@@ -473,7 +473,23 @@ class SpatialGraphDiagram:
         Y_plus = S_plus.yamada_polynomial()
         Y_minus = S_minus.yamada_polynomial()
         Y_0 = S_0.yamada_polynomial()
+
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
+
+    def normalized_yamada_polynomial(self):
+
+        yamada_polynomial = self.yamada_polynomial()
+
+        A = pari('A')
+
+        _, exps = get_coefficients_and_exponents(yamada_polynomial)
+        a, b = min(exps), max(exps)
+        ans1 = (-A) ** (-a) * yamada_polynomial
+        ans2 = (-A) ** b * reverse_poly(yamada_polynomial)
+
+        normalized_yamada_polynomial = min([ans1, ans2], key=list)
+
+        return normalized_yamada_polynomial
 
 
 def get_coefficients_and_exponents(poly):
@@ -515,21 +531,3 @@ def reverse_poly(poly):
         ans += c * A ** (-e)
 
     return ans
-
-
-def normalize_poly(poly):
-    """
-    The Yamada polynomial is only defined up to a power of (-A)^n.
-
-    Also, we don't want to distinguish between a spatial graph and its
-    mirror image, which corresponds to interchanging A <-> A^(-1).
-    """
-
-    A = pari('A')
-
-    _, exps = get_coefficients_and_exponents(poly)
-    a, b = min(exps), max(exps)
-    ans1 = (-A) ** (-a) * poly
-    ans2 = (-A) ** b * reverse_poly(poly)
-
-    return min([ans1, ans2], key=list)
