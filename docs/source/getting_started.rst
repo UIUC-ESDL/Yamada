@@ -1,6 +1,5 @@
-################
-Yamada user guide
-################
+My Title
+*********
 
 
 Hello World!!!

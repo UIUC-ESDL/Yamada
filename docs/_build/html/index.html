@@ -15,7 +15,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Yamada user guide" href="source/getting_started.html" />
+    <link rel="next" title="My Title" href="source/getting_started.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,6 +39,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="source/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/user/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/dev/index.html">Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/yamada.html">Yamada</a><ul>
@@ -65,6 +66,265 @@
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example 1</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">a</span> <span class="o">=</span> <span class="s1">&#39;wow!&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Example 2</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="p">{</span>
+<span class="linenos">  2</span> <span class="s2">&quot;cells&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">  3</span>  <span class="p">{</span>
+<span class="linenos">  4</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">  5</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos">  6</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">  7</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">  8</span>    <span class="s2">&quot;How to  Calculate the Yamada Polynomial of a Spatial Topology</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">  9</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 10</span>    <span class="s2">&quot;Ultimately, one of our research goals is to create a program that can take in a spatial diagram and calculate its Yamada polynomial. This workbook notebook partially implements this; future notebooks will see it through to completion.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 11</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 12</span>    <span class="s2">&quot;Current workflow: The user chooses a 3D model --&gt; The user manually labels the vertices, edges, and crossings --&gt; The program calculates the Yamada polynomial</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 13</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 14</span>    <span class="s2">&quot;Future workflow: The user chooses a 3D model --&gt; The program automatically extracts the vertices, edges, and crossings --&gt; The program calculates the Yamada polynomial</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 15</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 16</span>    <span class="s2">&quot;Notes:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 17</span>    <span class="s2">&quot;1. Code Validation:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 18</span>    <span class="s2">&quot;2. Edge Inflation: While the calculator works by operating on Vertex, Edge, and Crossing classes, it can still calculate Yamada polynomials without the user explicitly defining edges. The _inflate_edges method of the SpatialGraphDiagram class automatically intializes edges where they are implicitly defined by the vertices and crossings.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 19</span>    <span class="s2">&quot;3. Normalizing Yamada Polynomials&quot;</span>
+<span class="linenos"> 20</span>   <span class="p">]</span>
+<span class="linenos"> 21</span>  <span class="p">},</span>
+<span class="linenos"> 22</span>  <span class="p">{</span>
+<span class="linenos"> 23</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 24</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos"> 25</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 26</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 27</span>    <span class="s2">&quot;## Importing the necessary functions&quot;</span>
+<span class="linenos"> 28</span>   <span class="p">]</span>
+<span class="linenos"> 29</span>  <span class="p">},</span>
+<span class="linenos"> 30</span>  <span class="p">{</span>
+<span class="linenos"> 31</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos"> 32</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="linenos"> 33</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 34</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[],</span>
+<span class="linenos"> 35</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 36</span>    <span class="s2">&quot;from yamada.calculation import (Vertex, Edge, Crossing,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 37</span>    <span class="s2">&quot;    SpatialGraphDiagram, normalize_poly)</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos"> 38</span>   <span class="p">]</span>
+<span class="linenos"> 39</span>  <span class="p">},</span>
+<span class="linenos"> 40</span>  <span class="p">{</span>
+<span class="linenos"> 41</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 42</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos"> 43</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 44</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 45</span>    <span class="s2">&quot;## Calculate the Yamada Polynomial of an Infinity Symbol</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 46</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 47</span>    <span class="s2">&quot;![Infinity Symbol](./images/infinity_symbol.png)&quot;</span>
+<span class="linenos"> 48</span>   <span class="p">]</span>
+<span class="linenos"> 49</span>  <span class="p">},</span>
+<span class="linenos"> 50</span>  <span class="p">{</span>
+<span class="linenos"> 51</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos"> 52</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="linenos"> 53</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 54</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 55</span>    <span class="p">{</span>
+<span class="linenos"> 56</span>     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span>
+<span class="linenos"> 57</span>     <span class="s2">&quot;output_type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+<span class="linenos"> 58</span>     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 59</span>      <span class="s2">&quot;Infinity Symbol Yamada Polynomial: A^3 + A^2 + A</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos"> 60</span>     <span class="p">]</span>
+<span class="linenos"> 61</span>    <span class="p">}</span>
+<span class="linenos"> 62</span>   <span class="p">],</span>
+<span class="linenos"> 63</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 64</span>    <span class="s2">&quot;C = Crossing(&#39;X&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 65</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 66</span>    <span class="s2">&quot;C[0], C[2] = C[1], C[3]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 67</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 68</span>    <span class="s2">&quot;D = SpatialGraphDiagram([C])</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 69</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 70</span>    <span class="s2">&quot;yamada_polynomial_infinity_symbol = D.yamada_polynomial()</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 71</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 72</span>    <span class="s2">&quot;print(</span><span class="se">\&quot;</span><span class="s2">Infinity Symbol Yamada Polynomial:</span><span class="se">\&quot;</span><span class="s2">, yamada_polynomial_infinity_symbol)&quot;</span>
+<span class="linenos"> 73</span>   <span class="p">]</span>
+<span class="linenos"> 74</span>  <span class="p">},</span>
+<span class="linenos"> 75</span>  <span class="p">{</span>
+<span class="linenos"> 76</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 77</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos"> 78</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 79</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 80</span>    <span class="s2">&quot;## Calculate the Yamada Polynomial of an Unknotted Theta Graph</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 81</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 82</span>    <span class="s2">&quot;Vertices: A and B</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 83</span>    <span class="s2">&quot;Edges: E0, E1, and E2</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 84</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 85</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos"> 86</span>    <span class="s2">&quot;![Unknotted Theta Graph](./images/unknotted_theta_graph.png)&quot;</span>
+<span class="linenos"> 87</span>   <span class="p">]</span>
+<span class="linenos"> 88</span>  <span class="p">},</span>
+<span class="linenos"> 89</span>  <span class="p">{</span>
+<span class="linenos"> 90</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos"> 91</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="linenos"> 92</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos"> 93</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 94</span>    <span class="p">{</span>
+<span class="linenos"> 95</span>     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span>
+<span class="linenos"> 96</span>     <span class="s2">&quot;output_type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+<span class="linenos"> 97</span>     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos"> 98</span>      <span class="s2">&quot;Unknotted Theta Graph Yamada Polynomial: (-A^4 - A^3 - 2*A^2 - A - 1)/A^2</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos"> 99</span>     <span class="p">]</span>
+<span class="linenos">100</span>    <span class="p">}</span>
+<span class="linenos">101</span>   <span class="p">],</span>
+<span class="linenos">102</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">103</span>    <span class="s2">&quot;A, B = Vertex(3, &#39;A&#39;), Vertex(3, &#39;B&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">104</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">105</span>    <span class="s2">&quot;E0, E1, E2 = Edge(0), Edge(1), Edge(2)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">106</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">107</span>    <span class="s2">&quot;A[0], A[1], A[2] = E0[0], E1[0], E2[0]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">108</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">109</span>    <span class="s2">&quot;B[0], B[1], B[2] = E0[1], E2[1], E1[1]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">110</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">111</span>    <span class="s2">&quot;D = SpatialGraphDiagram([A, B, E0, E1, E2])</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">112</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">113</span>    <span class="s2">&quot;print(</span><span class="se">\&quot;</span><span class="s2">Unknotted Theta Graph Yamada Polynomial:</span><span class="se">\&quot;</span><span class="s2">, D.yamada_polynomial() )&quot;</span>
+<span class="linenos">114</span>   <span class="p">]</span>
+<span class="linenos">115</span>  <span class="p">},</span>
+<span class="linenos">116</span>  <span class="p">{</span>
+<span class="linenos">117</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">118</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos">119</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">120</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">121</span>    <span class="s2">&quot;## Calculate the Yamada Polynomial of an Omega-2 Graph</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">122</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">123</span>    <span class="s2">&quot;![Omega-2 Graph](./images/omega_2_graph.png)&quot;</span>
+<span class="linenos">124</span>   <span class="p">]</span>
+<span class="linenos">125</span>  <span class="p">},</span>
+<span class="linenos">126</span>  <span class="p">{</span>
+<span class="linenos">127</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos">128</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+<span class="linenos">129</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">130</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">131</span>    <span class="p">{</span>
+<span class="linenos">132</span>     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span>
+<span class="linenos">133</span>     <span class="s2">&quot;output_type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+<span class="linenos">134</span>     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">135</span>      <span class="s2">&quot;Omega-2 Graph Yamada Polynomial: (A^13 + A^11 + A^10 - A^9 + A^8 - 2*A^7 + A^6 - A^5 + A^4 + A^3 + A^2 + A + 1)/A^5</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">136</span>      <span class="s2">&quot;Omega-2 Graph Yamada Polynomial: -A^13 - A^11 - A^10 + A^9 - A^8 + 2*A^7 - A^6 + A^5 - A^4 - A^3 - A^2 - A - 1</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos">137</span>     <span class="p">]</span>
+<span class="linenos">138</span>    <span class="p">}</span>
+<span class="linenos">139</span>   <span class="p">],</span>
+<span class="linenos">140</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">141</span>    <span class="s2">&quot;A, B, C, D = [Vertex(3, L) for L in &#39;ABCD&#39;]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">142</span>    <span class="s2">&quot;X, Y, Z = [Crossing(L) for L in &#39;XYZ&#39;]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">143</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">144</span>    <span class="s2">&quot;A[0], A[1], A[2] = D[0], B[2], X[2]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">145</span>    <span class="s2">&quot;B[0], B[1] = C[0], X[3]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">146</span>    <span class="s2">&quot;C[1], C[2] = D[2], Z[0]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">147</span>    <span class="s2">&quot;D[1] = Z[1]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">148</span>    <span class="s2">&quot;X[0], X[1] = Y[3], Y[2]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">149</span>    <span class="s2">&quot;Y[0], Y[1] = Z[3], Z[2]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">150</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">151</span>    <span class="s2">&quot;D = SpatialGraphDiagram([A, B, C, D, X, Y, Z])</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">152</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">153</span>    <span class="s2">&quot;yp_omega_2 = D.yamada_polynomial()</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">154</span>    <span class="s2">&quot;# yp_omega_2_norm = n</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">155</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">156</span>    <span class="s2">&quot;print(</span><span class="se">\&quot;</span><span class="s2">Omega-2 Graph Yamada Polynomial:</span><span class="se">\&quot;</span><span class="s2">, yp_omega_2 )</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">157</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">158</span>    <span class="s2">&quot;nyp_omega_2 = D.normalized_yamada_polynomial()</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">159</span>    <span class="s2">&quot;# yp_omega_2_norm = n</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">160</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">161</span>    <span class="s2">&quot;print(</span><span class="se">\&quot;</span><span class="s2">Omega-2 Graph Yamada Polynomial:</span><span class="se">\&quot;</span><span class="s2">, nyp_omega_2 )&quot;</span>
+<span class="linenos">162</span>   <span class="p">]</span>
+<span class="linenos">163</span>  <span class="p">},</span>
+<span class="linenos">164</span>  <span class="p">{</span>
+<span class="linenos">165</span>   <span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">166</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+<span class="linenos">167</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">168</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">169</span>    <span class="s2">&quot;## Calculate the Yamada Polynomial of an Arbitrary Trivalent Spatial Topology</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">170</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">171</span>    <span class="s2">&quot;![Trivalent Spatial Topology](./images/trivalent_spatial_topology.png)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">172</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">173</span>    <span class="s2">&quot;Vertices:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">174</span>    <span class="s2">&quot;Crossings:&quot;</span>
+<span class="linenos">175</span>   <span class="p">]</span>
+<span class="linenos">176</span>  <span class="p">},</span>
+<span class="linenos">177</span>  <span class="p">{</span>
+<span class="linenos">178</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos">179</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="linenos">180</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">181</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">182</span>    <span class="p">{</span>
+<span class="linenos">183</span>     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;stdout&quot;</span><span class="p">,</span>
+<span class="linenos">184</span>     <span class="s2">&quot;output_type&quot;</span><span class="p">:</span> <span class="s2">&quot;stream&quot;</span><span class="p">,</span>
+<span class="linenos">185</span>     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">186</span>      <span class="s2">&quot;Yamada Polynomial: (A^12 - A^11 - 4*A^8 + A^7 - 6*A^6 + A^5 - 4*A^4 - A + 1)/A^6</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos">187</span>     <span class="p">]</span>
+<span class="linenos">188</span>    <span class="p">}</span>
+<span class="linenos">189</span>   <span class="p">],</span>
+<span class="linenos">190</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">191</span>    <span class="s2">&quot;A,B,C,D,E,F = [Vertex(3,L) for L in &#39;ABCDEF&#39;]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">192</span>    <span class="s2">&quot;X, Y = [Crossing(L) for L in &#39;XY&#39;]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">193</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">194</span>    <span class="s2">&quot;A[0], A[1], A[2] = X[3], B[1], Y[0]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">195</span>    <span class="s2">&quot;B[0], B[2] = C[1], D[1]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">196</span>    <span class="s2">&quot;C[0], C[2] = Y[1], E[0]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">197</span>    <span class="s2">&quot;D[0], D[2] = E[1], X[2]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">198</span>    <span class="s2">&quot;E[2] = F[0]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">199</span>    <span class="s2">&quot;F[1], F[2] = X[1], Y[2]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">200</span>    <span class="s2">&quot;X[0] = Y[3]</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">201</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">202</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">203</span>    <span class="s2">&quot;D = SpatialGraphDiagram([A,B,C,D,E,F,X,Y])</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">204</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">205</span>    <span class="s2">&quot;yamada_polynomial_trivalent_spatial_topology = D.yamada_polynomial()</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">206</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">207</span>    <span class="s2">&quot;print(&#39;Yamada Polynomial:&#39;, yamada_polynomial_trivalent_spatial_topology)&quot;</span>
+<span class="linenos">208</span>   <span class="p">]</span>
+<span class="linenos">209</span>  <span class="p">},</span>
+<span class="linenos">210</span>  <span class="p">{</span>
+<span class="linenos">211</span>   <span class="s2">&quot;cell_type&quot;</span><span class="p">:</span> <span class="s2">&quot;code&quot;</span><span class="p">,</span>
+<span class="linenos">212</span>   <span class="s2">&quot;execution_count&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+<span class="linenos">213</span>   <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="linenos">214</span>   <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[],</span>
+<span class="linenos">215</span>   <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">[</span>
+<span class="linenos">216</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">217</span>    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="linenos">218</span>   <span class="p">]</span>
+<span class="linenos">219</span>  <span class="p">}</span>
+<span class="linenos">220</span> <span class="p">],</span>
+<span class="linenos">221</span> <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">222</span>  <span class="s2">&quot;kernelspec&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">223</span>   <span class="s2">&quot;display_name&quot;</span><span class="p">:</span> <span class="s2">&quot;venv&quot;</span><span class="p">,</span>
+<span class="linenos">224</span>   <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+<span class="linenos">225</span>   <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;python3&quot;</span>
+<span class="linenos">226</span>  <span class="p">},</span>
+<span class="linenos">227</span>  <span class="s2">&quot;language_info&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">228</span>   <span class="s2">&quot;codemirror_mode&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">229</span>    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;ipython&quot;</span><span class="p">,</span>
+<span class="linenos">230</span>    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="linenos">231</span>   <span class="p">},</span>
+<span class="linenos">232</span>   <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;.py&quot;</span><span class="p">,</span>
+<span class="linenos">233</span>   <span class="s2">&quot;mimetype&quot;</span><span class="p">:</span> <span class="s2">&quot;text/x-python&quot;</span><span class="p">,</span>
+<span class="linenos">234</span>   <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+<span class="linenos">235</span>   <span class="s2">&quot;nbconvert_exporter&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
+<span class="linenos">236</span>   <span class="s2">&quot;pygments_lexer&quot;</span><span class="p">:</span> <span class="s2">&quot;ipython3&quot;</span><span class="p">,</span>
+<span class="linenos">237</span>   <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)]&quot;</span>
+<span class="linenos">238</span>  <span class="p">},</span>
+<span class="linenos">239</span>  <span class="s2">&quot;orig_nbformat&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="linenos">240</span>  <span class="s2">&quot;vscode&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">241</span>   <span class="s2">&quot;interpreter&quot;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">242</span>    <span class="s2">&quot;hash&quot;</span><span class="p">:</span> <span class="s2">&quot;1db9398ee49eef1bd8a9b288bd45376255f620050e688400ab54b9a87d7d0f89&quot;</span>
+<span class="linenos">243</span>   <span class="p">}</span>
+<span class="linenos">244</span>  <span class="p">}</span>
+<span class="linenos">245</span> <span class="p">},</span>
+<span class="linenos">246</span> <span class="s2">&quot;nbformat&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="linenos">247</span> <span class="s2">&quot;nbformat_minor&quot;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="linenos">248</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
 </section>
 
 
@@ -88,6 +348,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="source/getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/user/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/examples/index.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/dev/index.html">Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="source/yamada.html">Yamada</a></li>
@@ -99,7 +360,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="source/getting_started.html" title="next chapter">Yamada user guide</a></li>
+      <li>Next: <a href="source/getting_started.html" title="next chapter">My Title</a></li>
   </ul></li>
 </ul>
 </div>
