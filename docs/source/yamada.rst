@@ -4,26 +4,34 @@ yamada package
 Submodules
 ----------
 
-yamada.generation\_methods module
----------------------------------
+yamada.calculation module
+-------------------------
 
-.. automodule:: yamada.generation_methods
+.. automodule:: yamada.calculation
    :members:
    :undoc-members:
    :show-inheritance:
 
-yamada.system\_to\_diagram module
----------------------------------
+yamada.data module
+------------------
 
-.. automodule:: yamada.system_to_diagram
+.. automodule:: yamada.data
    :members:
    :undoc-members:
    :show-inheritance:
 
-yamada.yamada\_polynomials module
----------------------------------
+yamada.enumeration module
+-------------------------
 
-.. automodule:: yamada.yamada_polynomials
+.. automodule:: yamada.enumeration
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+yamada.visualization module
+---------------------------
+
+.. automodule:: yamada.visualization
    :members:
    :undoc-members:
    :show-inheritance:
