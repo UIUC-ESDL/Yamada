@@ -1,6 +1,6 @@
 import networkx as nx
 from cypari import pari
-from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, Crossing, reverse_poly
+from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, Crossing, reverse_poly
 
 
 
