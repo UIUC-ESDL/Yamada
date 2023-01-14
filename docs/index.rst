@@ -13,14 +13,12 @@ Welcome to Yamada's documentation!
    Getting Started <source/getting_started>
    
    User Guide <source/user/index>
-   Examples <source/examples/index>
+   Examples <source/examples>
    API Reference <source/reference/index>
    Development <source/dev/index>
    Yamada <source/yamada>
    Modules <source/modules>
    readme <source/README>
-
-
 
 
 Indices and tables
@@ -30,12 +28,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. literalinclude:: source/examples/example1.py
-   :language: python
-   :linenos:
-   :caption: Example 1
-
-.. literalinclude:: ../examples/calculate_yamada_polynomial_semiautomatic/demo.ipynb
-   :language: python
-   :linenos:
-   :caption: Example 2
