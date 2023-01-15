@@ -7,15 +7,15 @@ class LaurentPolynomial:
     @property
     def laurent_polynomial(self):
 
-        laurent_polynomial = ""
+        polynomial_expression = ""
 
         for i, j in zip(self.coeff, self.order):
-            laurent_polynomial += str(i) + "A^" + str(j) + " + "
+            polynomial_expression += str(i) + "A^" + str(j) + " + "
         
         # Remove trailing " + "
-        laurent_polynomial = laurent_polynomial.rstrip(" + ")
+        polynomial_expression = polynomial_expression.rstrip(" + ")
              
-        return laurent_polynomial
+        return polynomial_expression
 
     def __repr__(self):  
         return self.laurent_polynomial
