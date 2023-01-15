@@ -102,25 +102,35 @@ class LaurentPolynomial:
         # TODO fix object creation statement
 
         # Ensure the input being multipled (the multiple) is a LaurentPolynomial or throw an error
-        polynomial = self._format_polynomial(multiple)
+        multiple = self._format_polynomial(multiple)
 
-        new_term_tuples = []
+        product_coeffs = self.coeffs.copy()
+        product_orders = self.orders.copy()
     
-        for term_coeff, term_order in zip(self.coeffs, self.orders):
+        for multiple_coeff, multiple_order in zip(multiple.coeffs, multiple.orders):
 
-            if term_order in polynomial.orders:
+            if multiple_order in product_orders:
 
                 # Get the index of the term in the polynomial
-                term_index = polynomial.orders.index(term_order)
+                term_index = product_orders.index(multiple_order)
 
                 # Increment the corresponding coeff
-                product_coeff = term_coeff * polynomial.coeffs[term_index]
-                combined_order = term_order + polynomial.orders[term_index]
-                new_term_tuples.append((product_coeff, combined_order))
-            else:
-                new_term_tuples.append((term_coeff, term_order))
+                product_coeffs[term_index] *= multiple_coeff
+                product_orders[term_index] += multiple_order
 
-        return LaurentPolynomial(new_term_tuples)
+            else:
+                product_coeffs.append(multiple_coeff)
+                product_orders.append(multiple_order)
+
+        return LaurentPolynomial(self.term, coeffs = product_coeffs, orders = product_orders)
+
+
+    def __imul__(self, multiple):
+        return self.__mul__(multiple)
+
+    def __rmul__(self, multiple):
+        return self.__mul__(multiple)
+
 
     # TODO Implement __truediv__ method?
     # TODO Implement __floordiv__ method?
@@ -159,7 +169,7 @@ a = A+2
 
 print('a', a)
 
-a += A
+a - A
 
 print('a', a)
 
