@@ -60,8 +60,8 @@ class LaurentPolynomial:
         # If the input being added (addend) is not a LaurentPolynomial, make it to one or throw an error
         polynomial = self._format_polynomial(addend)
         
-        new_coeffs = []
-        new_orders = []
+        result_coeffs = []
+        result_orders = []
 
         for term_coeff, term_order in self.term_tuples:
 
@@ -71,16 +71,17 @@ class LaurentPolynomial:
                 term_index = polynomial.orders.index(term_order)
 
                 # Increment the corresponding coeff
-                combined_coeff = term_coeff + polynomial.coeffs[term_index]
-                new_coeffs.append(combined_coeff)
-                new_orders.append(term_order)
+                added_coeff = term_coeff + polynomial.coeffs[term_index]
+
+                result_coeffs.append(added_coeff)
+                result_orders.append(term_order)
 
             else:
-                new_coeffs.append(term_coeff)
-                new_orders.append(term_order)
+                result_coeffs.append(term_coeff)
+                result_orders.append(term_order)
 
 
-        return LaurentPolynomial(self.term, coeffs = new_coeffs, orders = new_orders)
+        return LaurentPolynomial(self.term, coeffs = result_coeffs, orders = result_orders)
     
     def __iadd__(self, polynomial):
         return self.__add__(polynomial)
