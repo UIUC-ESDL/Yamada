@@ -28,6 +28,17 @@ class LaurentPolynomial:
         orders = self.order + polynomial.order
 
         return LaurentPolynomial(coeffs, orders)
+    
+    # TODO Implement __iadd__ method?
+    # TODO Implement __isub__ method?
+
+    def __mul__(self, polynomial):
+        pass
+
+    # TODO Implement __truediv__ method?
+    # TODO Implement __floordiv__ method?
+
+
         
 
 aa = LaurentPolynomial([1,2,3], [1,2,3])
