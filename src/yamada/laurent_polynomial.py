@@ -84,18 +84,10 @@ class LaurentPolynomial:
 
         return LaurentPolynomial(self.term, coeffs = sum_coeffs, orders = sum_orders)
 
-    def __iadd__(self, addend):
-        return self.__add__(addend)
-
     def __radd__(self, addend):
         return self.__add__(addend)
 
-
-
     def __sub__(self, subtrahend):
-        return self.__add__(-1*subtrahend)
-
-    def __isub__(self, subtrahend):
         return self.__add__(-1*subtrahend)
 
     def __rsub__(self, subtrahend):
@@ -187,6 +179,12 @@ class LaurentPolynomial:
                     new_orders.append(order)
 
         return new_coeffs, new_orders
+
+    def _sort(self):
+        pass
+
+    def _normalize(self):
+        pass
 
 
 A = LaurentPolynomial('A')  
