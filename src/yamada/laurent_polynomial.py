@@ -1,4 +1,6 @@
 
+import copy
+
 class LaurentPolynomial:
 
     def __init__(self, term, coeffs = [1], orders = [1]):
@@ -88,8 +90,7 @@ class LaurentPolynomial:
     def __radd__(self, addend):
         return self.__add__(addend)
 
-    def __pow__(self, power):
-        pass
+
 
     def __sub__(self, subtrahend):
         return self.__add__(-1*subtrahend)
@@ -136,6 +137,21 @@ class LaurentPolynomial:
 
     def __rmul__(self, multiple):
         return self.__mul__(multiple)
+
+
+    def __pow__(self, power):
+        
+        polynomial = copy.deepcopy(self)
+
+        for i in range(power-1):
+            polynomial = polynomial.__mul__(self)
+
+        return polynomial
+        
+        
+        
+        
+        return 1
 
 
     # TODO Implement __truediv__ method?
@@ -196,7 +212,7 @@ b = 2+A
 
 print('b', b)
 
-
+A**2
 
 # b = 3*A
 
