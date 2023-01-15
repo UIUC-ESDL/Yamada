@@ -477,6 +477,13 @@ class SpatialGraphDiagram:
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
     def normalized_yamada_polynomial(self):
+        """normalized_yamada_polynomial How does normalizing the polynomial work?
+
+        _extended_summary_
+
+        :return: _description_
+        :rtype: _type_
+        """
 
         yamada_polynomial = self.yamada_polynomial()
 

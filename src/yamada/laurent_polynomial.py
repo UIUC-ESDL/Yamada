@@ -13,7 +13,34 @@ class LaurentPolynomial:
         polynomial_expression = ""
 
         for coeff_i, order_i in zip(self.coeff, self.order):
-            polynomial_expression += str(coeff_i) + "A^" + str(order_i) + " + "
+
+            # If the coefficient is zero, skip the term
+            if coeff_i == 0:
+                pass
+            # If the coefficient is not zero
+            else:
+
+                # If the coefficient is one, don't print it
+                if coeff_i == 1:
+                    pass
+                else:
+                    polynomial_expression += str(coeff_i)
+
+                # If the order is zero, don't print the order
+                if order_i == 0:
+                    pass
+                elif order_i == 1:
+                    polynomial_expression += "A"
+                else:
+                    polynomial_expression += "A^" + str(order_i)
+
+                polynomial_expression += " + "
+            # If the coefficient is one, don't print it
+
+
+            # If the order is zero, don't print the order
+
+            # polynomial_expression += str(coeff_i) + "A^" + str(order_i) + " + "
         
         # Remove trailing " + "
         polynomial_expression = polynomial_expression.rstrip(" + ")
@@ -22,8 +49,18 @@ class LaurentPolynomial:
 
     def __add__(self, polynomial):
 
+        # If the added term is not a LaurentPolynomial, convert it to one
+        if isinstance(polynomial, LaurentPolynomial):
+            pass
+        elif isinstance(polynomial, int) or isinstance(polynomial, float):
+            coeff = polynomial
+            order = 0
+            polynomial = LaurentPolynomial([(coeff, order)])
+        else:
+            raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
+
+        # Now add the two polynomials
         new_term_tuples = []
-    
         for term_coeff, term_order in self.term_tuples:
 
             if term_order in polynomial.order:
@@ -39,8 +76,14 @@ class LaurentPolynomial:
 
         return LaurentPolynomial(new_term_tuples)
     
-    # TODO Implement __iadd__ method?
-    # TODO Implement __isub__ method?
+    def __iadd__(self, polynomial):
+        return self.__add__(polynomial)
+
+    def __sub__(self, polynomial):
+        return self.__add__(-1*polynomial)
+
+    def __isub__(self, polynomial):
+        return self.__add__(-1*polynomial)
 
     def __mul__(self, polynomial):
         
@@ -74,17 +117,17 @@ aa = LaurentPolynomial([(1,1), (1,2), (1,3)])
 
 bb = LaurentPolynomial([(1,1), (1,2), (1,3)])
 
-print(aa)
+print('polynomial', aa)
 
 # print(type(aa))
 
 cc = aa + bb
 
-print(cc)
+print('add self  ',cc)
 # print(type(cc))
 
 # print(cc.coeff)
 
 dd = aa * bb
 
-print(dd)
+print('mult self ',dd)
