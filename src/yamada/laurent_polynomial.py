@@ -54,16 +54,15 @@ class LaurentPolynomial:
              
         return polynomial_expression
 
-    def __add__(self, polynomial):
+    def __add__(self, addend):
 
 
-
-        # If the added term is not a LaurentPolynomial, convert it to one
-        polynomial = self._check_input_format(polynomial)
+        # If the input being added (addend) is not a LaurentPolynomial, make it to one or throw an error
+        polynomial = self._format_polynomial(addend)
         
-        # Now add the two polynomials
         new_coeffs = []
         new_orders = []
+
         for term_coeff, term_order in self.term_tuples:
 
             if term_order in polynomial.orders:
@@ -92,10 +91,13 @@ class LaurentPolynomial:
     def __isub__(self, polynomial):
         return self.__add__(-1*polynomial)
 
-    def __mul__(self, polynomial):
+    def __mul__(self, multiple):
         
         # TODO check if need to expand...
         # TODO fix object creation statement
+
+        # If the input being multipled (multiple) is not a LaurentPolynomial, make it to one or throw an error
+        polynomial = self._format_polynomial(multiple)
 
         new_term_tuples = []
     
@@ -120,7 +122,7 @@ class LaurentPolynomial:
     # TODO Implement _normalize method?
     # TODO Implement _sort method?
     
-    def _check_input_format(self, input):
+    def _format_polynomial(self, input):
         """_check_input_format Converts input to LaurentPolynomial for arithmetic operations
 
         :param input: _description_
