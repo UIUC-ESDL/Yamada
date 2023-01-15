@@ -58,28 +58,25 @@ class LaurentPolynomial:
         # Ensure the input being added (the addend) is a LaurentPolynomial or throw an error
         addend = self._format_polynomial(addend)
         
-        result_coeffs = self.coeffs.copy()
-        result_orders = self.orders.copy()
+        sum_coeffs = self.coeffs.copy()
+        sum_orders = self.orders.copy()
 
         for addend_coeff, addend_order in zip(addend.coeffs, addend.orders):
 
-            if addend_order in addend.orders:
+            if addend_order in sum_orders:
 
                 # Get the index of the term in the polynomial
-                term_index = addend.orders.index(addend_order)
+                term_index = sum_orders.index(addend_order)
 
                 # Increment the corresponding coeff
-                added_coeff = addend_coeff + addend.coeffs[term_index]
-
-                result_coeffs.append(added_coeff)
-                result_orders.append(addend_order)
+                sum_coeffs[term_index] += addend_coeff 
 
             else:
-                result_coeffs.append(addend_coeff)
-                result_orders.append(addend_order)
+                sum_coeffs.append(addend_coeff)
+                sum_orders.append(addend_order)
 
 
-        return LaurentPolynomial(self.term, coeffs = result_coeffs, orders = result_orders)
+        return LaurentPolynomial(self.term, coeffs = sum_coeffs, orders = sum_orders)
 
     def __iadd__(self, addend):
         return self.__add__(addend)
@@ -162,7 +159,7 @@ a = A+2
 
 print('a', a)
 
-a +=2
+a += A
 
 print('a', a)
 
