@@ -5,20 +5,20 @@ class LaurentPolynomial:
         self.order = order
 
     @property
-    def polynomial(self):
+    def laurent_polynomial(self):
 
-        polynomial = ""
+        laurent_polynomial = ""
 
         for i, j in zip(self.coeff, self.order):
-            polynomial += str(i) + "A^" + str(j) + " + "
+            laurent_polynomial += str(i) + "A^" + str(j) + " + "
         
         # Remove trailing " + "
-        polynomial = polynomial.rstrip(" + ")
+        laurent_polynomial = laurent_polynomial.rstrip(" + ")
              
-        return polynomial
+        return laurent_polynomial
 
     def __repr__(self):  
-        return self.polynomial
+        return self.laurent_polynomial
 
     def __add__(self, polynomial):
 
