@@ -97,30 +97,32 @@ class LaurentPolynomial:
         return self.__add__(-1*subtrahend)
 
     def __mul__(self, multiple):
-        
-        # TODO check if need to expand...
-        # TODO fix object creation statement
 
+        """
+        (1+x) * (1+x) = (1+x)^2 = 1 + 2x + x^2
+
+        TODO check if need to expand...
+        TODO fix object creation statement
+        
+        """
+        
         # Ensure the input being multipled (the multiple) is a LaurentPolynomial or throw an error
         multiple = self._format_polynomial(multiple)
 
-        product_coeffs = self.coeffs.copy()
-        product_orders = self.orders.copy()
+        product_coeffs = []
+        product_orders = []
+
     
         for multiple_coeff, multiple_order in zip(multiple.coeffs, multiple.orders):
 
-            if multiple_order in product_orders:
 
-                # Get the index of the term in the polynomial
-                term_index = product_orders.index(multiple_order)
+            for self_coeff, self_order in zip(self.coeffs, self.orders):
 
-                # Increment the corresponding coeff
-                product_coeffs[term_index] *= multiple_coeff
-                product_orders[term_index] += multiple_order
+                product_coeffs.append(multiple_coeff * self_coeff)
+                product_orders.append(multiple_order + self_order)
 
-            else:
-                product_coeffs.append(multiple_coeff)
-                product_orders.append(multiple_order)
+        # Simplify like terms
+        product_coeffs, product_orders = self._simplify_like_terms(product_coeffs, product_orders)
 
         return LaurentPolynomial(self.term, coeffs = product_coeffs, orders = product_orders)
 
@@ -157,8 +159,20 @@ class LaurentPolynomial:
         else:
             raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
 
-    def _simplify_like_terms(self):
-        pass
+    def _simplify_like_terms(self, coeffs, orders):
+        
+        new_coeffs = []
+        new_orders = []
+
+        for coeff, order in zip(coeffs, orders):
+                
+                if order in new_orders:
+                    new_coeffs[new_orders.index(order)] += coeff
+                else:
+                    new_coeffs.append(coeff)
+                    new_orders.append(order)
+
+        return new_coeffs, new_orders
 
 
 A = LaurentPolynomial('A')  
