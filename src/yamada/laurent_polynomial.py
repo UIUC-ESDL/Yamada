@@ -38,6 +38,10 @@ class LaurentPolynomial:
                 else:
                     polynomial += str(coeff)
 
+                # However if coeff is 1 and order is zero we should show it
+                if coeff == 1 and order == 0:
+                    polynomial += str(coeff)
+
                 # If the order is zero, don't print the order
                 if order == 0:
                     pass
