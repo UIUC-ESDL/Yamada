@@ -147,12 +147,6 @@ class LaurentPolynomial:
             polynomial = polynomial.__mul__(self)
 
         return polynomial
-        
-        
-        
-        
-        return 1
-
 
     # TODO Implement __truediv__ method?
     # TODO Implement __floordiv__ method?
