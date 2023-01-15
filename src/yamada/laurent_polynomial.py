@@ -54,10 +54,11 @@ class LaurentPolynomial:
              
         return polynomial_expression
 
+    # TODO Make arithmetic operations work with both orders
+
     def __add__(self, addend):
 
-
-        # If the input being added (addend) is not a LaurentPolynomial, make it to one or throw an error
+        # Ensure the input being added (the addend) is a LaurentPolynomial or throw an error
         polynomial = self._format_polynomial(addend)
         
         result_coeffs = []
@@ -82,22 +83,31 @@ class LaurentPolynomial:
 
 
         return LaurentPolynomial(self.term, coeffs = result_coeffs, orders = result_orders)
-    
-    def __iadd__(self, polynomial):
-        return self.__add__(polynomial)
 
-    def __sub__(self, polynomial):
-        return self.__add__(-1*polynomial)
+    def __iadd__(self, addend):
+        return self.__add__(addend)
 
-    def __isub__(self, polynomial):
-        return self.__add__(-1*polynomial)
+    def __radd__(self, addend):
+        return self.__add__(addend)
+
+    def __pow__(self, power):
+        pass
+
+    def __sub__(self, subtrahend):
+        return self.__add__(-1*subtrahend)
+
+    def __isub__(self, subtrahend):
+        return self.__add__(-1*subtrahend)
+
+    def __rsub__(self, subtrahend):
+        return self.__add__(-1*subtrahend)
 
     def __mul__(self, multiple):
         
         # TODO check if need to expand...
         # TODO fix object creation statement
 
-        # If the input being multipled (multiple) is not a LaurentPolynomial, make it to one or throw an error
+        # Ensure the input being multipled (the multiple) is a LaurentPolynomial or throw an error
         polynomial = self._format_polynomial(multiple)
 
         new_term_tuples = []
@@ -136,9 +146,9 @@ class LaurentPolynomial:
             return input
 
         elif isinstance(input, int) or isinstance(input, float):
-            coeff = input
-            order = 0
-            return LaurentPolynomial([(coeff, order)])
+            coeff = [input]
+            order = [0]
+            return LaurentPolynomial(self.term, coeffs=coeff, orders=order)
 
         else:
             raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
@@ -151,7 +161,10 @@ A = LaurentPolynomial('A')
 
 a = A+2
 
-print(a)
+b = 2+A
+
+print('a', a)
+print('b', b)
 
 
 
