@@ -43,12 +43,29 @@ class LaurentPolynomial:
     # TODO Implement __isub__ method?
 
     def __mul__(self, polynomial):
-        # TODO Implement __mul__ method
-        pass
+        
+        new_term_tuples = []
+    
+        for term_coeff, term_order in self.term_tuples:
+
+            if term_order in polynomial.order:
+
+                # Get the index of the term in the polynomial
+                term_index = polynomial.order.index(term_order)
+
+                # Increment the corresponding coeff
+                product_coeff = term_coeff * polynomial.coeff[term_index]
+                combined_order = term_order + polynomial.order[term_index]
+                new_term_tuples.append((product_coeff, combined_order))
+            else:
+                new_term_tuples.append((term_coeff, term_order))
+
+        return LaurentPolynomial(new_term_tuples)
 
     # TODO Implement __truediv__ method?
     # TODO Implement __floordiv__ method?
     # TODO Implement _normalize method?
+    # TODO Implement _sort method?
 
 
         
@@ -67,3 +84,7 @@ print(cc)
 # print(type(cc))
 
 # print(cc.coeff)
+
+dd = aa * bb
+
+print(dd)
