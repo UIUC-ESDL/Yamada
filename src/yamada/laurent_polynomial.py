@@ -59,17 +59,8 @@ class LaurentPolynomial:
 
 
         # If the added term is not a LaurentPolynomial, convert it to one
-        if isinstance(polynomial, LaurentPolynomial):
-            pass
-        elif isinstance(polynomial, int) or isinstance(polynomial, float):
-            coeff = polynomial
-            order = 0
-            polynomial = LaurentPolynomial([(coeff, order)])
-        else:
-            raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
-
-
-
+        polynomial = self._check_input_format(polynomial)
+        
         # Now add the two polynomials
         new_coeffs = []
         new_orders = []
@@ -128,6 +119,29 @@ class LaurentPolynomial:
     # TODO Implement __floordiv__ method?
     # TODO Implement _normalize method?
     # TODO Implement _sort method?
+    
+    def _check_input_format(self, input):
+        """_check_input_format Converts input to LaurentPolynomial for arithmetic operations
+
+        :param input: _description_
+        :type input: _type_
+        :raises TypeError: _description_
+        :return: _description_
+        :rtype: _type_
+        """
+        if isinstance(input, LaurentPolynomial):
+            return input
+
+        elif isinstance(input, int) or isinstance(input, float):
+            coeff = input
+            order = 0
+            return LaurentPolynomial([(coeff, order)])
+
+        else:
+            raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
+
+    def _simplify_like_terms(self):
+        pass
 
 
 A = LaurentPolynomial('A')  
