@@ -1,9 +1,11 @@
 
 class LaurentPolynomial:
+
     def __init__(self, term_tuples):
 
         self.term_tuples = term_tuples
     
+        # Unpack tuples into coeff and order lists
         self.coeff, self.order = list(zip(*self.term_tuples))
 
     def __repr__(self):
@@ -20,39 +22,48 @@ class LaurentPolynomial:
 
     def __add__(self, polynomial):
 
-        # TODO If same order then increment coeff
-        
-        coeffs = self.coeff + polynomial.coeff
-        orders = self.order + polynomial.order
+        new_term_tuples = []
+    
+        for term_coeff, term_order in self.term_tuples:
 
-        # Pack coeff and order into tuples
-        term_tuples = list(zip(coeffs, orders))
+            if term_order in polynomial.order:
 
-        return LaurentPolynomial(term_tuples)
+                # Get the index of the term in the polynomial
+                term_index = polynomial.order.index(term_order)
+
+                # Increment the corresponding coeff
+                combined_coeff = term_coeff + polynomial.coeff[term_index]
+                new_term_tuples.append((combined_coeff, term_order))
+            else:
+                new_term_tuples.append((term_coeff, term_order))
+
+        return LaurentPolynomial(new_term_tuples)
     
     # TODO Implement __iadd__ method?
     # TODO Implement __isub__ method?
 
     def __mul__(self, polynomial):
+        # TODO Implement __mul__ method
         pass
 
     # TODO Implement __truediv__ method?
     # TODO Implement __floordiv__ method?
+    # TODO Implement _normalize method?
 
 
         
 
-aa = LaurentPolynomial([(1,1), (2,2), (3,3)])
+aa = LaurentPolynomial([(1,1), (1,2), (1,3)])
 
-bb = LaurentPolynomial([(1,1), (2,2), (3,3)])
+bb = LaurentPolynomial([(1,1), (1,2), (1,3)])
 
-print("AA", aa)
+print(aa)
 
 # print(type(aa))
 
 cc = aa + bb
 
-print("CC", cc)
+print(cc)
 # print(type(cc))
 
 # print(cc.coeff)
