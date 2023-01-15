@@ -2,84 +2,81 @@
 class LaurentPolynomial:
 
     def __init__(self, term, coeffs = [1], orders = [1]):
+        """
+        LaurentPolynomial Class for representing Laurent polynomials
+        
+        TODO Implemennt input checking e.g., empty inputs or uneven order
 
-        # TODO switch from difining tuple to defining string and moving...
-        # TODO Implemennt input checking e.g., empty inputs or uneven order
-        # Must be type string
+        :param term: The character used to represent the polynomial
+        :type term: str
+        :param coeffs: The coefficients of the polynomial
+        :type coeffs: list
+        :param orders: The orders of the polynomial
+        :type orders: list
+        """
+        
         self.term = term
         self.coeffs = coeffs
         self.orders = orders
 
-        self.term_tuples = list(zip(self.coeffs, self.orders))
-    
-        # Unpack tuples into coeff and order lists
-        # self.coeff, self.order = list(zip(*self.term_tuples))
-
     def __repr__(self):
 
-        polynomial_expression = ""
+        # Initialize the polynomial
+        polynomial = ""
 
         for coeff, order in zip(self.coeffs, self.orders):
 
-            # If the coefficient is zero, skip the term
+            # If the coefficient is zero, it disappears
             if coeff == 0:
                 pass
-            # If the coefficient is not zero
+
             else:
 
-                # If the coefficient is one, don't print it
+                # If the coefficient is one, don't show it
                 if coeff == 1:
                     pass
                 else:
-                    polynomial_expression += str(coeff)
+                    polynomial += str(coeff)
 
                 # If the order is zero, don't print the order
                 if order == 0:
                     pass
                 elif order == 1:
-                    polynomial_expression += self.term
+                    polynomial += self.term
                 else:
-                    polynomial_expression += self.term + "^" + str(order)
+                    polynomial += self.term + "^" + str(order)
 
-                polynomial_expression += " + "
-            # If the coefficient is one, don't print it
-
-
-            # If the order is zero, don't print the order
-
-            # polynomial_expression += str(coeff_i) + "A^" + str(order_i) + " + "
+                polynomial += " + "
         
         # Remove trailing " + "
-        polynomial_expression = polynomial_expression.rstrip(" + ")
+        polynomial = polynomial.rstrip(" + ")
              
-        return polynomial_expression
-
-    # TODO Make arithmetic operations work with both orders
+        return polynomial
 
     def __add__(self, addend):
 
         # Ensure the input being added (the addend) is a LaurentPolynomial or throw an error
-        polynomial = self._format_polynomial(addend)
+        addend = self._format_polynomial(addend)
         
-        result_coeffs = []
-        result_orders = []
+        result_coeffs = self.coeffs.copy()
+        result_orders = self.orders.copy()
 
-        for term_coeff, term_order in self.term_tuples:
+        for addend_coeff, addend_order in zip(addend.coeffs, addend.orders):
 
-            if term_order in polynomial.orders:
+            if addend_order in addend.orders:
 
                 # Get the index of the term in the polynomial
-                term_index = polynomial.orders.index(term_order)
+                term_index = addend.orders.index(addend_order)
 
                 # Increment the corresponding coeff
-                added_coeff = term_coeff + polynomial.coeffs[term_index]
+                added_coeff = addend_coeff + addend.coeffs[term_index]
 
                 result_coeffs.append(added_coeff)
-                result_orders.append(term_order)
+                result_orders.append(addend_order)
 
             else:
-                result_coeffs.append(term_coeff)
-                result_orders.append(term_order)
+                result_coeffs.append(addend_coeff)
+                result_orders.append(addend_order)
 
 
         return LaurentPolynomial(self.term, coeffs = result_coeffs, orders = result_orders)
@@ -112,7 +109,7 @@ class LaurentPolynomial:
 
         new_term_tuples = []
     
-        for term_coeff, term_order in self.term_tuples:
+        for term_coeff, term_order in zip(self.coeffs, self.orders):
 
             if term_order in polynomial.orders:
 
@@ -159,11 +156,19 @@ class LaurentPolynomial:
 
 A = LaurentPolynomial('A')  
 
+print('A', A)
+
 a = A+2
+
+print('a', a)
+
+a +=2
+
+print('a', a)
 
 b = 2+A
 
-print('a', a)
+
 print('b', b)
 
 
