@@ -28,9 +28,14 @@ class LaurentPolynomial:
 
         for coeff, order in zip(self.coeffs, self.orders):
 
+            # TODO Only show zero if it is the only term in the polynomial
+
+
             # If the coefficient is zero, it disappears
+            # TODO Evaluate if this is the best way to handle zero coefficients
             if coeff == 0:
-                pass
+                # pass
+                polynomial += str(coeff)
 
             else:
 
@@ -88,6 +93,7 @@ class LaurentPolynomial:
         return self.__add__(addend)
 
     def __sub__(self, subtrahend):
+        
         return self.__add__(-1*subtrahend)
 
     def __rsub__(self, subtrahend):
