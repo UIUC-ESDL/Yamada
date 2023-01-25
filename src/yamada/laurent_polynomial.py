@@ -186,18 +186,6 @@ class LaurentPolynomial(InputValidation):
                 else:
                     polynomial += "^" + str(exponent)
 
-
-                # Also don't show an exponent if its one (e.g., 3x^1 --> 3x)
-
-
-                # # But if a coefficient is nonzero and the exponent is zero, show it (e.g., 3x^0 --> 3)
-                # elif coefficient != 0 and exponent == 0:
-                #     polynomial += str(coefficient)
-                #
-                # else:
-                #     polynomial += str(coefficient) + str(self.term) + "^" + str(exponent)
-
-
             return polynomial
 
     def __add__(self, addend):
@@ -205,25 +193,24 @@ class LaurentPolynomial(InputValidation):
         # Ensure the input being added (the addend) is a LaurentPolynomial or throw an error
         addend = self._format_polynomial(addend)
         
-        sum_coeffs = self.coefficients.copy()
-        sum_orders = self.exponents.copy()
+        sum_coefficients = self.coefficients.copy()
+        sum_exponents = self.exponents.copy()
 
-        for addend_coeff, addend_order in zip(addend.coefficients, addend.exponents):
+        for addend_coefficient, addend_exponent in zip(addend.coefficients, addend.exponents):
 
-            if addend_order in sum_orders:
+            if addend_exponent in sum_exponents:
 
                 # Get the index of the term in the polynomial
-                term_index = sum_orders.index(addend_order)
+                term_index = sum_exponents.index(addend_exponent)
 
-                # Increment the corresponding coeff
-                sum_coeffs[term_index] += addend_coeff 
+                # Increment the corresponding coefficient
+                sum_coefficients[term_index] += addend_coefficient
 
             else:
-                sum_coeffs.append(addend_coeff)
-                sum_orders.append(addend_order)
+                sum_coefficients.append(addend_coefficient)
+                sum_exponents.append(addend_exponent)
 
-
-        return LaurentPolynomial(self.term, coefficients= sum_coeffs, exponents= sum_orders)
+        return LaurentPolynomial(self.term, coefficients=sum_coefficients, exponents=sum_exponents)
 
     def __radd__(self, addend):
         return self.__add__(addend)
@@ -249,19 +236,19 @@ class LaurentPolynomial(InputValidation):
         # Ensure the input being multiple (the multiple) is a LaurentPolynomial or throw an error
         multiple = self._format_polynomial(multiple)
 
-        product_coeffs = []
-        product_orders = []
+        product_coefficients = []
+        product_exponents = []
 
     
-        for multiple_coeff, multiple_order in zip(multiple.coefficients, multiple.exponents):
+        for multiple_coefficient, multiple_exponent in zip(multiple.coefficients, multiple.exponents):
 
 
-            for self_coeff, self_order in zip(self.coefficients, self.exponents):
+            for coefficient, exponent in zip(self.coefficients, self.exponents):
 
-                product_coeffs.append(multiple_coeff * self_coeff)
-                product_orders.append(multiple_order + self_order)
+                product_coefficients.append(multiple_coefficient * coefficient)
+                product_exponents.append(multiple_exponent + exponent)
 
-        return LaurentPolynomial(self.term, coefficients=product_coeffs, exponents=product_orders)
+        return LaurentPolynomial(self.term, coefficients=product_coefficients, exponents=product_exponents)
 
 
     def __imul__(self, multiple):
