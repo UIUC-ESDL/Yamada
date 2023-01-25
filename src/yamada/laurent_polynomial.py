@@ -1,9 +1,10 @@
 
 import copy
 
+
 class LaurentPolynomial:
 
-    def __init__(self, term, coeffs = [1], orders = [1]):
+    def __init__(self, term, coefficients=[1], exponents=[1]):
         """
         LaurentPolynomial Class for representing Laurent polynomials
         
@@ -11,51 +12,51 @@ class LaurentPolynomial:
 
         :param term: The character used to represent the polynomial
         :type term: str
-        :param coeffs: The coefficients of the polynomial
-        :type coeffs: list
-        :param orders: The orders of the polynomial
-        :type orders: list
+        :param coefficients: The coefficients of the polynomial
+        :type coefficients: list
+        :param exponents: The orders of the polynomial
+        :type exponents: list
         """
         
         self.term = term
-        self.coeffs = coeffs
-        self.orders = orders
+        self.coefficients = coefficients
+        self.exponents = exponents
 
     def __repr__(self):
 
         # Initialize the polynomial
         polynomial = ""
 
-        for coeff, order in zip(self.coeffs, self.orders):
+        for coefficient, exponent in zip(self.coefficients, self.exponents):
 
             # TODO Only show zero if it is the only term in the polynomial
 
 
             # If the coefficient is zero, it disappears
             # TODO Evaluate if this is the best way to handle zero coefficients
-            if coeff == 0:
+            if coefficient == 0:
                 # pass
-                polynomial += str(coeff)
+                polynomial += str(coefficient)
 
             else:
 
                 # If the coefficient is one, don't show it
-                if coeff == 1:
+                if coefficient == 1:
                     pass
                 else:
-                    polynomial += str(coeff)
+                    polynomial += str(coefficient)
 
-                # However if coeff is 1 and order is zero we should show it
-                if coeff == 1 and order == 0:
-                    polynomial += str(coeff)
+                # However if coefficient is 1 and exponent is zero we should show it
+                if coefficient == 1 and exponent == 0:
+                    polynomial += str(coefficient)
 
-                # If the order is zero, don't print the order
-                if order == 0:
+                # If the exponent is zero, don't print the exponent
+                if exponent == 0:
                     pass
-                elif order == 1:
+                elif exponent == 1:
                     polynomial += self.term
                 else:
-                    polynomial += self.term + "^" + str(order)
+                    polynomial += self.term + "^" + str(exponent)
 
                 polynomial += " + "
         
@@ -69,10 +70,10 @@ class LaurentPolynomial:
         # Ensure the input being added (the addend) is a LaurentPolynomial or throw an error
         addend = self._format_polynomial(addend)
         
-        sum_coeffs = self.coeffs.copy()
-        sum_orders = self.orders.copy()
+        sum_coeffs = self.coefficients.copy()
+        sum_orders = self.exponents.copy()
 
-        for addend_coeff, addend_order in zip(addend.coeffs, addend.orders):
+        for addend_coeff, addend_order in zip(addend.coefficients, addend.exponents):
 
             if addend_order in sum_orders:
 
@@ -87,7 +88,7 @@ class LaurentPolynomial:
                 sum_orders.append(addend_order)
 
 
-        return LaurentPolynomial(self.term, coeffs = sum_coeffs, orders = sum_orders)
+        return LaurentPolynomial(self.term, coefficients= sum_coeffs, exponents= sum_orders)
 
     def __radd__(self, addend):
         return self.__add__(addend)
@@ -116,10 +117,10 @@ class LaurentPolynomial:
         product_orders = []
 
     
-        for multiple_coeff, multiple_order in zip(multiple.coeffs, multiple.orders):
+        for multiple_coeff, multiple_order in zip(multiple.coefficients, multiple.exponents):
 
 
-            for self_coeff, self_order in zip(self.coeffs, self.orders):
+            for self_coeff, self_order in zip(self.coefficients, self.exponents):
 
                 product_coeffs.append(multiple_coeff * self_coeff)
                 product_orders.append(multiple_order + self_order)
@@ -127,7 +128,7 @@ class LaurentPolynomial:
         # Simplify like terms
         product_coeffs, product_orders = self._simplify_like_terms(product_coeffs, product_orders)
 
-        return LaurentPolynomial(self.term, coeffs = product_coeffs, orders = product_orders)
+        return LaurentPolynomial(self.term, coefficients= product_coeffs, exponents= product_orders)
 
 
     def __imul__(self, multiple):
@@ -166,7 +167,7 @@ class LaurentPolynomial:
         elif isinstance(input, int) or isinstance(input, float):
             coeff = [input]
             order = [0]
-            return LaurentPolynomial(self.term, coeffs=coeff, orders=order)
+            return LaurentPolynomial(self.term, coefficients=coeff, exponents=order)
 
         else:
             raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
