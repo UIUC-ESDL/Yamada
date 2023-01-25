@@ -1,14 +1,73 @@
-
+from typing import Union
+from warnings import warn
 import copy
+
+
+class InputValidation:
+    def __init__(self,
+                 term:         str,
+                 coefficients: list[Union[int, float]],
+                 exponents:    list[Union[int, float]],
+                 order:        str):
+
+        self.term         = self._check_term(term)
+        self.coefficients = self._check_coefficients(coefficients)
+        self.exponents    = self._check_exponents(exponents)
+        self.order        = self._check_order(order)
+
+    def _check_term(self,
+                    term: str) -> str:
+
+        if type(self.term) != str:
+            raise TypeError("The term must be a string")
+        if len(self.term) != 1:
+            raise ValueError("The term must be a single character")
+
+        return term
+
+    def _check_coefficients(self,
+                            coefficients: list[Union[int, float]]) -> list[Union[int, float]]:
+        if type(self.coefficients) != list:
+            raise TypeError("The coefficients must be a list")
+        for coefficient in self.coefficients:
+            if type(coefficient) != int:
+                raise TypeError("The coefficients must be integers")
+
+        return coefficients
+
+    def _check_exponents(self,
+                         exponents: list[Union[int, float]]) -> list[Union[int, float]]:
+
+        # TODO Can Laurent polynomials have negative exponents?
+        # TODO Can Laurent polynomials have zero exponents?
+        # TODO Can Laurent polynomials have non-integer exponents?
+
+        if type(self.exponents) != list:
+            raise TypeError("The exponents must be a list")
+        for exponent in self.exponents:
+            if type(exponent) != int:
+                raise TypeError("The exponents must be integers")
+
+        return exponents
+
+    def _check_order(self,
+                     order: str) -> str:
+
+        if type(self.order) != str:
+            raise TypeError("The order must be a string")
+        if self.order not in ['increasing', 'decreasing']:
+            raise ValueError("The order must be either 'increasing' or 'decreasing'")
+
+        return order
 
 
 class LaurentPolynomial:
 
-    def __init__(self, term, coefficients=[1], exponents=[1]):
+    def __init__(self, term, coefficients=[1], exponents=[1], order='increasing'):
         """
         LaurentPolynomial Class for representing Laurent polynomials
         
-        TODO Implemennt input checking e.g., empty inputs or uneven order
+        TODO Implement input checking e.g., empty inputs or uneven order
 
         :param term: The character used to represent the polynomial
         :type term: str
@@ -16,54 +75,61 @@ class LaurentPolynomial:
         :type coefficients: list
         :param exponents: The orders of the polynomial
         :type exponents: list
+        param order: The order in which the polynomial is represented (i.e., "increasing" or "decreasing")
+        :type order: str
         """
         
         self.term = term
         self.coefficients = coefficients
         self.exponents = exponents
+        self.order = order
 
     def __repr__(self):
 
-        # Initialize the polynomial
-        polynomial = ""
+        # TODO Implement the self.order kwargs
 
-        for coefficient, exponent in zip(self.coefficients, self.exponents):
+        # If the polynomial only contains a single term with a coefficient of zero, then the polynomial is zero
+        if self.coefficients == [0] and self.exponents == [0]:
+            return "0"
 
-            # TODO Only show zero if it is the only term in the polynomial
+        else:
 
+            polynomial = ""
 
-            # If the coefficient is zero, it disappears
-            # TODO Evaluate if this is the best way to handle zero coefficients
-            if coefficient == 0:
-                # pass
-                polynomial += str(coefficient)
+            for coefficient, exponent in zip(self.coefficients, self.exponents):
 
-            else:
-
-                # If the coefficient is one, don't show it
-                if coefficient == 1:
+                # If the coefficient is zero, then the whole term is zero --> don't show it
+                if coefficient == 0:
                     pass
+
                 else:
-                    polynomial += str(coefficient)
 
-                # However if coefficient is 1 and exponent is zero we should show it
-                if coefficient == 1 and exponent == 0:
-                    polynomial += str(coefficient)
+                    # First, determine whether a leading + or - sign is needed
 
-                # If the exponent is zero, don't print the exponent
-                if exponent == 0:
-                    pass
-                elif exponent == 1:
-                    polynomial += self.term
-                else:
-                    polynomial += self.term + "^" + str(exponent)
+                    # If this is the first term, then don't show the addition sign (e.g., +1+x^2 --> 1+x^2)
+                    # Note: It is okay to display a leading minus sign
+                    if self.coefficients.index(coefficient) == 0 and coefficient >= 0:
+                        pass
+                    elif coefficient >= 0:
+                        polynomial += "+"
+                    elif coefficient < 0:
+                        polynomial += "-"
 
-                polynomial += " + "
-        
-        # Remove trailing " + "
-        polynomial = polynomial.rstrip(" + ")
-             
-        return polynomial
+                    # Next, determine how to show the coefficient and exponent
+
+                    # Don't show a coefficient of one if the exponent is nonzero (e.g., 1x^1 --> x)
+                    if coefficient == 1 and exponent == 1:
+                        polynomial += str(self.term)
+
+                    # But if a coefficient is nonzero and the exponent is zero, show it (e.g., 3x^0 --> 3)
+                    elif coefficient != 0 and exponent == 0:
+                        polynomial += str(coefficient)
+
+                    else:
+                        polynomial += str(coefficient) + str(self.term) + "^" + str(exponent)
+
+
+            return polynomial
 
     def __add__(self, addend):
 
@@ -126,7 +192,7 @@ class LaurentPolynomial:
                 product_orders.append(multiple_order + self_order)
 
         # Simplify like terms
-        product_coeffs, product_orders = self._simplify_like_terms(product_coeffs, product_orders)
+        product_coeffs, product_orders = self._simplify_expression(product_coeffs, product_orders)
 
         return LaurentPolynomial(self.term, coefficients= product_coeffs, exponents= product_orders)
 
@@ -172,7 +238,7 @@ class LaurentPolynomial:
         else:
             raise TypeError("Polynomial must be of type LaurentPolynomial, int, or float")
 
-    def _simplify_like_terms(self, coeffs, orders):
+    def _simplify_expression(self, coeffs, orders):
         
         new_coeffs = []
         new_orders = []
