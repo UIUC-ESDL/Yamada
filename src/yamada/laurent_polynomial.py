@@ -10,29 +10,29 @@ class InputValidation:
                  exponents:    list[Union[int, float]],
                  order:        str):
 
-        self.term         = self._validate_term(term)
-        self.coefficients = self._validate_coefficients(coefficients)
-        self.exponents    = self._validate_exponents(exponents)
-        self.order        = self._validate_order(order)
+        self._validate_term(term)
+        self._validate_coefficients(coefficients)
+        self._validate_exponents(exponents)
+        self._validate_order(order)
 
     def _validate_term(self,
                        term: str) -> str:
 
-        if type(self.term) != str:
+        if type(term) != str:
             raise TypeError("The term must be a string")
 
-        if self.term == 'Chad':
+        if term == 'Chad':
             raise ValueError("While Chad is an awesome name, the term must be a single character")
 
-        if len(self.term) != 1:
+        if len(term) != 1:
             raise ValueError("The term must be a single character")
 
-        return term
+        self.term = term
 
     def _validate_coefficients(self,
                                coefficients: list[Union[int, float]]) -> list[Union[int, float]]:
 
-        if type(coefficients) == Union[int, float]:
+        if type(coefficients) in [int, float]:
             warn("The coefficients should be a list, not a single number. Converting to a list")
             coefficients = [coefficients]
 
@@ -40,12 +40,11 @@ class InputValidation:
             raise TypeError("The coefficients must be a list")
 
         for coefficient in coefficients:
-            if type(coefficient) != Union[int, float]:
+            if type(coefficient) not in [int, float]:
                 raise TypeError("The coefficients must be integers or floats")
 
-
         self.coefficients = coefficients
-        # return coefficients
+
 
     def _validate_exponents(self,
                             exponents: list[Union[int, float]]) -> list[Union[int, float]]:
@@ -54,29 +53,29 @@ class InputValidation:
         # TODO Can Laurent polynomials have zero exponents?
         # TODO Can Laurent polynomials have non-integer exponents?
 
-        if type(exponents) == Union[int, float]:
+        if type(exponents) in [int, float]:
             warn("The exponents should be a list, not a single number. Converting to a list")
             exponents = [exponents]
 
         if type(exponents) != list:
             raise TypeError("The exponents must be a list")
 
-        for exponent in self.exponents:
-            if type(exponent) != Union[int, float]:
+        for exponent in exponents:
+            if type(exponent) not in [int, float]:
                 raise TypeError("The exponents must be integers or floats")
 
-        return exponents
+        self.exponents = exponents
 
     def _validate_order(self,
                         order: str) -> str:
 
-        if type(self.order) != str:
+        if type(order) != str:
             raise TypeError("The order must be a string")
 
-        if self.order not in ['increasing', 'decreasing']:
+        if order not in ['increasing', 'decreasing']:
             raise ValueError("The order must be either 'increasing' or 'decreasing'")
 
-        return order
+        self.order = order
 
 
 class LaurentPolynomial(InputValidation):
@@ -89,7 +88,6 @@ class LaurentPolynomial(InputValidation):
         TODO Make kwargs immutable?
         TODO Implement normalization
 
-
         :param term: The character used to represent the polynomial
         :type term: str
         :param coefficients: The coefficients of the polynomial
@@ -100,11 +98,13 @@ class LaurentPolynomial(InputValidation):
         :type order: str
         """
         # super(LaurentPolynomial, self).__init__(term, coefficients, exponents, order)
-        # self.term = self._validate_term(term)
-        self.term = term
-        self.coefficients = coefficients
-        self.exponents = exponents
-        self.order = order
+
+        self._validate_term(term)
+        self._validate_coefficients(coefficients)
+
+        # self.exponents = exponents
+        self._validate_exponents(exponents)
+        self._validate_order(order)
         self.normalize = normalize
 
     def __repr__(self):
