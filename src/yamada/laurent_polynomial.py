@@ -10,64 +10,85 @@ class InputValidation:
                  exponents:    list[Union[int, float]],
                  order:        str):
 
-        self.term         = self._check_term(term)
-        self.coefficients = self._check_coefficients(coefficients)
-        self.exponents    = self._check_exponents(exponents)
-        self.order        = self._check_order(order)
+        self.term         = self._validate_term(term)
+        self.coefficients = self._validate_coefficients(coefficients)
+        self.exponents    = self._validate_exponents(exponents)
+        self.order        = self._validate_order(order)
 
-    def _check_term(self,
-                    term: str) -> str:
+    def _validate_term(self,
+                       term: str) -> str:
 
         if type(self.term) != str:
             raise TypeError("The term must be a string")
+
+        if self.term == 'Chad':
+            raise ValueError("While Chad is an awesome name, the term must be a single character")
+
         if len(self.term) != 1:
             raise ValueError("The term must be a single character")
 
         return term
 
-    def _check_coefficients(self,
-                            coefficients: list[Union[int, float]]) -> list[Union[int, float]]:
-        if type(self.coefficients) != list:
+    def _validate_coefficients(self,
+                               coefficients: list[Union[int, float]]) -> list[Union[int, float]]:
+
+        if type(coefficients) == Union[int, float]:
+            warn("The coefficients should be a list, not a single number. Converting to a list")
+            coefficients = [coefficients]
+
+        if type(coefficients) != list:
             raise TypeError("The coefficients must be a list")
-        for coefficient in self.coefficients:
-            if type(coefficient) != int:
-                raise TypeError("The coefficients must be integers")
 
-        return coefficients
+        for coefficient in coefficients:
+            if type(coefficient) != Union[int, float]:
+                raise TypeError("The coefficients must be integers or floats")
 
-    def _check_exponents(self,
-                         exponents: list[Union[int, float]]) -> list[Union[int, float]]:
+
+        self.coefficients = coefficients
+        # return coefficients
+
+    def _validate_exponents(self,
+                            exponents: list[Union[int, float]]) -> list[Union[int, float]]:
 
         # TODO Can Laurent polynomials have negative exponents?
         # TODO Can Laurent polynomials have zero exponents?
         # TODO Can Laurent polynomials have non-integer exponents?
 
-        if type(self.exponents) != list:
+        if type(exponents) == Union[int, float]:
+            warn("The exponents should be a list, not a single number. Converting to a list")
+            exponents = [exponents]
+
+        if type(exponents) != list:
             raise TypeError("The exponents must be a list")
+
         for exponent in self.exponents:
-            if type(exponent) != int:
-                raise TypeError("The exponents must be integers")
+            if type(exponent) != Union[int, float]:
+                raise TypeError("The exponents must be integers or floats")
 
         return exponents
 
-    def _check_order(self,
-                     order: str) -> str:
+    def _validate_order(self,
+                        order: str) -> str:
 
         if type(self.order) != str:
             raise TypeError("The order must be a string")
+
         if self.order not in ['increasing', 'decreasing']:
             raise ValueError("The order must be either 'increasing' or 'decreasing'")
 
         return order
 
 
-class LaurentPolynomial:
+class LaurentPolynomial(InputValidation):
 
-    def __init__(self, term, coefficients=[1], exponents=[1], order='increasing'):
+    def __init__(self, term, coefficients=[1], exponents=[1], order='increasing', normalize=False):
         """
         LaurentPolynomial Class for representing Laurent polynomials
         
         TODO Implement input checking e.g., empty inputs or uneven order
+        TODO Make kwargs immutable?
+        TODO Implement normalization
+
 
         :param term: The character used to represent the polynomial
         :type term: str
@@ -78,15 +99,18 @@ class LaurentPolynomial:
         param order: The order in which the polynomial is represented (i.e., "increasing" or "decreasing")
         :type order: str
         """
-        
+        # super(LaurentPolynomial, self).__init__(term, coefficients, exponents, order)
+        # self.term = self._validate_term(term)
         self.term = term
         self.coefficients = coefficients
         self.exponents = exponents
         self.order = order
+        self.normalize = normalize
 
     def __repr__(self):
 
         # TODO Implement the self.order kwargs
+        # TODO Implement the power sign as a carrot or an asterisk?
 
         # If the polynomial only contains a single term with a coefficient of zero, then the polynomial is zero
         if self.coefficients == [0] and self.exponents == [0]:
@@ -262,22 +286,22 @@ class LaurentPolynomial:
 
 A = LaurentPolynomial('A')  
 
-print('A', A)
-
-a = A+2
-
-print('a', a)
-
-a - A
-
-print('a', a)
-
-b = 2+A
-
-
-print('b', b)
-
-A**2
+# print('A', A)
+#
+# a = A+2
+#
+# print('a', a)
+#
+# a - A
+#
+# print('a', a)
+#
+# b = 2+A
+#
+#
+# print('b', b)
+#
+# A**2
 
 # b = 3*A
 
