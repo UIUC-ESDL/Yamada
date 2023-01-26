@@ -45,15 +45,17 @@ d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
 
 
 
-# print(a2.intersects(b))
-#
-# aa = a.intersection(b)
+print(a2.intersects(c2))
 
-# plot_points(aa, ax=ax, color='red')
+i1 = a2.intersection(c2)
+
+
 
 plot_line(a2, ax=ax)
 plot_line(b2, ax=ax)
 plot_line(c2, ax=ax)
 plot_line(d2, ax=ax)
+
+plot_points(i1, ax=ax, color='red')
 
 plt.show()
