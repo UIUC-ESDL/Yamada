@@ -42,7 +42,18 @@ b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
 c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
 d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
 
+def project_3d_to_2d(points_3d):
+    pass
 
+def find_intersections(*LineStrings):
+    # intersections = []
+    # for i in range(len(LineStrings)):
+    #     for j in range(i + 1, len(LineStrings)):
+    #         if LineStrings[i].intersects(LineStrings[j]):
+    #             intersections.append(LineStrings[i].intersection(LineStrings[j]))
+    # return intersections
+
+    pass
 
 
 print(a2.intersects(c2))
@@ -56,6 +67,11 @@ plot_line(b2, ax=ax)
 plot_line(c2, ax=ax)
 plot_line(d2, ax=ax)
 
-plot_points(i1, ax=ax, color='red')
+plot_points(i1, ax=ax,
+            marker='o',
+            markersize=40,
+            markerfacecolor='none',
+            markeredgecolor='red',
+            markeredgewidth=4)
 
 plt.show()
