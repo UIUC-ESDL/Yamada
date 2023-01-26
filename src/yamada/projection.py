@@ -37,10 +37,10 @@ plt.show()
 fig = plt.figure()
 ax = fig.add_subplot()
 
-a2 = LineString([(a3[0][[0]], a3[0][2]), (a3[1][0], a3[1][2])])
-b2 = LineString([(b3[0][[0]], b3[0][2]), (b3[1][0], b3[1][2])])
-c2 = LineString([(c3[0][[0]], c3[0][2]), (c3[1][0], c3[1][2])])
-d2 = LineString([(d3[0][[0]], d3[0][2]), (d3[1][0], d3[1][2])])
+a2 = LineString([(a3[0][0], a3[0][2]), (a3[1][0], a3[1][2])])
+b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
+c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
+d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
 
 
 
@@ -53,4 +53,7 @@ d2 = LineString([(d3[0][[0]], d3[0][2]), (d3[1][0], d3[1][2])])
 
 plot_line(a2, ax=ax)
 plot_line(b2, ax=ax)
+plot_line(c2, ax=ax)
+plot_line(d2, ax=ax)
+
 plt.show()
