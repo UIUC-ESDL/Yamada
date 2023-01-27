@@ -21,8 +21,6 @@ Welcome to Yamada's documentation!
    readme <source/README>
 
 
-
-
 Indices and tables
 ==================
 
