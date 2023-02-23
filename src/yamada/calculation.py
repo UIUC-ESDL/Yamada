@@ -477,12 +477,9 @@ class SpatialGraphDiagram:
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
     def normalized_yamada_polynomial(self):
-        """normalized_yamada_polynomial How does normalizing the polynomial work?
+        """normalized_yamada_polynomial
 
-        _extended_summary_
-
-        :return: _description_
-        :rtype: _type_
+        TODO Why does the normalizer work this way?
         """
 
         yamada_polynomial = self.yamada_polynomial()
@@ -523,9 +520,10 @@ def get_coefficients_and_exponents(poly):
 
     return coefficients, exponents
 
+
 def reverse_poly(poly):
     """
-
+    TODO Why does reverse_poly invert the exponent? What is the purpose?
     """
 
     A = pari('A')
