@@ -131,24 +131,24 @@ class SpatialTopology:
         self.node_positions = node_positions
         self.edges = edges
 
-        self.rotation = self.rotation_generator()
+        # Initialize the rotation generator
+
+        def rotation_generator():
+            rotation = np.zeros(3)
+            while True:
+                yield rotation
+                rotation = np.random.rand(3) * 2 * np.pi
+
+        self.rotation_generator_object = rotation_generator()
 
         # Positions for the 2D projections / rotation
 
+
     @property
-    def random_rotation(self):
-        return next(self.rotation)
+    def rotation(self):
+        return next(self.rotation_generator_object)
 
-    def rotation_generator(self):
-        """
-        A Random rotation generator that starts with current orientation.
-        """
-        rotation = np.zeros(3)
 
-        while True:
-
-            yield rotation
-            rotation = np.random.rand(3) * 2 * np.pi
 
 
     def rotate(self):
