@@ -254,42 +254,54 @@ from shapely.plotting import plot_line, plot_points
 #
 # # Skew
 
-a = (0, 0)
-b = (1, 1)
-c = (1, 0)
-d = (0, 1)
-
-m1 = (b[1] - a[1]) / (b[0] - a[0])
-m2 = (d[1] - c[1]) / (d[0] - c[0])
-
-# y = mx + b --> b = y - mx
-b1 = a[1] - m1 * a[0]
-b2 = c[1] - m2 * c[0]
 
 
-def get_line_equation(a, b):
-    m = (b[1] - a[1]) / (b[0] - a[0])
-    b = a[1] - m * a[0]
-    return m, b
 
+def get_line_intersection(a, b, c, d):
+    """
+    Get the intersection point of two lines.
 
-def get_line_intersection(m1, b1, m2, b2):
+    Each line is defined by two points (a, b) and (c, d).
+    Each point is represented by a tuple (x, y) or (x, y).
+
+    Important logic:
+    1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
+    there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
+    2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
+    to determine which edge case the intersection is, just raise an error and try again with a different random projection.
+    3. ...
+
+    :param a: Point A of line 1
+    :param b: Point B of line 1
+    :param c: Point A of line 2
+    :param d: Point B of line 2
+    """
+
+    def get_line_equation(a, b):
+        m = (b[1] - a[1]) / (b[0] - a[0])
+        b = a[1] - m * a[0]
+        return m, b
+
+    m1, b1 = get_line_equation(a, b)
+    m2, b2 = get_line_equation(c, d)
 
     # If slope is the same, then the lines are parallel. Check if overlapping or not.
     if m1 == m2 and b1 == b2:
         raise ValueError('Lines are overlapping, try another random projection surface')
 
+    # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
     elif m1 == m2 and b1 != b2:
         collision_point = None
 
+    # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
     else:
-        # m_1 * x + b_1 = m_2 * x + b_2
-        # x = (b_2 - b_1) / (m_1 - m_2)
         x = (b2 - b1) / (m1 - m2)
         y = m1 * x + b1
 
         # If x or y is not between the two points, then the intersection is outside the line segment
-        if (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1]):
+        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (x == d[0] and y == d[1]):
+            raise ValueError('Lines are overlapping at vertices, try another random projection surface')
+        elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1]):
             collision_point = None
         else:
             collision_point = (x, y)
@@ -297,3 +309,11 @@ def get_line_intersection(m1, b1, m2, b2):
     return collision_point
 
 
+a = (0, 0)
+b = (1, 1)
+c = (1, 0)
+d = (0, 1)
+
+ans = get_line_intersection(a, b, c, d)
+
+ans = get_line_intersection((0,0), (1,1), (1,0), (2,1))
