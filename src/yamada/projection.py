@@ -34,12 +34,16 @@ def get_line_intersection(a, b, c, d):
     m1, b1 = get_line_equation(a, b)
     m2, b2 = get_line_equation(c, d)
 
+    valid_projection = False
+    collision_point = None
+
     # If slope is the same, then the lines are parallel. Check if overlapping or not.
     if m1 == m2 and b1 == b2:
-        raise ValueError('Lines are overlapping, try another random projection surface')
+        pass
 
     # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
     elif m1 == m2 and b1 != b2:
+        valid_projection = True
         collision_point = None
 
     # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
@@ -51,11 +55,13 @@ def get_line_intersection(a, b, c, d):
         if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (x == d[0] and y == d[1]):
             raise ValueError('Lines are overlapping at vertices, try another random projection surface')
         elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1]):
+            valid_projection = True
             collision_point = None
         else:
+            valid_projection = True
             collision_point = (x, y)
 
-    return collision_point
+    return valid_projection, collision_point
 
 # TODO Write Boolean collision check function
 # TODO Wrtie funcction to project 2D points...
@@ -141,22 +147,16 @@ class SpatialTopology:
 
         self.rotation_generator_object = rotation_generator()
 
-        # Positions for the 2D projections / rotation
-
+        self.projected_node_positions = self.project_node_positions()
 
     @property
     def rotation(self):
         return next(self.rotation_generator_object)
 
-
-
-
     def rotate(self):
         """
         Rotates a set of points about the first 3D point in the array.
 
-        :param positions:
-        :param rotation: Angle in radians
         :return: new_positions:
         """
 
@@ -164,7 +164,7 @@ class SpatialTopology:
         reference_position = self.node_positions[0]
         origin_positions = self.node_positions - reference_position
 
-        alpha, beta, gamma = self.random_rotation
+        alpha, beta, gamma = self.rotation
 
         # Rotation matrix Euler angle convention r = r_z(gamma) @ r_y(beta) @ r_x(alpha)
 
@@ -190,20 +190,20 @@ class SpatialTopology:
 
         return new_positions
 
-    def project_to_2d(self, positions):
+    def project_node_positions(self):
         # Project to 2D, index the x and z coordinates
-        return positions[:, [0, 2]]
+        return self.node_positions[:, [0, 2]]
 
 
     def project_to_2ds(self):
 
-        valid_rotation = False
+        valid_projection = False
         iter = 0
         max_iter = 100
 
-        while not valid_rotation and iter < max_iter:
+        while not valid_projection and iter < max_iter:
 
-            positions = self.rotate()
+            positions, valid_rotation = self.rotate()
 
             # Project to 2D, index the x and z coordinates
             projection_positions = positions[:, [0, 2]]
