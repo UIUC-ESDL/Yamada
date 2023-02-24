@@ -104,67 +104,106 @@ def get_line_intersection(a, b, c, d):
 
 # Initialize the graph
 
+def generate_spatial_transformation_graph():
 
-fig = plt.figure()
+    fig = plt.figure()
 
-ax1 = fig.add_subplot(221, projection='3d')
-ax2 = fig.add_subplot(222, projection='3d')
-ax3 = fig.add_subplot(223)
-ax4 = fig.add_subplot(224)
-
-
-# Axis 1
-
-ax1.set_xlim(-0.5, 1.5)
-ax1.set_ylim(-0.5, 1.5)
-ax1.set_zlim(-0.5, 1.5)
-
-ax1.title.set_text('Spatial Graph')
-ax1.xaxis.label.set_text('x')
-ax1.yaxis.label.set_text('y')
-ax1.zaxis.label.set_text('z')
+    ax1 = fig.add_subplot(221, projection='3d')
+    ax2 = fig.add_subplot(222, projection='3d')
+    ax3 = fig.add_subplot(223)
+    ax4 = fig.add_subplot(224)
 
 
-# Axis 2
+    # Axis 1
 
-ax2.set_xlim(-0.5, 1.5)
-ax2.set_ylim(-0.5, 1.5)
-ax2.set_zlim(-0.5, 1.5)
+    ax1.set_xlim(-0.5, 1.5)
+    ax1.set_ylim(-0.5, 1.5)
+    ax1.set_zlim(-0.5, 1.5)
 
-ax2.title.set_text('Spatial Graph \n (Random 3D Rotation)')
-ax2.xaxis.label.set_text('x')
-ax2.yaxis.label.set_text('y')
-ax2.zaxis.label.set_text('z')
+    ax1.title.set_text('Spatial Graph')
+    ax1.xaxis.label.set_text('x')
+    ax1.yaxis.label.set_text('y')
+    ax1.zaxis.label.set_text('z')
 
-# Axis 3
 
-ax3.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
-ax3.xaxis.label.set_text('x')
-ax3.yaxis.label.set_text('z')
+    # Axis 2
 
-ax3.set_xlim(-0.5, 1.5)
-ax3.set_ylim(-0.5, 1.5)
+    ax2.set_xlim(-0.5, 1.5)
+    ax2.set_ylim(-0.5, 1.5)
+    ax2.set_zlim(-0.5, 1.5)
 
-# Axis 4
+    ax2.title.set_text('Spatial Graph \n (Random 3D Rotation)')
+    ax2.xaxis.label.set_text('x')
+    ax2.yaxis.label.set_text('y')
+    ax2.zaxis.label.set_text('z')
 
-ax4.title.set_text('Spatial Graph Diagram 2 \n (Random 3D Rotation)')
-ax4.xaxis.label.set_text('x')
-ax4.yaxis.label.set_text('z')
+    # Axis 3
 
-ax4.set_xlim(-0.5, 1.5)
-ax4.set_ylim(-0.5, 1.5)
+    ax3.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
+    ax3.xaxis.label.set_text('x')
+    ax3.yaxis.label.set_text('z')
+
+    ax3.set_xlim(-0.5, 1.5)
+    ax3.set_ylim(-0.5, 1.5)
+
+    # Axis 4
+
+    ax4.title.set_text('Spatial Graph Diagram 2 \n (Random 3D Rotation)')
+    ax4.xaxis.label.set_text('x')
+    ax4.yaxis.label.set_text('z')
+
+    ax4.set_xlim(-0.5, 1.5)
+    ax4.set_ylim(-0.5, 1.5)
+
+    # Figure layout
+    plt.tight_layout(pad=2, w_pad=2, h_pad=4.0)
+
+    return ax1, ax2, ax3, ax4
+
+
+ax1, ax2, ax3, ax4 = generate_spatial_transformation_graph()
+
+
+# Create graph
+
+class SpatialTopology:
+
+    def __init__(self, nodes, node_positions, edges, ax1, ax2, ax3, ax4):
+        self.nodes = nodes
+        self.node_positions = node_positions
+        self.edges = edges
+
+    def project(self):
+        pass
+
+    def rotate(self):
+        pass
+
+    def plot(self):
+        for edge in self.edges:
+            point_1 = self.node_positions[self.nodes.index(edge[0])]
+            point_2 = self.node_positions[self.nodes.index(edge[1])]
+            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]], 'blue')
+
+sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
+                      node_positions=[(0, 0.5, 0), (1, 0.5, 1), (1, 0, 0), (0, 0, 1)],
+                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+                      ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4)
+
+sp1.plot()
 
 # Plot 3D points
+
 
 a3 = np.array([[0, 0.5, 0], [1, 0.5, 1]])
 b3 = np.array([[1, 0.5, 1], [1, 0, 0]])
 c3 = np.array([[1, 0, 0], [0, 0, 1]])
 d3 = np.array([[0, 0, 1], [0, 0.5, 0]])
 
-ax1.plot3D(a3[:, 0], a3[:, 1], a3[:, 2], 'blue')
-ax1.plot3D(b3[:, 0], b3[:, 1], b3[:, 2], 'blue')
-ax1.plot3D(c3[:, 0], c3[:, 1], c3[:, 2], 'blue')
-ax1.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
+# ax1.plot3D(a3[:, 0], a3[:, 1], a3[:, 2], 'blue')
+# ax1.plot3D(b3[:, 0], b3[:, 1], b3[:, 2], 'blue')
+# ax1.plot3D(c3[:, 0], c3[:, 1], c3[:, 2], 'blue')
+# ax1.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
 
 
 # Plot the 2D projection
@@ -176,10 +215,16 @@ d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
 
 i1 = a2.intersection(c2)
 
-plot_line(a2, ax=ax3)
-plot_line(b2, ax=ax3)
-plot_line(c2, ax=ax3)
-plot_line(d2, ax=ax3)
+ax3.plot([a3[0][0], a3[1][0]], [a3[0][2], a3[1][2]], 'blue')
+ax3.plot([b3[0][0], b3[1][0]], [b3[0][2], b3[1][2]], 'blue')
+ax3.plot([c3[0][0], c3[1][0]], [c3[0][2], c3[1][2]], 'blue')
+ax3.plot([d3[0][0], d3[1][0]], [d3[0][2], d3[1][2]], 'blue')
+
+
+# plot_line(a2, ax=ax3)
+# plot_line(b2, ax=ax3)
+# plot_line(c2, ax=ax3)
+# plot_line(d2, ax=ax3)
 
 plot_points(i1, ax=ax3,
             marker='o',
@@ -229,5 +274,5 @@ plot_points(i1, ax=ax4,
             markeredgewidth=4)
 
 
-plt.tight_layout(pad=2, w_pad=2, h_pad=4.0)
+
 plt.show()
