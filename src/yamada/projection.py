@@ -100,8 +100,10 @@ def get_line_intersection(a, b, c, d):
     return collision_point
 
 # TODO Write Boolean collision check function
+# TODO Wrtie funcction to project 2D points...
 
 # Initialize the graph
+
 
 fig = plt.figure()
 
@@ -167,14 +169,10 @@ ax1.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
 
 # Plot the 2D projection
 
-
-
 a2 = LineString([(a3[0][0], a3[0][2]), (a3[1][0], a3[1][2])])
 b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
 c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
 d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
-
-print(a2.intersects(c2))
 
 i1 = a2.intersection(c2)
 
@@ -194,8 +192,6 @@ plot_points(i1, ax=ax3,
 
 # Apply a random 3D transformation
 
-
-
 positions = np.concatenate((a3, b3, c3, d3), axis=0)
 
 np.random.seed(1)
@@ -213,68 +209,12 @@ ax2.plot3D(b3[:, 0], b3[:, 1], b3[:, 2], 'blue')
 ax2.plot3D(c3[:, 0], c3[:, 1], c3[:, 2], 'blue')
 ax2.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
 
-
-####
-
-
-
-
-# plt.show()
-
-# Project 3D points to 2D on the XZ plane
-
-# fig = plt.figure()
-# ax = fig.add_subplot()
-
-#
-#
-# def project_3d_to_2d(points_3d):
-#     pass
-#
-#
-# def check_for_overlapping_points(*line_strings):
-#     # TODO Check function logic
-#     for i in range(len(line_strings)):
-#         for j in range(i + 1, len(line_strings)):
-#             if line_strings[i].intersects(line_strings[j]):
-#                 return True
-#
-#     # Remove all collocation points
-#
-#     return False
-#
-#
-# def check_for_parallel_lines(*line_strings):
-#     # TODO Check function logic
-#     for i in range(len(line_strings)):
-#         for j in range(i + 1, len(line_strings)):
-#             if line_strings[i].parallel(line_strings[j]):
-#                 return True
-#     return False
-#
-#
-# def check_for_intersecting_lines(*line_strings):
-#     # TODO Check function logic
-#     intersections = []
-#     for i in range(len(line_strings)):
-#         for j in range(i + 1, len(line_strings)):
-#             if line_strings[i].intersects(line_strings[j]):
-#                 intersections.append(line_strings[i].intersection(line_strings[j]))
-#     return intersections
-#
-#
-
-
 a2 = LineString([(a3[0][0], a3[0][2]), (a3[1][0], a3[1][2])])
 b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
 c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
 d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
 
-print(a2.intersects(c2))
-
 i1 = a2.intersection(c2)
-
-
 
 plot_line(a2, ax=ax4)
 plot_line(b2, ax=ax4)
@@ -291,37 +231,3 @@ plot_points(i1, ax=ax4,
 
 plt.tight_layout(pad=2, w_pad=2, h_pad=4.0)
 plt.show()
-
-#
-# from shapely import LinearRing
-#
-# ring = LinearRing([(0, 0), (1, 1), (1, 0)])
-#
-# ring.area
-#
-# ring.length
-#
-# a = LineString([[0,0],[0,1],[1,1],[1,0]])
-# b = LinearRing(a)
-#
-#
-# # Overlapping
-#
-# # Parallel
-#
-# # Skew
-
-
-
-
-
-
-
-# a = (0, 0)
-# b = (1, 1)
-# c = (1, 0)
-# d = (0, 1)
-#
-# ans = get_line_intersection(a, b, c, d)
-#
-# ans = get_line_intersection((0,0), (1,1), (0,0), (2,1))
