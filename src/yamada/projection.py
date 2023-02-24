@@ -5,9 +5,6 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-from shapely.geometry import LineString
-from shapely.plotting import plot_line, plot_points
-
 
 def get_line_intersection(a, b, c, d):
     """
@@ -134,14 +131,25 @@ class SpatialTopology:
         self.node_positions = node_positions
         self.edges = edges
 
+        self.rotation = self.rotation_generator()
+
         # Positions for the 2D projections / rotation
 
     @property
     def random_rotation(self):
-        return np.random.rand(3) * 2 * np.pi
+        return next(self.rotation)
 
-    def project(self):
-        pass
+    def rotation_generator(self):
+        """
+        A Random rotation generator that starts with current orientation.
+        """
+        rotation = np.zeros(3)
+
+        while True:
+
+            yield rotation
+            rotation = np.random.rand(3) * 2 * np.pi
+
 
     def rotate(self):
         """
@@ -154,9 +162,9 @@ class SpatialTopology:
 
         # Shift the object to origin
         reference_position = self.node_positions[0]
-        origin_positions = positions - reference_position
+        origin_positions = self.node_positions - reference_position
 
-        alpha, beta, gamma = rotation
+        alpha, beta, gamma = self.random_rotation
 
         # Rotation matrix Euler angle convention r = r_z(gamma) @ r_y(beta) @ r_x(alpha)
 
@@ -182,15 +190,42 @@ class SpatialTopology:
 
         return new_positions
 
+    def project_to_2d(self, positions):
+        # Project to 2D, index the x and z coordinates
+        return positions[:, [0, 2]]
+
+
+    def project_to_2ds(self):
+
+        valid_rotation = False
+        iter = 0
+        max_iter = 100
+
+        while not valid_rotation and iter < max_iter:
+
+            positions = self.rotate()
+
+            # Project to 2D, index the x and z coordinates
+            projection_positions = positions[:, [0, 2]]
+
+        if iter == max_iter:
+            raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+
+        return projection_positions
+
+
     def plot(self):
+
+        # Plot 3D
         for edge in self.edges:
             point_1 = self.node_positions[self.nodes.index(edge[0])]
             point_2 = self.node_positions[self.nodes.index(edge[1])]
             ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]], 'blue')
 
+
 sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
-                      node_positions=[(0, 0.5, 0), (1, 0.5, 1), (1, 0, 0), (0, 0, 1)],
-                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+                      node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+                      edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']],
                       ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4)
 
 sp1.plot()
@@ -276,6 +311,14 @@ sp1.plot()
 #             markeredgecolor='red',
 #             markeredgewidth=4)
 
+def mygen():
+
+    # Initialize the counter
+    i = 0
+
+    while True:
+        yield i
+        i += 1
 
 
 plt.show()
