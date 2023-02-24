@@ -4,67 +4,7 @@ from numpy import sin, cos
 import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
-
-def get_line_intersection(a, b, c, d):
-    """
-    Get the intersection point of two lines.
-
-    Each line is defined by two points (a, b) and (c, d).
-    Each point is represented by a tuple (x, y) or (x, y).
-
-    Important logic:
-    1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
-    there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
-    2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
-    to determine which edge case the intersection is, just raise an error and try again with a different random projection.
-    3. ...
-
-    :param a: Point A of line 1
-    :param b: Point B of line 1
-    :param c: Point A of line 2
-    :param d: Point B of line 2
-    """
-
-    def get_line_equation(a, b):
-        m = (b[1] - a[1]) / (b[0] - a[0])
-        b = a[1] - m * a[0]
-        return m, b
-
-    m1, b1 = get_line_equation(a, b)
-    m2, b2 = get_line_equation(c, d)
-
-    valid_projection = False
-    collision_point = None
-
-    # If slope is the same, then the lines are parallel. Check if overlapping or not.
-    if m1 == m2 and b1 == b2:
-        pass
-
-    # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
-    elif m1 == m2 and b1 != b2:
-        valid_projection = True
-        collision_point = None
-
-    # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
-    else:
-        x = (b2 - b1) / (m1 - m2)
-        y = m1 * x + b1
-
-        # If x or y is not between the two points, then the intersection is outside the line segment
-        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (x == d[0] and y == d[1]):
-            raise ValueError('Lines are overlapping at vertices, try another random projection surface')
-        elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1]):
-            valid_projection = True
-            collision_point = None
-        else:
-            valid_projection = True
-            collision_point = (x, y)
-
-    return valid_projection, collision_point
-
-# TODO Write Boolean collision check function
-# TODO Wrtie funcction to project 2D points...
+from itertools import pairwise
 
 # Initialize the graph
 
@@ -137,6 +77,9 @@ class SpatialTopology:
         self.node_positions = node_positions
         self.edges = edges
 
+        self.rotated_node_positions = None
+        self.projected_node_positions = None
+
         # Initialize the rotation generator
 
         def rotation_generator():
@@ -152,6 +95,10 @@ class SpatialTopology:
     @property
     def rotation(self):
         return next(self.rotation_generator_object)
+
+    @property
+    def edge_pairs(self):
+        return
 
     def rotate(self):
         """
@@ -190,12 +137,71 @@ class SpatialTopology:
 
         return new_positions
 
-    def project_node_positions(self):
+    def get_line_intersection(self, a, b, c, d):
+        """
+        Get the intersection point of two lines.
+
+        Each line is defined by two points (a, b) and (c, d).
+        Each point is represented by a tuple (x, y) or (x, y).
+
+        Important logic:
+        1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
+        there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
+        2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
+        to determine which edge case the intersection is, just raise an error and try again with a different random projection.
+        3. ...
+
+        :param a: Point A of line 1
+        :param b: Point B of line 1
+        :param c: Point A of line 2
+        :param d: Point B of line 2
+        """
+
+        def get_line_equation(a, b):
+            m = (b[1] - a[1]) / (b[0] - a[0])
+            b = a[1] - m * a[0]
+            return m, b
+
+        m1, b1 = get_line_equation(a, b)
+        m2, b2 = get_line_equation(c, d)
+
+        valid_projection = False
+        collision_point = None
+
+        # If slope is the same, then the lines are parallel. Check if overlapping or not.
+        if m1 == m2 and b1 == b2:
+            pass
+
+        # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
+        elif m1 == m2 and b1 != b2:
+            valid_projection = True
+            collision_point = None
+
+        # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
+        else:
+            x = (b2 - b1) / (m1 - m2)
+            y = m1 * x + b1
+
+            # If x or y is not between the two points, then the intersection is outside the line segment
+            if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
+                    x == d[0] and y == d[1]):
+                pass
+            elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
+                    y > a[1] and y > b[1]):
+                valid_projection = True
+                collision_point = None
+            else:
+                valid_projection = True
+                collision_point = (x, y)
+
+        return valid_projection, collision_point
+
+    def project(self):
         # Project to 2D, index the x and z coordinates
-        return self.node_positions[:, [0, 2]]
+        return
 
 
-    def project_to_2ds(self):
+    def project(self):
 
         valid_projection = False
         iter = 0
@@ -204,6 +210,10 @@ class SpatialTopology:
         while not valid_projection and iter < max_iter:
 
             positions, valid_rotation = self.rotate()
+
+            self.node_positions[:, [0, 2]]
+
+            valid_projection, collision_point = self.get_line_intersection(a, b, c, d)
 
             # Project to 2D, index the x and z coordinates
             projection_positions = positions[:, [0, 2]]
