@@ -77,11 +77,6 @@ class SpatialTopology:
         self.node_positions = node_positions
         self.edges = edges
 
-        self.rotated_node_positions = None
-        self.projected_node_positions = None
-
-        # Initialize the rotation generator
-
         def rotation_generator():
             rotation = np.zeros(3)
             while True:
@@ -89,16 +84,16 @@ class SpatialTopology:
                 rotation = np.random.rand(3) * 2 * np.pi
 
         self.rotation_generator_object = rotation_generator()
-
-        self.projected_node_positions = self.project_node_positions()
-
-    @property
-    def rotation(self):
-        return next(self.rotation_generator_object)
+        self.rotation = None
+        self.rotated_node_positions = None
+        self.projected_node_positions = None
 
     @property
     def edge_pairs(self):
-        return
+        return list(pairwise(self.edges))
+
+    def randomize_rotation(self):
+        self.rotation = next(self.rotation_generator_object)
 
     def rotate(self):
         """
@@ -135,7 +130,10 @@ class SpatialTopology:
         # Shift back from origin
         new_positions = rotated_origin_positions + reference_position
 
-        return new_positions
+        self.rotated_node_positions = new_positions
+
+    def project_node_positions(self):
+        self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
     def get_line_intersection(self, a, b, c, d):
         """
@@ -158,8 +156,23 @@ class SpatialTopology:
         """
 
         def get_line_equation(a, b):
-            m = (b[1] - a[1]) / (b[0] - a[0])
-            b = a[1] - m * a[0]
+            """
+            Get the line equation in the form y = mx + b
+            a = (x1, y1)
+            b = (x2, y2)
+            m = (y2 - y1) / (x2 - x1)
+            y = mx + b --> b = y - mx
+
+            If x2-x1=0, then m = Undefined
+            """
+
+            if b[0]-a[0] == 0:
+                m = np.NaN
+                b = np.NaN
+            else:
+                m = (b[1] - a[1]) / (b[0] - a[0])
+                b = a[1] - m * a[0]
+
             return m, b
 
         m1, b1 = get_line_equation(a, b)
@@ -168,8 +181,16 @@ class SpatialTopology:
         valid_projection = False
         collision_point = None
 
+        # If both lines are vertical and overlapping
+        if m1 == np.NaN and m2 == np.NaN and a[0] == c[0]:
+            pass
+
+        # If both lines are vertical but not overlapping
+        elif m1 == np.NaN and m2 == np.NaN and a[0] != c[0]:
+            pass
+
         # If slope is the same, then the lines are parallel. Check if overlapping or not.
-        if m1 == m2 and b1 == b2:
+        elif m1 == m2 and b1 == b2:
             pass
 
         # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
@@ -179,8 +200,18 @@ class SpatialTopology:
 
         # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
         else:
-            x = (b2 - b1) / (m1 - m2)
-            y = m1 * x + b1
+
+            if m1 == np.NaN or m2 == np.NaN:
+                if m1 == np.NaN:
+                    x = a[0]
+                    y = m2 * x + b2
+                else:
+                    x = c[0]
+                    y = m1 * x + b1
+            else:
+                # m1 * x + b1 = m2 * x + b2 --> x = (b2 - b1) / (m1 - m2)
+                x = (b2 - b1) / (m1 - m2)
+                y = m1 * x + b1
 
             # If x or y is not between the two points, then the intersection is outside the line segment
             if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
@@ -196,12 +227,10 @@ class SpatialTopology:
 
         return valid_projection, collision_point
 
-    def project(self):
-        # Project to 2D, index the x and z coordinates
-        return
-
 
     def project(self):
+
+        # TODO Capture names of what crosses what...
 
         valid_projection = False
         iter = 0
@@ -209,19 +238,31 @@ class SpatialTopology:
 
         while not valid_projection and iter < max_iter:
 
-            positions, valid_rotation = self.rotate()
+            print('LOOPING')
 
-            self.node_positions[:, [0, 2]]
+            self.randomize_rotation()
+            self.rotate()
+            self.project_node_positions()
 
-            valid_projection, collision_point = self.get_line_intersection(a, b, c, d)
+            collision_points = []
+            for line_1, line_2 in self.edge_pairs:
+                a = self.projected_node_positions[self.nodes.index(line_1[0])]
+                b = self.projected_node_positions[self.nodes.index(line_1[1])]
+                c = self.projected_node_positions[self.nodes.index(line_2[0])]
+                d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-            # Project to 2D, index the x and z coordinates
-            projection_positions = positions[:, [0, 2]]
+                valid_projection, collision_point = self.get_line_intersection(a, b, c, d)
+
+                if valid_projection is False:
+                    break
+
+                if collision_point is not None:
+                    collision_points.append(collision_point)
+
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
 
-        return projection_positions
 
 
     def plot(self):
@@ -232,11 +273,20 @@ class SpatialTopology:
             point_2 = self.node_positions[self.nodes.index(edge[1])]
             ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]], 'blue')
 
+        # Plot 2D
+        for edge in self.edges:
+            point_1 = self.projected_node_positions[self.nodes.index(edge[0])]
+            point_2 = self.projected_node_positions[self.nodes.index(edge[1])]
+            ax3.plot([point_1[0], point_2[0]], [point_1[1], point_2[1]], 'blue')
+
 
 sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']],
                       ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4)
+
+
+sp1.project()
 
 sp1.plot()
 
