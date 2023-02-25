@@ -4,7 +4,7 @@ from numpy import sin, cos
 import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from itertools import pairwise
+from itertools import pairwise, combinations
 
 # Initialize the graph
 
@@ -87,10 +87,26 @@ class SpatialTopology:
         self.rotation = None
         self.rotated_node_positions = None
         self.projected_node_positions = None
+        self.collision_points = None
 
     @property
     def edge_pairs(self):
-        return list(pairwise(self.edges))
+        return list(combinations(self.edges, 2))
+
+    @property
+    def adjacent_edge_pairs(self):
+
+        adjacent_edge_pairs = []
+
+        for edge_1, edge_2 in self.edge_pairs:
+            if edge_1[0] == edge_2[0] or edge_1[0] == edge_2[1] or edge_1[1] == edge_2[0] or edge_1[1] == edge_2[1]:
+                adjacent_edge_pairs += [(edge_1, edge_2)]
+
+        return adjacent_edge_pairs
+
+    @property
+    def nonadjacent_edge_pairs(self):
+        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
 
     def randomize_rotation(self):
         self.rotation = next(self.rotation_generator_object)
@@ -155,25 +171,27 @@ class SpatialTopology:
         :param d: Point B of line 2
         """
 
-        def get_line_equation(a, b):
+        def get_line_equation(p1, p2):
             """
             Get the line equation in the form y = mx + b
-            a = (x1, y1)
-            b = (x2, y2)
+            p1 = (x1, y1)
+            p2 = (x2, y2)
             m = (y2 - y1) / (x2 - x1)
             y = mx + b --> b = y - mx
 
             If x2-x1=0, then m = Undefined
             """
 
-            if b[0]-a[0] == 0:
-                m = np.NaN
-                b = np.NaN
+            if p2[0]-p1[0] == 0:
+                slope = np.NaN
+                intercept = np.NaN
             else:
-                m = (b[1] - a[1]) / (b[0] - a[0])
-                b = a[1] - m * a[0]
+                slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+                intercept = p1[1] - slope * p1[0]
 
-            return m, b
+            return slope, intercept
+
+        # TODO Don't check for intersection between two adjacent segments unless they're overlapping?
 
         m1, b1 = get_line_equation(a, b)
         m2, b2 = get_line_equation(c, d)
@@ -181,19 +199,20 @@ class SpatialTopology:
         valid_projection = False
         collision_point = None
 
-        # If both lines are vertical and overlapping
+        # If both lines are vertical and overlapping --> Not Valid Project
         if m1 == np.NaN and m2 == np.NaN and a[0] == c[0]:
             pass
 
         # If both lines are vertical but not overlapping
         elif m1 == np.NaN and m2 == np.NaN and a[0] != c[0]:
-            pass
+            valid_projection = True
+            collision_point = None
 
-        # If slope is the same, then the lines are parallel. Check if overlapping or not.
+        # If slope and intercept are the same then the lines are overlapping
         elif m1 == m2 and b1 == b2:
             pass
 
-        # If the slope is the same but the offsets are different, then the lines are parallel but not overlapping
+        # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
         elif m1 == m2 and b1 != b2:
             valid_projection = True
             collision_point = None
@@ -201,6 +220,7 @@ class SpatialTopology:
         # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
         else:
 
+            # Find the intersection point
             if m1 == np.NaN or m2 == np.NaN:
                 if m1 == np.NaN:
                     x = a[0]
@@ -213,17 +233,22 @@ class SpatialTopology:
                 x = (b2 - b1) / (m1 - m2)
                 y = m1 * x + b1
 
+            # Then verify whether it is within the bounds
+
             # If x or y is not between the two points, then the intersection is outside the line segment
             if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
                     x == d[0] and y == d[1]):
                 pass
+
             elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
                     y > a[1] and y > b[1]):
                 valid_projection = True
                 collision_point = None
+
             else:
                 valid_projection = True
                 collision_point = (x, y)
+                print('Added point: ', collision_point)
 
         return valid_projection, collision_point
 
@@ -259,6 +284,8 @@ class SpatialTopology:
                 if collision_point is not None:
                     collision_points.append(collision_point)
 
+            self.collision_points = collision_points
+
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
@@ -289,6 +316,8 @@ sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
 sp1.project()
 
 sp1.plot()
+
+sp1.adjacent_edge_pairs
 
 # Plot 3D points
 
