@@ -191,67 +191,45 @@ class SpatialTopology:
 
             return slope, intercept
 
-        # TODO Don't check for intersection between two adjacent segments unless they're overlapping?
-
         m1, b1 = get_line_equation(a, b)
         m2, b2 = get_line_equation(c, d)
 
-        valid_projection = False
-        collision_point = None
 
-        # If both lines are vertical and overlapping --> Not Valid Project
+        # If both lines are vertical and overlapping
         if m1 == np.NaN and m2 == np.NaN and a[0] == c[0]:
-            pass
+            collision_point = np.inf
 
         # If both lines are vertical but not overlapping
         elif m1 == np.NaN and m2 == np.NaN and a[0] != c[0]:
-            valid_projection = True
             collision_point = None
 
         # If slope and intercept are the same then the lines are overlapping
         elif m1 == m2 and b1 == b2:
-            pass
+            collision_point = None
 
         # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
         elif m1 == m2 and b1 != b2:
-            valid_projection = True
             collision_point = None
 
         # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
         else:
 
             # Find the intersection point
-            if m1 == np.NaN or m2 == np.NaN:
-                if m1 == np.NaN:
-                    x = a[0]
-                    y = m2 * x + b2
-                else:
+            if m1 is np.NaN or m2 is np.NaN:
+                if m1 is np.NaN:
                     x = c[0]
+                    y = m2 * x + b2
+                elif m2 is np.NaN:
+                    x = a[0]
                     y = m1 * x + b1
             else:
                 # m1 * x + b1 = m2 * x + b2 --> x = (b2 - b1) / (m1 - m2)
                 x = (b2 - b1) / (m1 - m2)
                 y = m1 * x + b1
 
-            # Then verify whether it is within the bounds
+            collision_point = np.array([x, y])
 
-            # If x or y is not between the two points, then the intersection is outside the line segment
-            if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                    x == d[0] and y == d[1]):
-                pass
-
-            elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
-                    y > a[1] and y > b[1]):
-                valid_projection = True
-                collision_point = None
-
-            else:
-                valid_projection = True
-                collision_point = (x, y)
-                print('Added point: ', collision_point)
-
-        return valid_projection, collision_point
-
+        return collision_point
 
     def project(self):
 
@@ -269,20 +247,75 @@ class SpatialTopology:
             self.rotate()
             self.project_node_positions()
 
-            collision_points = []
-            for line_1, line_2 in self.edge_pairs:
+
+            # Check that adjacent segments aren't overlapping
+
+
+            for line_1, line_2 in self.adjacent_edge_pairs:
                 a = self.projected_node_positions[self.nodes.index(line_1[0])]
                 b = self.projected_node_positions[self.nodes.index(line_1[1])]
                 c = self.projected_node_positions[self.nodes.index(line_2[0])]
                 d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-                valid_projection, collision_point = self.get_line_intersection(a, b, c, d)
+                collision_point = self.get_line_intersection(a, b, c, d)
 
-                if valid_projection is False:
+                if collision_point is None:
+                    valid_projection = True
+
+                elif collision_point is np.inf:
+                    valid_projection = False
                     break
+
+                else:
+                    x, y = collision_point
+
+                    if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
+                            x == d[0] and y == d[1]):
+                        pass
+
+
+            # Check nonadjacent segments
+
+
+            collision_points = []
+            for line_1, line_2 in self.nonadjacent_edge_pairs:
+                a = self.projected_node_positions[self.nodes.index(line_1[0])]
+                b = self.projected_node_positions[self.nodes.index(line_1[1])]
+                c = self.projected_node_positions[self.nodes.index(line_2[0])]
+                d = self.projected_node_positions[self.nodes.index(line_2[1])]
+
+                collision_point = self.get_line_intersection(a, b, c, d)
 
                 if collision_point is not None:
                     collision_points.append(collision_point)
+
+                if collision_point is None:
+                    valid_projection = True
+
+                elif collision_point is np.inf:
+                    valid_projection = False
+                    break
+
+                else:
+                    x, y = collision_point
+
+                    # If x or y is not between the two points, then the intersection is outside the line segment
+                    if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
+                            x == d[0] and y == d[1]):
+                        pass
+
+                    elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
+                            y > a[1] and y > b[1]):
+                        valid_projection = True
+                        collision_point = None
+
+                    else:
+                        valid_projection = True
+                        collision_point = (x, y)
+                        print('Added point: ', collision_point)
+
+                    if valid_projection is False:
+                        break
 
             self.collision_points = collision_points
 
