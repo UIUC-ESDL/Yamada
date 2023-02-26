@@ -214,6 +214,17 @@ class BaseVertex:
     def entry_points(self):
         return [EntryPoint(self, i) for i in range(self.degree)]
 
+    def next_available_index(self):
+        """
+        Returns the next available index.
+
+        This is useful for automatically generating then setting items.
+        """
+        for i in range(self.degree):
+            if self.adjacent[i] is None:
+                return i
+        raise ValueError("No available index")
+
 
 class Vertex(BaseVertex):
     pass

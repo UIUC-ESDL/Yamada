@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import sin, cos
-
-import networkx as nx
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from itertools import pairwise, combinations
+from itertools import combinations
+
+from calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
+
 
 class SpatialGraph:
     """
@@ -18,13 +18,12 @@ class SpatialGraph:
         self.node_positions = node_positions
         self.edges = edges
 
-
-
         self.rotation_generator_object = self.rotation_generator()
         self.rotation = None
         self.rotated_node_positions = None
         self.projected_node_positions = None
         self.collision_points = None
+        self.colliding_edges = None
 
     @property
     def edge_pairs(self):
@@ -44,6 +43,17 @@ class SpatialGraph:
     @property
     def nonadjacent_edge_pairs(self):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
+
+    @property
+    def edge_pairs_with_crossings(self):
+        return self.colliding_edges
+
+    @property
+    def edge_pairs_without_crossings(self):
+        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.edge_pairs_with_crossings]
+
+    def node_degree(self, node):
+        return len([edge for edge in self.edges if node in edge])
 
     @staticmethod
     def rotation_generator():
@@ -196,6 +206,7 @@ class SpatialGraph:
 
 
             # Check that adjacent segments aren't overlapping
+            # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap
 
 
             for line_1, line_2 in self.adjacent_edge_pairs:
@@ -223,7 +234,7 @@ class SpatialGraph:
 
             # Check nonadjacent segments
 
-
+            colliding_edges = []
             collision_points = []
             for line_1, line_2 in self.nonadjacent_edge_pairs:
                 a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -257,15 +268,41 @@ class SpatialGraph:
                         valid_projection = True
                         collision_point = (x, y)
                         collision_points.append(collision_point)
+                        colliding_edges.append((line_1, line_2))
 
                     if valid_projection is False:
                         break
 
             self.collision_points = collision_points
+            self.colliding_edges = colliding_edges
 
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+
+
+    def create_spatial_graph_diagram(self):
+
+        vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
+        crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.collision_points))]
+
+        for edge_1, edge_2 in self.edge_pairs_without_crossings:
+            # Get the first available indices for each node
+            node_1_index = self.nodes.index(edge_1[0])
+            node_2_index = self.nodes.index(edge_1[1])
+            node_3_index = self.nodes.index(edge_2[0])
+            node_4_index = self.nodes.index(edge_2[1])
+            node_1_next_available_index = vertices[node_1_index].next_available_index()
+            node_2_next_available_index = vertices[node_2_index].next_available_index()
+            node_3_next_available_index = vertices[node_3_index].next_available_index()
+            node_4_next_available_index = vertices[node_4_index].next_available_index()
+
+
+
+        for edge_1, edge_2 in self.edge_pairs_with_crossings:
+            pass
+
+        return vertices, crossings
 
 
 
@@ -335,9 +372,29 @@ sp1.project()
 sp1.plot()
 
 
+# sp1.edge_pairs_with_crossings
+
+a = Vertex(2, 'a')
+
+sp1.create_spatial_graph_diagram()
 
 
-
+# Alternative method of calculating the Yamada Polynomial of an Infinity Symbol
+# a, b, c, d = [Vertex(2, L) for L in 'abcd']
+# x = Crossing('x')
+#
+# a[0] = x[2]
+# b[0] = x[0]
+# b[1] = c[0]
+# c[1] = x[3]
+# d[0] = x[1]
+# d[1] = a[1]
+#
+# D = SpatialGraphDiagram([a,b,c,d,x])
+#
+# yamada_polynomial_infinity_symbol = D.yamada_polynomial()
+#
+# print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
 
 
