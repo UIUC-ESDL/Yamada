@@ -6,12 +6,15 @@ from sympy import symbols, solve, Eq
 
 from calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
+class InputValidation:
+    pass
 
 class SpatialGraph:
     """
     A class to represent a spatial graph.
 
     TODO Create a SpatialGraphDiagram subclass
+    TODO Check that no two intersecting edges are planar
     """
 
     def __init__(self, nodes, node_positions, edges):
@@ -267,7 +270,20 @@ class SpatialGraph:
         return collision_point
 
     def project(self):
+        """
+        Project the spatial graph onto a random 2D plane.
 
+        The projection is done by applying a random 3D rotation to the graph and then projecting it onto a 2D plane.
+        For simplicity, we use the transformed XZ plane. When the rotation is complete, the program checks that the
+        projected graph for several things.
+
+        First, it checks to make sure that no combinations of edges and/or nodes are overlapping.
+
+        Second, it checks to make sure that no edges are perfectly vertical or perfectly horizontal. While neither of
+        these cases technically incorrect, it's easier to implement looping through rotations rather than add edge cases
+        in for these cases.
+
+        """
         # TODO Capture names of what crosses what...
 
         valid_projection = False
@@ -282,78 +298,90 @@ class SpatialGraph:
             self.rotate()
             self.project_node_positions()
 
+            vertical_or_horizontal = False
+            # Make sure no edge is vertical or horizontal:
+            for edge in self.edges:
+                x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
+                x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
+
+                if x1 == x2 or z1 == z2:
+                    valid_projection = False
+                    vertical_or_horizontal = True
+                    break
 
             # Check that adjacent segments aren't overlapping
             # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap
+            # Use better logic than vertical or horizontal. The problem is that the break above
+            # wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
+            if vertical_or_horizontal == False:
 
+                for line_1, line_2 in self.adjacent_edge_pairs:
+                    a = self.projected_node_positions[self.nodes.index(line_1[0])]
+                    b = self.projected_node_positions[self.nodes.index(line_1[1])]
+                    c = self.projected_node_positions[self.nodes.index(line_2[0])]
+                    d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-            for line_1, line_2 in self.adjacent_edge_pairs:
-                a = self.projected_node_positions[self.nodes.index(line_1[0])]
-                b = self.projected_node_positions[self.nodes.index(line_1[1])]
-                c = self.projected_node_positions[self.nodes.index(line_2[0])]
-                d = self.projected_node_positions[self.nodes.index(line_2[1])]
+                    collision_point = self.get_line_intersection(a, b, c, d)
 
-                collision_point = self.get_line_intersection(a, b, c, d)
-
-                if collision_point is None:
-                    valid_projection = True
-
-                elif collision_point is np.inf:
-                    valid_projection = False
-                    break
-
-                else:
-                    x, y = collision_point
-
-                    if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                            x == d[0] and y == d[1]):
-                        pass
-
-
-            # Check nonadjacent segments
-
-            colliding_edges = [] # Ordered under, over
-            collision_points = []
-            for line_1, line_2 in self.nonadjacent_edge_pairs:
-                a = self.projected_node_positions[self.nodes.index(line_1[0])]
-                b = self.projected_node_positions[self.nodes.index(line_1[1])]
-                c = self.projected_node_positions[self.nodes.index(line_2[0])]
-                d = self.projected_node_positions[self.nodes.index(line_2[1])]
-
-                collision_point = self.get_line_intersection(a, b, c, d)
-
-                if collision_point is None:
-                    valid_projection = True
-
-                elif collision_point is np.inf:
-                    valid_projection = False
-                    break
-
-                else:
-                    x, y = collision_point
-
-                    # If x or y is not between the two points, then the intersection is outside the line segment
-                    if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                            x == d[0] and y == d[1]):
-                        pass
-
-                    elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
-                            y > a[1] and y > b[1]):
+                    if collision_point is None:
                         valid_projection = True
-                        # collision_point = None
 
-                    else:
-                        valid_projection = True
-                        collision_point = (x, y)
-                        # TODO Check which edge is on top
-                        collision_points.append(collision_point)
-                        colliding_edges.append((line_1, line_2))
-
-                    if valid_projection is False:
+                    elif collision_point is np.inf:
+                        valid_projection = False
                         break
 
-            self.collision_points = collision_points
-            self.colliding_edges = colliding_edges
+                    else:
+                        x, y = collision_point
+
+                        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
+                                x == d[0] and y == d[1]):
+                            pass
+
+
+                # Check nonadjacent segments
+
+                colliding_edges = [] # Ordered under, over
+                collision_points = []
+                for line_1, line_2 in self.nonadjacent_edge_pairs:
+                    a = self.projected_node_positions[self.nodes.index(line_1[0])]
+                    b = self.projected_node_positions[self.nodes.index(line_1[1])]
+                    c = self.projected_node_positions[self.nodes.index(line_2[0])]
+                    d = self.projected_node_positions[self.nodes.index(line_2[1])]
+
+                    collision_point = self.get_line_intersection(a, b, c, d)
+
+                    if collision_point is None:
+                        valid_projection = True
+
+                    elif collision_point is np.inf:
+                        valid_projection = False
+                        break
+
+                    else:
+                        x, y = collision_point
+
+                        # If x or y is not between the two points, then the intersection is outside the line segment
+                        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
+                                x == d[0] and y == d[1]):
+                            pass
+
+                        elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
+                                y > a[1] and y > b[1]):
+                            valid_projection = True
+                            # collision_point = None
+
+                        else:
+                            valid_projection = True
+                            collision_point = (x, y)
+                            # TODO Check which edge is on top
+                            collision_points.append(collision_point)
+                            colliding_edges.append((line_1, line_2))
+
+                        if valid_projection is False:
+                            break
+
+                self.collision_points = collision_points
+                self.colliding_edges = colliding_edges
 
 
         if iter == max_iter:
@@ -434,8 +462,9 @@ class SpatialGraph:
 
         fig = plt.figure()
 
-        ax1 = plt.subplot(121, projection='3d')
-        ax2 = plt.subplot(122)
+        ax1 = plt.subplot(221, projection='3d')
+        ax2 = plt.subplot(222)
+        ax3 = plt.subplot(223, projection='3d')
 
         # Axis 1
 
@@ -454,11 +483,22 @@ class SpatialGraph:
         ax2.xaxis.label.set_text('x')
         ax2.yaxis.label.set_text('z')
 
-        ax2.set_xlim(-0.5, 1.5)
-        ax2.set_ylim(-0.5, 1.5)
+        # ax2.set_xlim(-0.5, 1.5)
+        # ax2.set_ylim(-0.5, 1.5)
+
+        # Axis 3
+
+        ax3.set_xlim(-0.5, 1.5)
+        ax3.set_ylim(-0.5, 1.5)
+        ax3.set_zlim(-0.5, 1.5)
+
+        ax3.title.set_text('Spatial Graph Rotated')
+        ax3.xaxis.label.set_text('x')
+        ax3.yaxis.label.set_text('y')
+        ax3.zaxis.label.set_text('z')
 
         # Figure layout
-        plt.tight_layout(pad=2, w_pad=2, h_pad=0)
+        plt.tight_layout(pad=2, w_pad=5, h_pad=0)
 
         # Plot 3D
         for edge in self.edges:
@@ -466,6 +506,13 @@ class SpatialGraph:
             point_2 = self.node_positions[self.nodes.index(edge[1])]
             ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
         ax1.legend(self.edges)
+
+        # Plot 3D
+        for edge in self.edges:
+            point_1 = self.rotated_node_positions[self.nodes.index(edge[0])]
+            point_2 = self.rotated_node_positions[self.nodes.index(edge[1])]
+            ax3.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        ax3.legend(self.edges)
 
 
         # Plot 2D
@@ -486,6 +533,9 @@ class SpatialGraph:
         return None
 
 
+# Set random seed for consistency
+np.random.seed(1)
+
 sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                    edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
@@ -498,11 +548,11 @@ sp1.plot()
 
 # sp1.edge_pairs_with_crossings
 
-a = Vertex(2, 'a')
+# a = Vertex(2, 'a')
 
 # sp1.create_spatial_graph_diagram()
 
-sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
+# sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
 
 
 # Alternative method of calculating the Yamada Polynomial of an Infinity Symbol
