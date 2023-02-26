@@ -225,9 +225,6 @@ class SpatialTopology:
 
                 collision_point = self.get_line_intersection(a, b, c, d)
 
-                if collision_point is not None:
-                    collision_points.append(collision_point)
-
                 if collision_point is None:
                     valid_projection = True
 
@@ -251,7 +248,7 @@ class SpatialTopology:
                     else:
                         valid_projection = True
                         collision_point = (x, y)
-                        print('Added point: ', collision_point)
+                        collision_points.append(collision_point)
 
                     if valid_projection is False:
                         break
@@ -310,6 +307,15 @@ class SpatialTopology:
         ax2.legend(self.edges)
 
 
+        # Plot collision points
+        for collision_point in self.collision_points:
+            ax2.scatter(collision_point[0], collision_point[1], marker='o', s=500,facecolors='none', edgecolors='r', linewidths=2)
+
+        plt.show()
+
+        return None
+
+
 sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
@@ -319,100 +325,13 @@ sp1.project()
 
 sp1.plot()
 
-# sp1.project()
-
-# sp1.plot()
 
 
-# Plot 3D points
-
-#
-# a3 = np.array([[0, 0.5, 0], [1, 0.5, 1]])
-# b3 = np.array([[1, 0.5, 1], [1, 0, 0]])
-# c3 = np.array([[1, 0, 0], [0, 0, 1]])
-# d3 = np.array([[0, 0, 1], [0, 0.5, 0]])
-
-# ax1.plot3D(a3[:, 0], a3[:, 1], a3[:, 2], 'blue')
-# ax1.plot3D(b3[:, 0], b3[:, 1], b3[:, 2], 'blue')
-# ax1.plot3D(c3[:, 0], c3[:, 1], c3[:, 2], 'blue')
-# ax1.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
 
 
-# Plot the 2D projection
-
-# a2 = LineString([(a3[0][0], a3[0][2]), (a3[1][0], a3[1][2])])
-# b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
-# c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
-# d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
-#
-# i1 = a2.intersection(c2)
-#
-# ax3.plot([a3[0][0], a3[1][0]], [a3[0][2], a3[1][2]], 'blue')
-# ax3.plot([b3[0][0], b3[1][0]], [b3[0][2], b3[1][2]], 'blue')
-# ax3.plot([c3[0][0], c3[1][0]], [c3[0][2], c3[1][2]], 'blue')
-# ax3.plot([d3[0][0], d3[1][0]], [d3[0][2], d3[1][2]], 'blue')
-#
-#
-# # plot_line(a2, ax=ax3)
-# # plot_line(b2, ax=ax3)
-# # plot_line(c2, ax=ax3)
-# # plot_line(d2, ax=ax3)
-#
-# plot_points(i1, ax=ax3,
-#             marker='o',
-#             markersize=40,
-#             markerfacecolor='none',
-#             markeredgecolor='red',
-#             markeredgewidth=4)
-#
-#
-#
-# # Apply a random 3D transformation
-#
-# positions = np.concatenate((a3, b3, c3, d3), axis=0)
-#
-# np.random.seed(1)
-# angles = np.random.rand(3) * 2 * np.pi
-#
-# new_positions = rotate_about_point(positions, angles)
-#
-# a3 = new_positions[0:2]
-# b3 = new_positions[2:4]
-# c3 = new_positions[4:6]
-# d3 = new_positions[6:8]
-#
-# ax2.plot3D(a3[:, 0], a3[:, 1], a3[:, 2], 'blue')
-# ax2.plot3D(b3[:, 0], b3[:, 1], b3[:, 2], 'blue')
-# ax2.plot3D(c3[:, 0], c3[:, 1], c3[:, 2], 'blue')
-# ax2.plot3D(d3[:, 0], d3[:, 1], d3[:, 2], 'blue')
-#
-# a2 = LineString([(a3[0][0], a3[0][2]), (a3[1][0], a3[1][2])])
-# b2 = LineString([(b3[0][0], b3[0][2]), (b3[1][0], b3[1][2])])
-# c2 = LineString([(c3[0][0], c3[0][2]), (c3[1][0], c3[1][2])])
-# d2 = LineString([(d3[0][0], d3[0][2]), (d3[1][0], d3[1][2])])
-#
-# i1 = a2.intersection(c2)
-#
-# plot_line(a2, ax=ax4)
-# plot_line(b2, ax=ax4)
-# plot_line(c2, ax=ax4)
-# plot_line(d2, ax=ax4)
-#
-# plot_points(i1, ax=ax4,
-#             marker='o',
-#             markersize=40,
-#             markerfacecolor='none',
-#             markeredgecolor='red',
-#             markeredgewidth=4)
-
-def mygen():
-
-    # Initialize the counter
-    i = 0
-
-    while True:
-        yield i
-        i += 1
 
 
-plt.show()
+
+
+
+
