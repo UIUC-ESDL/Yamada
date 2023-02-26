@@ -6,23 +6,21 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from itertools import pairwise, combinations
 
+class SpatialGraph:
+    """
+    A class to represent a spatial graph.
 
-# Create graph
-
-class SpatialTopology:
+    TODO Create a SpatialGraphDiagram subclass
+    """
 
     def __init__(self, nodes, node_positions, edges):
         self.nodes = nodes
         self.node_positions = node_positions
         self.edges = edges
 
-        def rotation_generator():
-            rotation = np.zeros(3)
-            while True:
-                yield rotation
-                rotation = np.random.rand(3) * 2 * np.pi
 
-        self.rotation_generator_object = rotation_generator()
+
+        self.rotation_generator_object = self.rotation_generator()
         self.rotation = None
         self.rotated_node_positions = None
         self.projected_node_positions = None
@@ -46,6 +44,16 @@ class SpatialTopology:
     @property
     def nonadjacent_edge_pairs(self):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
+
+    @staticmethod
+    def rotation_generator():
+        """
+        A generator to generate random rotations for projecting a spatial graph onto a 2D plane.
+        """
+        rotation = np.zeros(3)
+        while True:
+            yield rotation
+            rotation = np.random.rand(3) * 2 * np.pi
 
     def randomize_rotation(self):
         self.rotation = next(self.rotation_generator_object)
@@ -309,16 +317,17 @@ class SpatialTopology:
 
         # Plot collision points
         for collision_point in self.collision_points:
-            ax2.scatter(collision_point[0], collision_point[1], marker='o', s=500,facecolors='none', edgecolors='r', linewidths=2)
+            ax2.scatter(collision_point[0], collision_point[1],
+                        marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
 
         return None
 
 
-sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
-                      node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                      edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
+sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+                   node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+                   edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
 
 
 sp1.project()
