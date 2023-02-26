@@ -2,6 +2,7 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
+from sympy import symbols, solve, Eq
 
 from calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
@@ -107,6 +108,83 @@ class SpatialGraph:
 
     def project_node_positions(self):
         self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
+
+    @staticmethod
+    def get_y_position(a,b,x_int,z_int):
+        """
+        Get the ... position of line given and intermediate x and y values
+
+        Example: (change)
+            a = (0,0,0)
+            b = (1,1,1)
+            x_int = 0.5
+            z_int = 0.5
+
+        """
+
+        x1, y1, z1 = a
+        x2, y2, z2 = b
+
+        l = x2 - x1
+        m = y2 - y1
+        n = z2 - z1
+
+        # Check for vertical line
+
+
+
+        # (x-x1)/l = (y-y1)/m = (z-z1)/n
+        # EQ1: y = (m/l)(x-x1) + y1
+        # EQ2: y = (m/n)(z-z1) + y1
+
+        y = symbols('y')
+
+        eq1 = Eq(m/l*(x_int-x1)+y1-y)
+        eq2 = Eq(m/n*(z_int-z1)+y1-y)
+
+        res = solve((eq1, eq2), y)
+
+        # Convert from sympy float to normal float
+        y_int = float(res[y])
+
+        return y_int
+
+    def get_edge_overlap_order(self, edge_1, edge_2):
+        """
+        Get the order of the overlapping nodes in the two edges.
+
+        Use rotated node positions since rotation and project may change the overlap order.
+
+        :param edge_1: Edge 1
+        :param edge_2: Edge 2
+        :return: overlap_order: The order of the overlapping nodes in edge 1 and edge 2
+        """
+
+        overlap_order = []
+
+        node_1, node_2 = edge_1
+        node_3, node_4 = edge_2
+
+        node_1_index = self.nodes.index(node_1)
+        node_2_index = self.nodes.index(node_2)
+        node_3_index = self.nodes.index(node_3)
+        node_4_index = self.nodes.index(node_4)
+
+        node_1_position = self.rotated_node_positions[node_1_index]
+        node_2_position = self.rotated_node_positions[node_2_index]
+        node_3_position = self.rotated_node_positions[node_3_index]
+        node_4_position = self.rotated_node_positions[node_4_index]
+
+        # TODO Implement checker better
+
+        # Check if edge_1 and edge_2 are planar
+        # ...
+
+
+
+
+
+        return overlap_order
 
     def get_line_intersection(self, a, b, c, d):
         """
@@ -234,7 +312,7 @@ class SpatialGraph:
 
             # Check nonadjacent segments
 
-            colliding_edges = []
+            colliding_edges = [] # Ordered under, over
             collision_points = []
             for line_1, line_2 in self.nonadjacent_edge_pairs:
                 a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -267,6 +345,7 @@ class SpatialGraph:
                     else:
                         valid_projection = True
                         collision_point = (x, y)
+                        # TODO Check which edge is on top
                         collision_points.append(collision_point)
                         colliding_edges.append((line_1, line_2))
 
@@ -286,21 +365,66 @@ class SpatialGraph:
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
         crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.collision_points))]
 
-        for edge_1, edge_2 in self.edge_pairs_without_crossings:
+        # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
+        for edge_1, edge_2 in self.adjacent_edge_pairs:
+
+            # Figure out which 2 of the 4 nodes are connected together
+            # The nodes must come from opposing edges
+            if edge_1[0] == edge_2[0]:
+                node_1 = edge_1[0]
+                node_2 = edge_2[0]
+            elif edge_1[0] == edge_2[1]:
+                node_1 = edge_1[0]
+                node_2 = edge_2[1]
+            elif edge_1[1] == edge_2[0]:
+                node_1 = edge_1[1]
+                node_2 = edge_2[0]
+            elif edge_1[1] == edge_2[1]:
+                node_1 = edge_1[1]
+                node_2 = edge_2[1]
+            else:
+                raise Exception('Edges are not adjacent')
+
+
             # Get the first available indices for each node
-            node_1_index = self.nodes.index(edge_1[0])
-            node_2_index = self.nodes.index(edge_1[1])
-            node_3_index = self.nodes.index(edge_2[0])
-            node_4_index = self.nodes.index(edge_2[1])
+            node_1_index = self.nodes.index(node_1)
+            node_2_index = self.nodes.index(node_2)
+
             node_1_next_available_index = vertices[node_1_index].next_available_index()
             node_2_next_available_index = vertices[node_2_index].next_available_index()
-            node_3_next_available_index = vertices[node_3_index].next_available_index()
-            node_4_next_available_index = vertices[node_4_index].next_available_index()
 
+            vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][node_2_next_available_index]
 
+        for edge_1, edge_2, crossing in zip(self.edge_pairs_with_crossings, crossings):
 
-        for edge_1, edge_2 in self.edge_pairs_with_crossings:
-            pass
+            # Figure out which 2 of the 4 nodes are connected together
+            # The nodes must come from opposing edges
+            if edge_1[0] == edge_2[0]:
+                node_1 = edge_1[0]
+                node_2 = edge_2[0]
+            elif edge_1[0] == edge_2[1]:
+                node_1 = edge_1[0]
+                node_2 = edge_2[1]
+            elif edge_1[1] == edge_2[0]:
+                node_1 = edge_1[1]
+                node_2 = edge_2[0]
+            elif edge_1[1] == edge_2[1]:
+                node_1 = edge_1[1]
+                node_2 = edge_2[1]
+            else:
+                raise Exception('Edges are not adjacent')
+
+            # TODO Figure out how to obtian order... do at crossing findign time
+
+            # Get the first available indices for each node
+            node_1_index = self.nodes.index(node_1)
+            node_2_index = self.nodes.index(node_2)
+
+            node_1_next_available_index = vertices[node_1_index].next_available_index()
+            node_2_next_available_index = vertices[node_2_index].next_available_index()
+
+            vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][
+                node_2_next_available_index]
 
         return vertices, crossings
 
@@ -376,7 +500,9 @@ sp1.plot()
 
 a = Vertex(2, 'a')
 
-sp1.create_spatial_graph_diagram()
+# sp1.create_spatial_graph_diagram()
+
+sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
 
 
 # Alternative method of calculating the Yamada Polynomial of an Infinity Symbol
