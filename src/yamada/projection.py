@@ -12,11 +12,8 @@ def generate_spatial_transformation_graph():
 
     fig = plt.figure()
 
-    ax1 = fig.add_subplot(221, projection='3d')
-    ax2 = fig.add_subplot(222, projection='3d')
-    ax3 = fig.add_subplot(223)
-    ax4 = fig.add_subplot(224)
-
+    ax1 = plt.subplot(121, projection='3d')
+    ax2 = plt.subplot(122)
 
     # Axis 1
 
@@ -29,50 +26,29 @@ def generate_spatial_transformation_graph():
     ax1.yaxis.label.set_text('y')
     ax1.zaxis.label.set_text('z')
 
-
     # Axis 2
+
+    ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
+    ax2.xaxis.label.set_text('x')
+    ax2.yaxis.label.set_text('z')
 
     ax2.set_xlim(-0.5, 1.5)
     ax2.set_ylim(-0.5, 1.5)
-    ax2.set_zlim(-0.5, 1.5)
-
-    ax2.title.set_text('Spatial Graph \n (Random 3D Rotation)')
-    ax2.xaxis.label.set_text('x')
-    ax2.yaxis.label.set_text('y')
-    ax2.zaxis.label.set_text('z')
-
-    # Axis 3
-
-    ax3.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
-    ax3.xaxis.label.set_text('x')
-    ax3.yaxis.label.set_text('z')
-
-    ax3.set_xlim(-0.5, 1.5)
-    ax3.set_ylim(-0.5, 1.5)
-
-    # Axis 4
-
-    ax4.title.set_text('Spatial Graph Diagram 2 \n (Random 3D Rotation)')
-    ax4.xaxis.label.set_text('x')
-    ax4.yaxis.label.set_text('z')
-
-    ax4.set_xlim(-0.5, 1.5)
-    ax4.set_ylim(-0.5, 1.5)
 
     # Figure layout
-    plt.tight_layout(pad=2, w_pad=2, h_pad=4.0)
+    plt.tight_layout(pad=2, w_pad=2, h_pad=0)
 
-    return ax1, ax2, ax3, ax4
+    return ax1, ax2
 
 
-ax1, ax2, ax3, ax4 = generate_spatial_transformation_graph()
+ax1, ax2 = generate_spatial_transformation_graph()
 
 
 # Create graph
 
 class SpatialTopology:
 
-    def __init__(self, nodes, node_positions, edges, ax1, ax2, ax3, ax4):
+    def __init__(self, nodes, node_positions, edges, ax1, ax2):
         self.nodes = nodes
         self.node_positions = node_positions
         self.edges = edges
@@ -307,7 +283,7 @@ class SpatialTopology:
                     elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
                             y > a[1] and y > b[1]):
                         valid_projection = True
-                        collision_point = None
+                        # collision_point = None
 
                     else:
                         valid_projection = True
@@ -331,26 +307,32 @@ class SpatialTopology:
         for edge in self.edges:
             point_1 = self.node_positions[self.nodes.index(edge[0])]
             point_2 = self.node_positions[self.nodes.index(edge[1])]
-            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]], 'blue')
+            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        ax1.legend(self.edges)
+
 
         # Plot 2D
         for edge in self.edges:
             point_1 = self.projected_node_positions[self.nodes.index(edge[0])]
             point_2 = self.projected_node_positions[self.nodes.index(edge[1])]
-            ax3.plot([point_1[0], point_2[0]], [point_1[1], point_2[1]], 'blue')
+            ax2.plot([point_1[0], point_2[0]], [point_1[1], point_2[1]])
+        ax2.legend(self.edges)
 
 
 sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']],
-                      ax1=ax1, ax2=ax2, ax3=ax3, ax4=ax4)
+                      ax1=ax1, ax2=ax2)
 
 
 sp1.project()
 
 sp1.plot()
 
-sp1.adjacent_edge_pairs
+# sp1.project()
+
+# sp1.plot()
+
 
 # Plot 3D points
 
