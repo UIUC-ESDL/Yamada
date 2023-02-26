@@ -6,49 +6,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from itertools import pairwise, combinations
 
-# Initialize the graph
-
-def generate_spatial_transformation_graph():
-
-    fig = plt.figure()
-
-    ax1 = plt.subplot(121, projection='3d')
-    ax2 = plt.subplot(122)
-
-    # Axis 1
-
-    ax1.set_xlim(-0.5, 1.5)
-    ax1.set_ylim(-0.5, 1.5)
-    ax1.set_zlim(-0.5, 1.5)
-
-    ax1.title.set_text('Spatial Graph')
-    ax1.xaxis.label.set_text('x')
-    ax1.yaxis.label.set_text('y')
-    ax1.zaxis.label.set_text('z')
-
-    # Axis 2
-
-    ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
-    ax2.xaxis.label.set_text('x')
-    ax2.yaxis.label.set_text('z')
-
-    ax2.set_xlim(-0.5, 1.5)
-    ax2.set_ylim(-0.5, 1.5)
-
-    # Figure layout
-    plt.tight_layout(pad=2, w_pad=2, h_pad=0)
-
-    return ax1, ax2
-
-
-ax1, ax2 = generate_spatial_transformation_graph()
-
 
 # Create graph
 
 class SpatialTopology:
 
-    def __init__(self, nodes, node_positions, edges, ax1, ax2):
+    def __init__(self, nodes, node_positions, edges):
         self.nodes = nodes
         self.node_positions = node_positions
         self.edges = edges
@@ -303,6 +266,34 @@ class SpatialTopology:
 
     def plot(self):
 
+        fig = plt.figure()
+
+        ax1 = plt.subplot(121, projection='3d')
+        ax2 = plt.subplot(122)
+
+        # Axis 1
+
+        ax1.set_xlim(-0.5, 1.5)
+        ax1.set_ylim(-0.5, 1.5)
+        ax1.set_zlim(-0.5, 1.5)
+
+        ax1.title.set_text('Spatial Graph')
+        ax1.xaxis.label.set_text('x')
+        ax1.yaxis.label.set_text('y')
+        ax1.zaxis.label.set_text('z')
+
+        # Axis 2
+
+        ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
+        ax2.xaxis.label.set_text('x')
+        ax2.yaxis.label.set_text('z')
+
+        ax2.set_xlim(-0.5, 1.5)
+        ax2.set_ylim(-0.5, 1.5)
+
+        # Figure layout
+        plt.tight_layout(pad=2, w_pad=2, h_pad=0)
+
         # Plot 3D
         for edge in self.edges:
             point_1 = self.node_positions[self.nodes.index(edge[0])]
@@ -321,8 +312,7 @@ class SpatialTopology:
 
 sp1 = SpatialTopology(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                      edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']],
-                      ax1=ax1, ax2=ax2)
+                      edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
 
 
 sp1.project()
