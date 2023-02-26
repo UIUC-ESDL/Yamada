@@ -212,37 +212,26 @@ class SpatialGraph:
         def get_line_equation(p1, p2):
             """
             Get the line equation in the form y = mx + b
+
+            This function assumes lines are not vertical or horizontal since the projection method generates
+            random projections until one contains no vertical or horizontal lines.
+
             p1 = (x1, y1)
             p2 = (x2, y2)
             m = (y2 - y1) / (x2 - x1)
             y = mx + b --> b = y - mx
-
-            If x2-x1=0, then m = Undefined
             """
 
-            if p2[0]-p1[0] == 0:
-                slope = np.NaN
-                intercept = np.NaN
-            else:
-                slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
-                intercept = p1[1] - slope * p1[0]
+            slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+            intercept = p1[1] - slope * p1[0]
 
             return slope, intercept
 
         m1, b1 = get_line_equation(a, b)
         m2, b2 = get_line_equation(c, d)
 
-
-        # If both lines are vertical and overlapping
-        if m1 == np.NaN and m2 == np.NaN and a[0] == c[0]:
-            collision_point = np.inf
-
-        # If both lines are vertical but not overlapping
-        elif m1 == np.NaN and m2 == np.NaN and a[0] != c[0]:
-            collision_point = None
-
         # If slope and intercept are the same then the lines are overlapping
-        elif m1 == m2 and b1 == b2:
+        if m1 == m2 and b1 == b2:
             collision_point = None
 
         # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
