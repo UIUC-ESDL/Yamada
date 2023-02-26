@@ -113,9 +113,11 @@ class SpatialGraph:
         self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
     @staticmethod
-    def get_y_position(a,b,x_int,z_int):
+    def get_y_position(a, b, x_int, z_int):
         """
         Get the ... position of line given and intermediate x and y values
+
+        Assumes that lines are not vertical or horizontal per the projection method input checks.
 
         Example: (change)
             a = (0,0,0)
@@ -132,18 +134,14 @@ class SpatialGraph:
         m = y2 - y1
         n = z2 - z1
 
-        # Check for vertical line
-
-
-
         # (x-x1)/l = (y-y1)/m = (z-z1)/n
         # EQ1: y = (m/l)(x-x1) + y1
         # EQ2: y = (m/n)(z-z1) + y1
 
         y = symbols('y')
 
-        eq1 = Eq(m/l*(x_int-x1)+y1-y)
-        eq2 = Eq(m/n*(z_int-z1)+y1-y)
+        eq1 = Eq(m/l*(x_int-x1)+y1, y)
+        eq2 = Eq(m/n*(z_int-z1)+y1, y)
 
         res = solve((eq1, eq2), y)
 
@@ -152,9 +150,9 @@ class SpatialGraph:
 
         return y_int
 
-    def get_edge_overlap_order(self, edge_1, edge_2):
+    def get_edge_overlap_order(self, edge_1, edge_2, collision_point):
         """
-        Get the order of the overlapping nodes in the two edges.
+        Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
         Use rotated node positions since rotation and project may change the overlap order.
 
@@ -180,12 +178,22 @@ class SpatialGraph:
 
         # TODO Implement checker better
 
-        # Check if edge_1 and edge_2 are planar
-        # ...
+        x_collision, z_collision = collision_point
 
+        # If y_collision_1 and y_collision_2 are the same, then the edges are planar and it is not a valid spatial graph
+        y_collision_1 = self.get_y_position(node_1_position, node_2_position, x_collision, z_collision)
+        y_collision_2 = self.get_y_position(node_3_position, node_4_position, x_collision, z_collision)
 
-
-
+        if y_collision_1 == y_collision_2:
+            raise ValueError('The edges are planar. This is not a valid spatial graph.')
+        elif y_collision_1 > y_collision_2:
+            overlap_order.append(edge_2)
+            overlap_order.append(edge_1)
+        elif y_collision_1 < y_collision_2:
+            overlap_order.append(edge_1)
+            overlap_order.append(edge_2)
+        else:
+            raise ValueError('There should be no else case.')
 
         return overlap_order
 
@@ -281,8 +289,6 @@ class SpatialGraph:
 
         while not valid_projection and iter < max_iter:
 
-            print('LOOPING')
-
             self.randomize_rotation()
             self.rotate()
             self.project_node_positions()
@@ -364,7 +370,9 @@ class SpatialGraph:
                             collision_point = (x, y)
                             # TODO Check which edge is on top
                             collision_points.append(collision_point)
-                            colliding_edges.append((line_1, line_2))
+
+                            collision_order = self.get_edge_overlap_order(line_1, line_2, collision_point)
+                            colliding_edges.append(collision_order)
 
                         if valid_projection is False:
                             break
