@@ -828,28 +828,9 @@ sp1.plot()
 
 sgd1 = sp1.create_spatial_graph_diagram()
 
-# sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
+yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
 
+print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
-# Alternative method of calculating the Yamada Polynomial of an Infinity Symbol
-# a, b, c, d = [Vertex(2, L) for L in 'abcd']
-# x = Crossing('x')
-#
-# a[0] = x[2]
-# b[0] = x[0]
-# b[1] = c[0]
-# c[1] = x[3]
-# d[0] = x[1]
-# d[1] = a[1]
-#
-# D = SpatialGraphDiagram([a,b,c,d,x])
-#
-# yamada_polynomial_infinity_symbol = D.yamada_polynomial()
-#
-# print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
-
-
-
-
-
+# Should say "Infinity Symbol Yamada Polynomial: A^3 + A^2 + A"
 
