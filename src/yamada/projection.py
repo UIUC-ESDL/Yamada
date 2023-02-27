@@ -831,7 +831,7 @@ class SpatialGraph(InputValidation, Geometry):
 #
 # # Should say "Infinity Symbol Yamada Polynomial: A^3 + A^2 + A"
 
-np.random.seed(1)
+np.random.seed(15)
 
 sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
