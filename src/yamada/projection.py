@@ -369,7 +369,8 @@ class SpatialGraph(InputValidation, Geometry):
     @property
     def edges_with_crossings(self):
         # Use a set comprehension to remove duplicates
-        return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing}
+        # Use zero index because extra tuple nesting was added somewhere...
+        return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing[0]}
 
     @property
     def edge_pairs_with_crossing(self):
@@ -581,7 +582,7 @@ class SpatialGraph(InputValidation, Geometry):
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
 
 
-        for [node_1, node_2], [node_3, node_4] in self.adjacent_edge_pairs_without_crossings:
+        for [node_1, node_2], [node_3, node_4] in self.adjacent_edge_pairs:
 
             # Figure out which 2 of the 4 nodes are connected together
             # The nodes must come from opposing edges
@@ -616,17 +617,24 @@ class SpatialGraph(InputValidation, Geometry):
             other_node_1_index = self.nodes.index(other_node_1)
             other_node_2_index = self.nodes.index(other_node_2)
 
-            common_node_next_available_index = vertices[common_node_index].next_available_index()
-            other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
-            other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
+            # Only assign the vertices to each other if the edge does not have a crossing (consider both edge orders)
+            # Also don't assign the vertex if it has already been previously assigned
+            # TODO Check if already assigned
 
-            vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
+            if (common_node, other_node_1) not in self.edges_with_crossings and (other_node_1, common_node) not in self.edges_with_crossings:
+                common_node_next_available_index = vertices[common_node_index].next_available_index()
+                other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
 
-            common_node_next_available_index = vertices[common_node_index].next_available_index()
+                if not vertices[common_node_index].already_assigned(vertices[other_node_1_index]):
+                    vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
 
-            vertices[common_node_index][common_node_next_available_index] = vertices[other_node_2_index][other_node_2_next_available_index]
+            if (common_node, other_node_2) not in self.edges_with_crossings and (other_node_2, common_node) not in self.edges_with_crossings:
+                common_node_next_available_index = vertices[common_node_index].next_available_index()
+                other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
 
-            # vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][node_2_next_available_index]
+                if not vertices[common_node_index].already_assigned(vertices[other_node_2_index]):
+                    vertices[common_node_index][common_node_next_available_index] = vertices[other_node_2_index][other_node_2_next_available_index]
+
 
 
         # Second, connect edges that cross.

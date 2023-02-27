@@ -219,12 +219,33 @@ class BaseVertex:
         Returns the next available index.
 
         This is useful for automatically generating then setting items.
+
+        TODO Verify indexing is correct, since degree should start with 1 not 0
         """
-        for i in range(self.degree):
+        for i in range(self.degree+1):
             if self.adjacent[i] is None:
                 return i
         raise ValueError("No available index")
 
+    def already_assigned(self, node):
+        """
+        Returns true if the index is already assigned
+
+        TODO Finish implementing this
+        """
+
+        already_assigned = []
+
+        for adjacent in self.adjacent:
+            if adjacent is None:
+                already_assigned.append(False)
+            else:
+                if adjacent[0] == node:
+                    already_assigned.append(True)
+                else:
+                    already_assigned.append(False)
+
+        return any(already_assigned)
 
 class Vertex(BaseVertex):
     pass
