@@ -506,15 +506,10 @@ class SpatialGraph(InputValidation, Geometry):
                             raise ValueError('Nonadjacent segments should not intersect at the endpoints of either segment.')
 
                         # If x or y is not between the two points, then the intersection is outside the line segment
-                        less_than_a = x < a[0] and y < a[1]
-                        less_than_b = x < b[0] and y < b[1]
-                        greater_than_a = x > a[0] and y > a[1]
-                        greater_than_b = x > b[0] and y > b[1]
-                        out_of_bounds = any([less_than_a, less_than_b, greater_than_a, greater_than_b])
+                        x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
+                        y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
 
-                        # If x or y is not between the two points, then the intersection is outside the line segment
-                        # Do not append the collision point
-                        if out_of_bounds:
+                        if x_outside_ab or y_outside_ab:
                             valid_projection = True
                             collision_point  = None
 
