@@ -14,7 +14,107 @@ class InputValidation:
     TODO Check that all nodes adjoin at least 2 edges (no braids)
     TODO Do I need to check if a graph is planar?
     """
-    pass
+
+    def __init__(self,
+                 nodes:          list[str],
+                 node_positions: np.ndarray,
+                 edges:          list[list[str, str]]):
+
+        self.nodes          = self._validate_nodes(nodes)
+        self.node_positions = self._validate_node_positions(node_positions)
+        self.edges          = self._validate_edges(edges)
+
+    @staticmethod
+    def _validate_nodes(nodes: list[str]) -> list[str]:
+        """
+        Validates the user's input and returns a list of nodes.
+
+        Checks:
+        1. The input is a list
+        2. Each node is a string
+        3. Each node is a single character
+        4. All nodes unique
+
+        TODO Check for forbidden characters
+        """
+
+        if type(nodes) != list:
+            raise TypeError('Nodes must be a list.')
+
+        for node in nodes:
+            if type(node) != str:
+                raise TypeError('Nodes must be strings.')
+
+        for node in nodes:
+            if len(node) == 0 or len(node) > 1:
+                raise ValueError('Nodes must be a single character.')
+
+        if len(nodes) != len(set(nodes)):
+            raise ValueError('All nodes must be unique.')
+
+        return nodes
+
+    def _validate_edges(self, edges: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """
+        Validates the user's input and returns a list of edges.
+
+        Checks:
+        1. The input is a list
+        2. Each edge is a tuple
+        3. Each edge contains two valid nodes
+        4. All edges are unique
+        """
+
+        if type(edges) != list:
+            raise TypeError('Edges must be a list.')
+
+        for edge in edges:
+            if type(edge) != tuple:
+                raise TypeError('Edges must be tuples.')
+
+        for edge in edges:
+            if len(edge) != 2:
+                raise ValueError('Edges must contain two nodes.')
+
+        for edge in edges:
+            for node in edge:
+                if node not in self.nodes:
+                    raise ValueError('Edges must contain valid nodes.')
+
+        if len(edges) != len(set(edges)):
+            raise ValueError('All edges must be unique.')
+
+        return edges
+
+    def _validate_node_positions(self, node_positions: np.ndarray) -> np.ndarray:
+        """
+        Validates the user's input and returns an array of node positions.
+
+        Checks:
+        1. The input is a np.ndarray
+        2. The array size matches the number of nodes
+        3. Each row contains 3 real numbers
+        4. Each row is unique
+        """
+
+        # if type(node_positions) != np.ndarray:
+        #     raise TypeError('Node positions must be a numpy array.')
+        #
+        # if node_positions.shape[0] != len(self.nodes):
+        #     raise ValueError('Node positions must contain a position for each node.')
+        #
+        # if node_positions.shape[1] != 3:
+        #     raise ValueError('Node positions must contain 3D coordinates.')
+
+        # for row in node_positions:
+        #     for element in row:
+        #         if type(element) != float and type(element) != int:
+        #             raise TypeError('Node positions must contain real numbers.')
+
+        # if len(node_positions) != len(set(node_positions)):
+        #     raise ValueError('All nodes must have a position.')
+
+        return node_positions
 
 
 class Geometry:
@@ -22,7 +122,9 @@ class Geometry:
     A class that contains static methods for necessary geometric calculations.
     """
     def __init__(self):
-        self.rotation = None
+        self.rotated_node_positions    = None
+        self.projected_node_positions  = None
+        self.rotation                  = None
         self.rotation_generator_object = self.rotation_generator()
 
     @staticmethod
@@ -144,21 +246,25 @@ class SpatialGraph(InputValidation, Geometry):
     """
     A class to represent a spatial graph.
 
+    Notes:
+        1. Component ports must be individually represented as nodes. In other words, a control valve servicing an
+        actuator must employ separate nodes for the supply and return ports, along with their associated edges.
+
     TODO Link to the SpatialGraphDiagram subclass
     TODO Check that no two intersecting edges are planar (in 3D
     """
 
-    def __init__(self, nodes, node_positions, edges):
-        self.nodes = nodes
-        self.node_positions = node_positions
-        self.edges = edges
+    def __init__(self,
+                 nodes:          list[str],
+                 node_positions: np.ndarray,
+                 edges:          list[list[str, str]]):
 
-        # Initialize the necessary Geometry attributes
+        # Initialize validated inputs
+        InputValidation.__init__(self, nodes, node_positions, edges)
+
+        # Initialize attributes necessary for geometric calculations
         Geometry.__init__(self)
 
-
-        self.rotated_node_positions = None
-        self.projected_node_positions = None
         self.collision_points = None
         self.colliding_edges = None
 
@@ -557,7 +663,7 @@ np.random.seed(1)
 
 sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                   edges=[['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'a']])
+                   edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
 
 
 sp1.project()
