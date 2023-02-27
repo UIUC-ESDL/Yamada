@@ -582,7 +582,7 @@ class SpatialGraph(InputValidation, Geometry):
         # Second, connect edges that cross.
 
 
-        for under_edge, over_edge, crossing in zip(self.edge_pairs_with_crossing, crossings):
+        for [under_edge, over_edge], crossing in zip(self.edge_pairs_with_crossing, crossings):
 
             # Per convention, the first edge is under and the second edge is over.
 
@@ -764,7 +764,7 @@ sp1.plot()
 
 # a = Vertex(2, 'a')
 
-sp1.create_spatial_graph_diagram()
+vert, cross = sp1.create_spatial_graph_diagram()
 
 # sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
 
