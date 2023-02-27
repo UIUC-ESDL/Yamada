@@ -207,7 +207,7 @@ class Geometry:
 
         return slope, intercept
 
-    def get_line_intersection(self, a, b, c, d):
+    def get_line_segment_intersection(self, a, b, c, d):
         """
         Get the intersection point of two lines.
 
@@ -215,11 +215,9 @@ class Geometry:
         Each point is represented by a tuple (x, y) or (x, y).
 
         Important logic:
-        1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
-        there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
-        2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
-        to determine which edge case the intersection is, just raise an error and try again with a different random projection.
-        3. ...
+        1. If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
+        2. If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
+        3. If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
 
         :param a: Point A of line 1
         :param b: Point B of line 1
@@ -230,15 +228,12 @@ class Geometry:
         m1, b1 = self.get_line_equation(a, b)
         m2, b2 = self.get_line_equation(c, d)
 
-        # If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
         if m1 == m2 and b1 == b2:
             collision_point = np.inf
 
-        # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
         elif m1 == m2 and b1 != b2:
             collision_point = None
 
-        # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
         else:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
@@ -449,8 +444,8 @@ class SpatialGraph(InputValidation, Geometry):
 
 
                 # Second, check adjacent edge pairs for validity.
-                # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap
-                # infinitely. Overlapping infinitely is not a valid spatial graph, so we check for that case.
+                # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
+                # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
@@ -458,7 +453,7 @@ class SpatialGraph(InputValidation, Geometry):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    collision_point = self.get_line_intersection(a, b, c, d)
+                    collision_point = self.get_line_segment_intersection(a, b, c, d)
 
                     if collision_point is not None and collision_point is not np.inf:
                         x, y = collision_point
@@ -474,16 +469,25 @@ class SpatialGraph(InputValidation, Geometry):
                     elif collision_point is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                # Check nonadjacent segments
-                colliding_edges = []
-                collision_points = []
+
+                # Third, Check nonadjacent edge pairs for validity.
+                # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
+                # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
+                # between endpoints.
+                # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
+
+
+                collision_edge_pairs = []
+                collision_points     = []
+
                 for line_1, line_2 in self.nonadjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-                    collision_point = self.get_line_intersection(a, b, c, d)
+                    collision_point = self.get_line_segment_intersection(a, b, c, d)
+                    collision_edge_pair = self.edge_overlap_order(line_1, line_2, collision_point)
 
                     if collision_point is None:
                         valid_projection = True
@@ -512,19 +516,15 @@ class SpatialGraph(InputValidation, Geometry):
                         # Do not append the collision point
                         if out_of_bounds:
                             valid_projection = True
-                            # TODO set collision point to none?
+                            collision_point  = None
 
                         else:
                             valid_projection = True
-                            collision_point = (x, y)
-                            # TODO Check which edge is on top
                             collision_points.append(collision_point)
-
-                            collision_order = self.edge_overlap_order(line_1, line_2, collision_point)
-                            colliding_edges.append(collision_order)
+                            collision_edge_pairs.append(collision_edge_pair)
 
                     self.collision_points = collision_points
-                    self.colliding_edges = colliding_edges
+                    self.colliding_edges = collision_edge_pairs
 
             except ValueError:
                 self.randomize_rotation()
