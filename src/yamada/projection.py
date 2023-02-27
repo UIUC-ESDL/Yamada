@@ -97,22 +97,23 @@ class InputValidation:
         4. Each row is unique
         """
 
-        # if type(node_positions) != np.ndarray:
-        #     raise TypeError('Node positions must be a numpy array.')
-        #
-        # if node_positions.shape[0] != len(self.nodes):
-        #     raise ValueError('Node positions must contain a position for each node.')
-        #
-        # if node_positions.shape[1] != 3:
-        #     raise ValueError('Node positions must contain 3D coordinates.')
+        if type(node_positions) != np.ndarray:
+            raise TypeError('Node positions must be a numpy array.')
 
-        # for row in node_positions:
-        #     for element in row:
-        #         if type(element) != float and type(element) != int:
-        #             raise TypeError('Node positions must contain real numbers.')
+        if node_positions.shape[0] != len(self.nodes):
+            raise ValueError('Node positions must contain a position for each node.')
 
-        # if len(node_positions) != len(set(node_positions)):
-        #     raise ValueError('All nodes must have a position.')
+        if node_positions.shape[1] != 3:
+            raise ValueError('Node positions must contain 3D coordinates.')
+
+        valid_types = [float, int, np.float32, np.int32, np.float64, np.int64]
+        for row in node_positions:
+            for element in row:
+                if type(element) not in valid_types:
+                    raise TypeError('Node positions must contain real numbers.')
+
+        if node_positions.shape[0] != np.unique(node_positions, axis=0).shape[0]:
+            raise ValueError('All nodes must have a position.')
 
         return node_positions
 
