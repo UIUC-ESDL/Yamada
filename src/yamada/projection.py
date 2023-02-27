@@ -127,6 +127,7 @@ class Geometry:
         self.projected_node_positions  = None
         self.rotation                  = None
         self.rotation_generator_object = self.rotation_generator()
+        self.randomize_rotation()
 
     @staticmethod
     def rotation_generator():
@@ -246,18 +247,18 @@ class Geometry:
         return collision_point
 
     @staticmethod
-    def get_y_position(a, b, x_int, z_int):
+    def calculate_intermediate_y_position(a, b, x_int, z_int):
         """
-        Get the ... position of line given and intermediate x and y values
+        Calculates the intermediate y position given two points and the intermediate x and z position.
 
         Assumes that lines are not vertical or horizontal per the projection method input checks.
 
-        Example: (change)
+        Example:
             a = (0,0,0)
             b = (1,1,1)
             x_int = 0.5
             z_int = 0.5
-
+            Therefore y_int = 0.5
         """
 
         x1, y1, z1 = a
@@ -313,6 +314,9 @@ class SpatialGraph(InputValidation, Geometry):
         # Initialize attributes necessary for geometric calculations
         Geometry.__init__(self)
 
+        self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
+        self.project_node_positions()
+
         # Initialize attributes that are calculated later
         self.collision_points = None
         self.colliding_edges = None
@@ -347,7 +351,7 @@ class SpatialGraph(InputValidation, Geometry):
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-    def get_edge_overlap_order(self, edge_1, edge_2, collision_point):
+    def edge_overlap_order(self, edge_1, edge_2, collision_point):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
@@ -355,6 +359,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         :param edge_1: Edge 1
         :param edge_2: Edge 2
+        :param collision_point: The point of intersection between the projections of edge 1 and edge 2
         :return: overlap_order: The order of the overlapping nodes in edge 1 and edge 2
         """
 
@@ -375,12 +380,12 @@ class SpatialGraph(InputValidation, Geometry):
 
         x_collision, z_collision = collision_point
 
-        # If y_collision points are the same, then the edges are planar, and it is not a valid spatial graph
-        y_collision_1 = self.get_y_position(node_1_position, node_2_position, x_collision, z_collision)
-        y_collision_2 = self.get_y_position(node_3_position, node_4_position, x_collision, z_collision)
+        y_collision_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_collision, z_collision)
+        y_collision_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_collision, z_collision)
 
         if y_collision_1 == y_collision_2:
-            raise ValueError('The edges are planar. This is not a valid spatial graph.')
+            raise ValueError('The edges are planar and therefore the interconnects they represent physically '
+                             'intersect. This is not a valid spatial graph.')
 
         elif y_collision_1 > y_collision_2:
             overlap_order.append(edge_2)
@@ -391,10 +396,9 @@ class SpatialGraph(InputValidation, Geometry):
             overlap_order.append(edge_2)
 
         else:
-            raise ValueError('There should be no else case.')
+            raise NotImplementedError('There should be no else case.')
 
         return overlap_order
-
 
 
     def project(self):
@@ -418,9 +422,7 @@ class SpatialGraph(InputValidation, Geometry):
         iter = 0
         max_iter = 100
 
-        self.randomize_rotation()
-        self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
-        self.project_node_positions()
+
 
         while not valid_projection and iter < max_iter:
 
@@ -501,7 +503,7 @@ class SpatialGraph(InputValidation, Geometry):
                             # TODO Check which edge is on top
                             collision_points.append(collision_point)
 
-                            collision_order = self.get_edge_overlap_order(line_1, line_2, collision_point)
+                            collision_order = self.edge_overlap_order(line_1, line_2, collision_point)
                             colliding_edges.append(collision_order)
 
                     self.collision_points = collision_points
