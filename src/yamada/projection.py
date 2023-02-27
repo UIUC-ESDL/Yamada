@@ -343,12 +343,12 @@ class SpatialGraph(InputValidation, Geometry):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
 
     @property
-    def edge_pairs_with_crossings(self):
+    def edge_pairs_with_crossing(self):
         return self.crossing_edge_pairs
 
     @property
-    def edge_pairs_without_crossings(self):
-        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.edge_pairs_with_crossings]
+    def edge_pairs_without_crossing(self):
+        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.edge_pairs_with_crossing]
 
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
@@ -534,11 +534,21 @@ class SpatialGraph(InputValidation, Geometry):
 
 
     def create_spatial_graph_diagram(self):
+        """
+        Create a diagram of the spatial graph.
+
+        Crossing Convention: ...
+
+
+        """
 
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
         crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
 
+
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
+
+
         for edge_1, edge_2 in self.adjacent_edge_pairs:
 
             # Figure out which 2 of the 4 nodes are connected together
@@ -568,26 +578,78 @@ class SpatialGraph(InputValidation, Geometry):
 
             vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][node_2_next_available_index]
 
-        for edge_1, edge_2, crossing in zip(self.edge_pairs_with_crossings, crossings):
 
-            # Figure out which 2 of the 4 nodes are connected together
-            # The nodes must come from opposing edges
-            if edge_1[0] == edge_2[0]:
-                node_1 = edge_1[0]
-                node_2 = edge_2[0]
-            elif edge_1[0] == edge_2[1]:
-                node_1 = edge_1[0]
-                node_2 = edge_2[1]
-            elif edge_1[1] == edge_2[0]:
-                node_1 = edge_1[1]
-                node_2 = edge_2[0]
-            elif edge_1[1] == edge_2[1]:
-                node_1 = edge_1[1]
-                node_2 = edge_2[1]
+        # Second, connect edges that cross.
+
+
+        for under_edge, over_edge in self.edge_pairs_with_crossing:
+
+            # Per convention, the first edge is under and the second edge is over.
+
+            # Relative node positions: top right (tr), top left (tl), bottom left (bl), bottom right (br)
+            # Figure out which edge nodes are tr, tl, bl, br
+            # Each edge must have one node in the top half, and one node in the bottom half
+
+            a, b = under_edge
+            c, d = over_edge
+
+            a_index = self.nodes.index(a)
+            b_index = self.nodes.index(b)
+            c_index = self.nodes.index(c)
+            d_index = self.nodes.index(d)
+
+            a_position = self.projected_node_positions[a_index]
+            b_position = self.projected_node_positions[b_index]
+            c_position = self.projected_node_positions[c_index]
+            d_position = self.projected_node_positions[d_index]
+
+            if a_position[1] > b_position[1]:
+                under_top = a
+                under_bottom = b
+
+            elif a_position[1] < b_position[1]:
+                under_top = b
+                under_bottom = a
             else:
-                raise Exception('Edges are not adjacent')
+                raise Exception('Under edge is horizontal')
 
-            # TODO Figure out how to obtian order... do at crossing findign time
+            if c_position[1] > d_position[1]:
+                over_top = c
+                over_bottom = d
+            elif c_position[1] < d_position[1]:
+                over_top = d
+                over_bottom = c
+            else:
+                raise Exception('Over edge is horizontal')
+
+            under_top_position = self.projected_node_positions[self.nodes.index(under_top)]
+            over_top_position = self.projected_node_positions[self.nodes.index(over_top)]
+
+            # Nodes 0 and 2 are under
+            # Nodes 1 and 3 are over
+            # Nodes are numbered in CCW order
+
+            if under_top_position[0] > over_top_position[0]:
+                tr = under_top
+                tr_node = 0
+                bl = under_bottom
+                bl_node = 2
+                tl = over_top
+                tl_node = 1
+                br = over_bottom
+                br_node = 3
+            elif under_top_position[0] < over_top_position[0]:
+                tr = over_top
+                tr_node = 1
+                bl = over_bottom
+                bl_node = 3
+                tl = under_top
+                tl_node = 2
+                br = under_bottom
+                br_node = 0
+
+
+
 
             # Get the first available indices for each node
             node_1_index = self.nodes.index(node_1)
@@ -596,8 +658,8 @@ class SpatialGraph(InputValidation, Geometry):
             node_1_next_available_index = vertices[node_1_index].next_available_index()
             node_2_next_available_index = vertices[node_2_index].next_available_index()
 
-            vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][
-                node_2_next_available_index]
+            # vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][
+            #     node_2_next_available_index]
 
         return vertices, crossings
 
@@ -695,7 +757,7 @@ sp1.plot()
 
 # a = Vertex(2, 'a')
 
-# sp1.create_spatial_graph_diagram()
+sp1.create_spatial_graph_diagram()
 
 # sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
 
