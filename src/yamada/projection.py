@@ -9,8 +9,6 @@ from calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
 class InputValidation:
     """
-    TODO Check that all nodes are unique
-    TODO Check that all edges are unique
     TODO Check that all nodes adjoin at least 2 edges (no braids)
     TODO Do I need to check if a graph is planar?
     """
@@ -18,7 +16,7 @@ class InputValidation:
     def __init__(self,
                  nodes:          list[str],
                  node_positions: np.ndarray,
-                 edges:          list[list[str, str]]):
+                 edges:          list[tuple[str, str]]):
 
         self.nodes          = self._validate_nodes(nodes)
         self.node_positions = self._validate_node_positions(node_positions)
@@ -133,14 +131,20 @@ class Geometry:
     @staticmethod
     def rotation_generator():
         """
-        A generator to generate random rotations for projecting a spatial graph onto a 2D plane.
+        A generator to generate random rotations for projecting a spatial graph onto a 2D plane. Angles in radians.
         """
+
+        # Set the initial generator state to zero.
         rotation = np.zeros(3)
+
         while True:
             yield rotation
             rotation = np.random.rand(3) * 2 * np.pi
 
     def randomize_rotation(self):
+        """
+        Query the rotation generator for a new rotation.
+        """
         self.rotation = next(self.rotation_generator_object)
 
     @staticmethod
@@ -184,7 +188,25 @@ class Geometry:
         return rotated_node_positions
 
     @staticmethod
-    def get_line_intersection(a, b, c, d):
+    def get_line_equation(p1, p2):
+        """
+        Get the line equation in the form y = mx + b
+
+        This function assumes lines are not vertical or horizontal since the projection method generates
+        random projections until one contains no vertical or horizontal lines.
+
+        p1 = (x1, y1)
+        p2 = (x2, y2)
+        m = (y2 - y1) / (x2 - x1)
+        y = mx + b --> b = y - mx
+        """
+
+        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+        intercept = p1[1] - slope * p1[0]
+
+        return slope, intercept
+
+    def get_line_intersection(self, a, b, c, d):
         """
         Get the intersection point of two lines.
 
@@ -204,30 +226,12 @@ class Geometry:
         :param d: Point B of line 2
         """
 
-        def get_line_equation(p1, p2):
-            """
-            Get the line equation in the form y = mx + b
+        m1, b1 = self.get_line_equation(a, b)
+        m2, b2 = self.get_line_equation(c, d)
 
-            This function assumes lines are not vertical or horizontal since the projection method generates
-            random projections until one contains no vertical or horizontal lines.
-
-            p1 = (x1, y1)
-            p2 = (x2, y2)
-            m = (y2 - y1) / (x2 - x1)
-            y = mx + b --> b = y - mx
-            """
-
-            slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
-            intercept = p1[1] - slope * p1[0]
-
-            return slope, intercept
-
-        m1, b1 = get_line_equation(a, b)
-        m2, b2 = get_line_equation(c, d)
-
-        # If slope and intercept are the same then the lines are overlapping
+        # If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
         if m1 == m2 and b1 == b2:
-            collision_point = None
+            collision_point = np.inf
 
         # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
         elif m1 == m2 and b1 != b2:
@@ -235,14 +239,55 @@ class Geometry:
 
         # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
         else:
-
-            # m1 * x + b1 = m2 * x + b2 --> x = (b2 - b1) / (m1 - m2)
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
-
             collision_point = np.array([x, y])
 
         return collision_point
+
+    @staticmethod
+    def get_y_position(a, b, x_int, z_int):
+        """
+        Get the ... position of line given and intermediate x and y values
+
+        Assumes that lines are not vertical or horizontal per the projection method input checks.
+
+        Example: (change)
+            a = (0,0,0)
+            b = (1,1,1)
+            x_int = 0.5
+            z_int = 0.5
+
+        """
+
+        x1, y1, z1 = a
+        x2, y2, z2 = b
+
+        l = x2 - x1
+        m = y2 - y1
+        n = z2 - z1
+
+        # (x-x1)/l = (y-y1)/m = (z-z1)/n
+        # EQ1: y = (m/l)(x-x1) + y1
+        # EQ2: y = (m/n)(z-z1) + y1
+
+        y = symbols('y')
+
+        eq1 = Eq(m / l * (x_int - x1) + y1, y)
+        eq2 = Eq(m / n * (z_int - z1) + y1, y)
+
+        res = solve((eq1, eq2), y)
+
+        # Convert from sympy float to normal float
+        y_int = float(res[y])
+
+        return y_int
+
+    def project_node_positions(self):
+        """
+        Project the node positions onto the x-z plane
+        """
+        self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
 
 class SpatialGraph(InputValidation, Geometry):
@@ -301,51 +346,6 @@ class SpatialGraph(InputValidation, Geometry):
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-
-
-
-
-    def project_node_positions(self):
-        self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
-
-    @staticmethod
-    def get_y_position(a, b, x_int, z_int):
-        """
-        Get the ... position of line given and intermediate x and y values
-
-        Assumes that lines are not vertical or horizontal per the projection method input checks.
-
-        Example: (change)
-            a = (0,0,0)
-            b = (1,1,1)
-            x_int = 0.5
-            z_int = 0.5
-
-        """
-
-        x1, y1, z1 = a
-        x2, y2, z2 = b
-
-        l = x2 - x1
-        m = y2 - y1
-        n = z2 - z1
-
-        # (x-x1)/l = (y-y1)/m = (z-z1)/n
-        # EQ1: y = (m/l)(x-x1) + y1
-        # EQ2: y = (m/n)(z-z1) + y1
-
-        y = symbols('y')
-
-        eq1 = Eq(m/l*(x_int-x1)+y1, y)
-        eq2 = Eq(m/n*(z_int-z1)+y1, y)
-
-        res = solve((eq1, eq2), y)
-
-        # Convert from sympy float to normal float
-        y_int = float(res[y])
-
-        return y_int
-
     def get_edge_overlap_order(self, edge_1, edge_2, collision_point):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
@@ -372,8 +372,6 @@ class SpatialGraph(InputValidation, Geometry):
         node_3_position = self.rotated_node_positions[node_3_index]
         node_4_position = self.rotated_node_positions[node_4_index]
 
-        # TODO Implement checker better
-
         x_collision, z_collision = collision_point
 
         # If y_collision_1 and y_collision_2 are the same, then the edges are planar and it is not a valid spatial graph
@@ -392,8 +390,6 @@ class SpatialGraph(InputValidation, Geometry):
             raise ValueError('There should be no else case.')
 
         return overlap_order
-
-
 
 
 
