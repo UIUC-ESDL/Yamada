@@ -331,7 +331,14 @@ class SpatialGraph(InputValidation, Geometry):
         adjacent_edge_pairs = []
 
         for edge_1, edge_2 in self.edge_pairs:
-            if edge_1[0] == edge_2[0] or edge_1[0] == edge_2[1] or edge_1[1] == edge_2[0] or edge_1[1] == edge_2[1]:
+
+            a, b = edge_1
+            c, d = edge_2
+
+            assertion_1 = a in [c, d]
+            assertion_2 = b in [c, d]
+
+            if assertion_1 or assertion_2:
                 adjacent_edge_pairs += [(edge_1, edge_2)]
 
         return adjacent_edge_pairs
@@ -418,15 +425,20 @@ class SpatialGraph(InputValidation, Geometry):
         """
         # TODO Capture names of what crosses what...
 
+        # Initialize while loop exit conditions
         valid_projection = False
-        iter = 0
-        max_iter = 100
-
-
+        iter             = 0
+        max_iter         = 100
 
         while not valid_projection and iter < max_iter:
 
             try:
+
+
+                # First, check that no edges are perfectly vertical or perfectly horizontal.
+                # While neither of these cases technically incorrect, it's easier to implement looping through rotations
+                # rather than add edge cases for each 2D and 3D line equation.
+
 
                 for edge in self.edges:
                     x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
@@ -435,7 +447,12 @@ class SpatialGraph(InputValidation, Geometry):
                     if x1 == x2 or z1 == z2:
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
-                # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap.
+
+                # Second, check adjacent edge pairs for validity.
+                # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap
+                # infinitely. Overlapping infinitely is not a valid spatial graph, so we check for that case.
+
+
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
