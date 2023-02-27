@@ -229,17 +229,17 @@ class Geometry:
         m2, b2 = self.get_line_equation(c, d)
 
         if m1 == m2 and b1 == b2:
-            collision_point = np.inf
+            crossing_position = np.inf
 
         elif m1 == m2 and b1 != b2:
-            collision_point = None
+            crossing_position = None
 
         else:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
-            collision_point = np.array([x, y])
+            crossing_position = np.array([x, y])
 
-        return collision_point
+        return crossing_position
 
     @staticmethod
     def calculate_intermediate_y_position(a, b, x_int, z_int):
@@ -313,8 +313,8 @@ class SpatialGraph(InputValidation, Geometry):
         self.project_node_positions()
 
         # Initialize attributes that are calculated later
-        self.collision_points = None
-        self.colliding_edges = None
+        self.crossing_positions = None
+        self.crossing_edge_pairs = None
 
     @property
     def edge_pairs(self):
@@ -344,7 +344,7 @@ class SpatialGraph(InputValidation, Geometry):
 
     @property
     def edge_pairs_with_crossings(self):
-        return self.colliding_edges
+        return self.crossing_edge_pairs
 
     @property
     def edge_pairs_without_crossings(self):
@@ -353,7 +353,7 @@ class SpatialGraph(InputValidation, Geometry):
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-    def edge_overlap_order(self, edge_1, edge_2, collision_point):
+    def edge_overlap_order(self, edge_1, edge_2, crossing_position):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
@@ -361,7 +361,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         :param edge_1: Edge 1
         :param edge_2: Edge 2
-        :param collision_point: The point of intersection between the projections of edge 1 and edge 2
+        :param crossing_position: The point of intersection between the projections of edge 1 and edge 2
         :return: overlap_order: The order of the overlapping nodes in edge 1 and edge 2
         """
 
@@ -380,20 +380,20 @@ class SpatialGraph(InputValidation, Geometry):
         node_3_position = self.rotated_node_positions[node_3_index]
         node_4_position = self.rotated_node_positions[node_4_index]
 
-        x_collision, z_collision = collision_point
+        x_crossing, z_crossing = crossing_position
 
-        y_collision_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_collision, z_collision)
-        y_collision_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_collision, z_collision)
+        y_crossing_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing, z_crossing)
+        y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
 
-        if y_collision_1 == y_collision_2:
+        if y_crossing_1 == y_crossing_2:
             raise ValueError('The edges are planar and therefore the interconnects they represent physically '
                              'intersect. This is not a valid spatial graph.')
 
-        elif y_collision_1 > y_collision_2:
+        elif y_crossing_1 > y_crossing_2:
             overlap_order.append(edge_2)
             overlap_order.append(edge_1)
 
-        elif y_collision_1 < y_collision_2:
+        elif y_crossing_1 < y_crossing_2:
             overlap_order.append(edge_1)
             overlap_order.append(edge_2)
 
@@ -453,20 +453,20 @@ class SpatialGraph(InputValidation, Geometry):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    collision_point = self.get_line_segment_intersection(a, b, c, d)
+                    crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
-                    if collision_point is not None and collision_point is not np.inf:
-                        x, y = collision_point
+                    if crossing_position is not None and crossing_position is not np.inf:
+                        x, y = crossing_position
                         assertion_1 = np.isclose(x, a[0]) and np.isclose(y, a[1])
                         assertion_2 = np.isclose(x, b[0]) and np.isclose(y, b[1])
                         assertion_3 = np.isclose(x, c[0]) and np.isclose(y, c[1])
                         assertion_4 = np.isclose(x, d[0]) and np.isclose(y, d[1])
                         assert any([assertion_1, assertion_2, assertion_3, assertion_4])
 
-                    elif collision_point is None:
+                    elif crossing_position is None:
                         raise ValueError('Adjacent edges must intersect at the endpoints.')
 
-                    elif collision_point is np.inf:
+                    elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
 
@@ -477,8 +477,8 @@ class SpatialGraph(InputValidation, Geometry):
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
 
-                collision_edge_pairs = []
-                collision_points     = []
+                crossing_edge_pairs = []
+                crossing_positions     = []
 
                 for line_1, line_2 in self.nonadjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -486,17 +486,17 @@ class SpatialGraph(InputValidation, Geometry):
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-                    collision_point = self.get_line_segment_intersection(a, b, c, d)
-                    collision_edge_pair = self.edge_overlap_order(line_1, line_2, collision_point)
+                    crossing_position = self.get_line_segment_intersection(a, b, c, d)
+                    crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
 
-                    if collision_point is None:
+                    if crossing_position is None:
                         valid_projection = True
 
-                    elif collision_point is np.inf:
+                    elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     else:
-                        x, y = collision_point
+                        x, y = crossing_position
 
                         assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
                         assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
@@ -511,15 +511,15 @@ class SpatialGraph(InputValidation, Geometry):
 
                         if x_outside_ab or y_outside_ab:
                             valid_projection = True
-                            collision_point  = None
+                            crossing_position  = None
 
                         else:
                             valid_projection = True
-                            collision_points.append(collision_point)
-                            collision_edge_pairs.append(collision_edge_pair)
+                            crossing_positions.append(crossing_position)
+                            crossing_edge_pairs.append(crossing_edge_pair)
 
-                    self.collision_points = collision_points
-                    self.colliding_edges = collision_edge_pairs
+                    self.crossing_positions = crossing_positions
+                    self.crossing_edge_pairs = crossing_edge_pairs
 
             except ValueError:
                 self.randomize_rotation()
@@ -536,7 +536,7 @@ class SpatialGraph(InputValidation, Geometry):
     def create_spatial_graph_diagram(self):
 
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
-        crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.collision_points))]
+        crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
 
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
         for edge_1, edge_2 in self.adjacent_edge_pairs:
@@ -668,9 +668,9 @@ class SpatialGraph(InputValidation, Geometry):
         ax2.legend(self.edges)
 
 
-        # Plot collision points
-        for collision_point in self.collision_points:
-            ax2.scatter(collision_point[0], collision_point[1],
+        # Plot crossing positions
+        for crossing_position in self.crossing_positions:
+            ax2.scatter(crossing_position[0], crossing_position[1],
                         marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
