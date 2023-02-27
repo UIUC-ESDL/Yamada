@@ -24,6 +24,7 @@ class Geometry:
     def __init__(self):
         self.rotation = None
         self.rotation_generator_object = self.rotation_generator()
+
     @staticmethod
     def rotation_generator():
         """
@@ -36,6 +37,107 @@ class Geometry:
 
     def randomize_rotation(self):
         self.rotation = next(self.rotation_generator_object)
+
+    @staticmethod
+    def rotate(positions, rotation):
+        """
+        Rotates a set of points about the first 3D point in the array.
+
+        :return: new_positions:
+        """
+
+        # Shift the object to origin
+        reference_position = positions[0]
+        origin_positions = positions - reference_position
+
+        alpha, beta, gamma = rotation
+
+        # Rotation matrix Euler angle convention r = r_z(gamma) @ r_y(beta) @ r_x(alpha)
+
+        r_x = np.array([[1., 0., 0.],
+                        [0., cos(alpha), -sin(alpha)],
+                        [0., sin(alpha), cos(alpha)]])
+
+        r_y = np.array([[cos(beta), 0., sin(beta)],
+                        [0., 1., 0.],
+                        [-sin(beta), 0., cos(beta)]])
+
+        r_z = np.array([[cos(gamma), -sin(gamma), 0.],
+                        [sin(gamma), cos(gamma), 0.],
+                        [0., 0., 1.]])
+
+        r = r_z @ r_y @ r_x
+
+        # Transpose positions from [[x1,y1,z1],[x2... ] to [[x1,x2,x3],[y1,... ]
+        rotated_origin_positions = (r @ origin_positions.T).T
+
+        # Shift back from origin
+        new_positions = rotated_origin_positions + reference_position
+
+        rotated_node_positions = new_positions
+
+        return rotated_node_positions
+
+    @staticmethod
+    def get_line_intersection(a, b, c, d):
+        """
+        Get the intersection point of two lines.
+
+        Each line is defined by two points (a, b) and (c, d).
+        Each point is represented by a tuple (x, y) or (x, y).
+
+        Important logic:
+        1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
+        there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
+        2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
+        to determine which edge case the intersection is, just raise an error and try again with a different random projection.
+        3. ...
+
+        :param a: Point A of line 1
+        :param b: Point B of line 1
+        :param c: Point A of line 2
+        :param d: Point B of line 2
+        """
+
+        def get_line_equation(p1, p2):
+            """
+            Get the line equation in the form y = mx + b
+
+            This function assumes lines are not vertical or horizontal since the projection method generates
+            random projections until one contains no vertical or horizontal lines.
+
+            p1 = (x1, y1)
+            p2 = (x2, y2)
+            m = (y2 - y1) / (x2 - x1)
+            y = mx + b --> b = y - mx
+            """
+
+            slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+            intercept = p1[1] - slope * p1[0]
+
+            return slope, intercept
+
+        m1, b1 = get_line_equation(a, b)
+        m2, b2 = get_line_equation(c, d)
+
+        # If slope and intercept are the same then the lines are overlapping
+        if m1 == m2 and b1 == b2:
+            collision_point = None
+
+        # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
+        elif m1 == m2 and b1 != b2:
+            collision_point = None
+
+        # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
+        else:
+
+            # m1 * x + b1 = m2 * x + b2 --> x = (b2 - b1) / (m1 - m2)
+            x = (b2 - b1) / (m1 - m2)
+            y = m1 * x + b1
+
+            collision_point = np.array([x, y])
+
+        return collision_point
 
 
 class SpatialGraph(InputValidation, Geometry):
@@ -92,42 +194,7 @@ class SpatialGraph(InputValidation, Geometry):
 
 
 
-    def rotate(self):
-        """
-        Rotates a set of points about the first 3D point in the array.
 
-        :return: new_positions:
-        """
-
-        # Shift the object to origin
-        reference_position = self.node_positions[0]
-        origin_positions = self.node_positions - reference_position
-
-        alpha, beta, gamma = self.rotation
-
-        # Rotation matrix Euler angle convention r = r_z(gamma) @ r_y(beta) @ r_x(alpha)
-
-        r_x = np.array([[1., 0., 0.],
-                        [0., cos(alpha), -sin(alpha)],
-                        [0., sin(alpha), cos(alpha)]])
-
-        r_y = np.array([[cos(beta), 0., sin(beta)],
-                        [0., 1., 0.],
-                        [-sin(beta), 0., cos(beta)]])
-
-        r_z = np.array([[cos(gamma), -sin(gamma), 0.],
-                        [sin(gamma), cos(gamma), 0.],
-                        [0., 0., 1.]])
-
-        r = r_z @ r_y @ r_x
-
-        # Transpose positions from [[x1,y1,z1],[x2... ] to [[x1,x2,x3],[y1,... ]
-        rotated_origin_positions = (r @ origin_positions.T).T
-
-        # Shift back from origin
-        new_positions = rotated_origin_positions + reference_position
-
-        self.rotated_node_positions = new_positions
 
     def project_node_positions(self):
         self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
@@ -217,77 +284,9 @@ class SpatialGraph(InputValidation, Geometry):
 
         return overlap_order
 
-    @staticmethod
-    def get_line_equation(p1, p2):
-        """
-        Get the line equation in the form y = mx + b
-
-        This function assumes lines are not vertical or horizontal since the projection method generates
-        random projections until one contains no vertical or horizontal lines.
-
-        p1 = (x1, y1)
-        p2 = (x2, y2)
-        m = (y2 - y1) / (x2 - x1)
-        y = mx + b --> b = y - mx
-        """
-
-        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
-        intercept = p1[1] - slope * p1[0]
-
-        return slope, intercept
-
-    def get_line_intersection(self, a, b, c, d):
-        """
-        Get the intersection point of two lines.
-
-        Each line is defined by two points (a, b) and (c, d).
-        Each point is represented by a tuple (x, y) or (x, y).
-
-        Important logic:
-        1. If the slopes are the same, then the lines are parallel. Check if they overlap. If they do not overlap, then
-        there is no crossing. If the lines overlap, then there is an infinite number of crossings. Raise an error.
-        2. If the intersection occurs exactly at points a, b, c, or d, then raise an error. Rather than apply complex logic
-        to determine which edge case the intersection is, just raise an error and try again with a different random projection.
-        3. ...
-
-        :param a: Point A of line 1
-        :param b: Point B of line 1
-        :param c: Point A of line 2
-        :param d: Point B of line 2
-        """
 
 
 
-        m1, b1 = self.get_line_equation(a, b)
-        m2, b2 = self.get_line_equation(c, d)
-
-        # If slope and intercept are the same then the lines are overlapping
-        if m1 == m2 and b1 == b2:
-            collision_point = None
-
-        # If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
-        elif m1 == m2 and b1 != b2:
-            collision_point = None
-
-        # If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
-        else:
-
-            # Find the intersection point
-            if m1 is np.NaN or m2 is np.NaN:
-                if m1 is np.NaN:
-                    x = c[0]
-                    y = m2 * x + b2
-                elif m2 is np.NaN:
-                    x = a[0]
-                    y = m1 * x + b1
-            else:
-                # m1 * x + b1 = m2 * x + b2 --> x = (b2 - b1) / (m1 - m2)
-                x = (b2 - b1) / (m1 - m2)
-                y = m1 * x + b1
-
-            collision_point = np.array([x, y])
-
-        return collision_point
 
     def project(self):
         """
@@ -313,7 +312,7 @@ class SpatialGraph(InputValidation, Geometry):
         while not valid_projection and iter < max_iter:
 
             self.randomize_rotation()
-            self.rotate()
+            self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
             self.project_node_positions()
 
             vertical_or_horizontal = False
