@@ -34,8 +34,6 @@ class InputValidation:
         2. Each node is a string
         3. Each node is a single character
         4. All nodes unique
-
-        TODO Check for forbidden characters
         """
 
         if type(nodes) != list:
@@ -51,6 +49,10 @@ class InputValidation:
 
         if len(nodes) != len(set(nodes)):
             raise ValueError('All nodes must be unique.')
+
+        for node in nodes:
+            if not node.isalpha():
+                raise ValueError('Nodes must be letters.')
 
         return nodes
 
