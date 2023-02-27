@@ -810,7 +810,32 @@ class SpatialGraph(InputValidation, Geometry):
 
 
 # Set random seed for consistency
-np.random.seed(1)
+# np.random.seed(1)
+#
+# sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+#                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+#                    edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+#
+#
+# sp1.project()
+#
+# sp1.plot()
+#
+#
+# sgd1 = sp1.create_spatial_graph_diagram()
+#
+# yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
+#
+# print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
+#
+# # Should say "Infinity Symbol Yamada Polynomial: A^3 + A^2 + A"
+
+np.random.seed(2)
+
+# Seeds 0,1,5,7 work
+# Seed 10 works but shows in different form
+# Seeds 2,3,4,6,9,11,12 does not work
+# Seed 8 works but circles a noncrossing
 
 sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
@@ -822,15 +847,9 @@ sp1.project()
 sp1.plot()
 
 
-# sp1.edge_pairs_with_crossings
+# sgd1 = sp1.create_spatial_graph_diagram()
 
-# a = Vertex(2, 'a')
+# yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
 
-sgd1 = sp1.create_spatial_graph_diagram()
-
-yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
-
-print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
-
-# Should say "Infinity Symbol Yamada Polynomial: A^3 + A^2 + A"
+# print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
