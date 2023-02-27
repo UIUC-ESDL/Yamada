@@ -374,18 +374,21 @@ class SpatialGraph(InputValidation, Geometry):
 
         x_collision, z_collision = collision_point
 
-        # If y_collision_1 and y_collision_2 are the same, then the edges are planar and it is not a valid spatial graph
+        # If y_collision points are the same, then the edges are planar, and it is not a valid spatial graph
         y_collision_1 = self.get_y_position(node_1_position, node_2_position, x_collision, z_collision)
         y_collision_2 = self.get_y_position(node_3_position, node_4_position, x_collision, z_collision)
 
         if y_collision_1 == y_collision_2:
             raise ValueError('The edges are planar. This is not a valid spatial graph.')
+
         elif y_collision_1 > y_collision_2:
             overlap_order.append(edge_2)
             overlap_order.append(edge_1)
+
         elif y_collision_1 < y_collision_2:
             overlap_order.append(edge_1)
             overlap_order.append(edge_2)
+
         else:
             raise ValueError('There should be no else case.')
 
@@ -420,8 +423,8 @@ class SpatialGraph(InputValidation, Geometry):
             self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
             self.project_node_positions()
 
-            vertical_or_horizontal = False
             # Make sure no edge is vertical or horizontal:
+            vertical_or_horizontal = False
             for edge in self.edges:
                 x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
                 x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
@@ -431,10 +434,8 @@ class SpatialGraph(InputValidation, Geometry):
                     vertical_or_horizontal = True
                     break
 
-            # Check that adjacent segments aren't overlapping
-            # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap
-            # Use better logic than vertical or horizontal. The problem is that the break above
-            # wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
+            # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap.
+            # Wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
             if vertical_or_horizontal == False:
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
