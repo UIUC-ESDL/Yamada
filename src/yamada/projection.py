@@ -339,8 +339,37 @@ class SpatialGraph(InputValidation, Geometry):
         return adjacent_edge_pairs
 
     @property
+    def adjacent_edge_pairs_without_crossings(self):
+
+        """
+        Get the adjacent edge pairs that do not have crossings.
+
+        When we are connecting nodes together, we don't want to try to connect nodes on opposing sides of a crossing.
+        """
+
+        edge_pairs = []
+
+        adjacent_edge_pairs = self.adjacent_edge_pairs
+        edges_with_crossing = self.edges_with_crossings
+
+        for edge_pair in adjacent_edge_pairs:
+
+            if not any([edge_with_crossing in edge_pair for edge_with_crossing in edges_with_crossing]):
+                edge_pairs += [edge_pair]
+
+            else:
+                print('else')
+
+        return edge_pairs
+
+    @property
     def nonadjacent_edge_pairs(self):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
+
+    @property
+    def edges_with_crossings(self):
+        # Use a set comprehension to remove duplicates
+        return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing}
 
     @property
     def edge_pairs_with_crossing(self):
@@ -399,6 +428,9 @@ class SpatialGraph(InputValidation, Geometry):
 
         else:
             raise NotImplementedError('There should be no else case.')
+
+        # Convert list to tuple for hashing later on...
+        overlap_order = tuple(overlap_order)
 
         return overlap_order
 
@@ -549,34 +581,52 @@ class SpatialGraph(InputValidation, Geometry):
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
 
 
-        for edge_1, edge_2 in self.adjacent_edge_pairs:
+        for [node_1, node_2], [node_3, node_4] in self.adjacent_edge_pairs_without_crossings:
 
             # Figure out which 2 of the 4 nodes are connected together
             # The nodes must come from opposing edges
-            if edge_1[0] == edge_2[0]:
-                node_1 = edge_1[0]
-                node_2 = edge_2[0]
-            elif edge_1[0] == edge_2[1]:
-                node_1 = edge_1[0]
-                node_2 = edge_2[1]
-            elif edge_1[1] == edge_2[0]:
-                node_1 = edge_1[1]
-                node_2 = edge_2[0]
-            elif edge_1[1] == edge_2[1]:
-                node_1 = edge_1[1]
-                node_2 = edge_2[1]
+
+
+            if node_1 == node_3:
+                common_node = node_1
+                other_node_1 = node_2
+                other_node_2 = node_4
+
+            elif node_1 == node_4:
+                common_node = node_1
+                other_node_1 = node_2
+                other_node_2 = node_3
+
+            elif node_2 == node_3:
+                common_node = node_2
+                other_node_1 = node_1
+                other_node_2 = node_4
+
+            elif node_2 == node_4:
+                common_node = node_2
+                other_node_1 = node_1
+                other_node_2 = node_3
+
             else:
                 raise Exception('Edges are not adjacent')
 
 
             # Get the first available indices for each node
-            node_1_index = self.nodes.index(node_1)
-            node_2_index = self.nodes.index(node_2)
+            common_node_index = self.nodes.index(common_node)
+            other_node_1_index = self.nodes.index(other_node_1)
+            other_node_2_index = self.nodes.index(other_node_2)
 
-            node_1_next_available_index = vertices[node_1_index].next_available_index()
-            node_2_next_available_index = vertices[node_2_index].next_available_index()
+            common_node_next_available_index = vertices[common_node_index].next_available_index()
+            other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
+            other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
 
-            vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][node_2_next_available_index]
+            vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
+
+            common_node_next_available_index = vertices[common_node_index].next_available_index()
+
+            vertices[common_node_index][common_node_next_available_index] = vertices[other_node_2_index][other_node_2_next_available_index]
+
+            # vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][node_2_next_available_index]
 
 
         # Second, connect edges that cross.
@@ -668,7 +718,11 @@ class SpatialGraph(InputValidation, Geometry):
             crossing[br_node_crossing_index] = vertices[br_node_index][br_node_next_available_index]
 
 
-        return vertices, crossings
+        inputs = vertices + crossings
+
+        sgd = SpatialGraphDiagram(inputs)
+
+        return sgd
 
 
 
@@ -764,7 +818,7 @@ sp1.plot()
 
 # a = Vertex(2, 'a')
 
-vert, cross = sp1.create_spatial_graph_diagram()
+sgd1 = sp1.create_spatial_graph_diagram()
 
 # sp1.get_y_position([0,0,0],[0,0,1],0,0.5)
 
