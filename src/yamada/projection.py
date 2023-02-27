@@ -524,7 +524,7 @@ class SpatialGraph(InputValidation, Geometry):
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
                     crossing_position = self.get_line_segment_intersection(a, b, c, d)
-                    crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
+
 
                     if crossing_position is None:
                         valid_projection = True
@@ -534,6 +534,7 @@ class SpatialGraph(InputValidation, Geometry):
 
                     else:
                         x, y = crossing_position
+                        crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
 
                         assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
                         assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
