@@ -433,34 +433,29 @@ class SpatialGraph(InputValidation, Geometry):
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
                 # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap.
-                # Wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
-
-
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-
                     collision_point = self.get_line_intersection(a, b, c, d)
 
-                    if collision_point is None:
-                        valid_projection = True
+                    if collision_point is not None and collision_point is not np.inf:
+                        x, y = collision_point
+                        assertion_1 = np.isclose(x, a[0]) and np.isclose(y, a[1])
+                        assertion_2 = np.isclose(x, b[0]) and np.isclose(y, b[1])
+                        assertion_3 = np.isclose(x, c[0]) and np.isclose(y, c[1])
+                        assertion_4 = np.isclose(x, d[0]) and np.isclose(y, d[1])
+                        assert any([assertion_1, assertion_2, assertion_3, assertion_4])
+
+                    elif collision_point is None:
+                        raise ValueError('Adjacent edges must intersect at the endpoints.')
 
                     elif collision_point is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                    else:
-                        x, y = collision_point
-
-                        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                                x == d[0] and y == d[1]):
-                            pass
-
-
                 # Check nonadjacent segments
-
-                colliding_edges = [] # Ordered under, over
+                colliding_edges = []
                 collision_points = []
                 for line_1, line_2 in self.nonadjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
