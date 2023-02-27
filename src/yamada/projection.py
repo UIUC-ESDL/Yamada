@@ -582,7 +582,7 @@ class SpatialGraph(InputValidation, Geometry):
         # Second, connect edges that cross.
 
 
-        for under_edge, over_edge in self.edge_pairs_with_crossing:
+        for under_edge, over_edge, crossing in zip(self.edge_pairs_with_crossing, crossings):
 
             # Per convention, the first edge is under and the second edge is over.
 
@@ -630,36 +630,43 @@ class SpatialGraph(InputValidation, Geometry):
             # Nodes are numbered in CCW order
 
             if under_top_position[0] > over_top_position[0]:
-                tr = under_top
-                tr_node = 0
-                bl = under_bottom
-                bl_node = 2
-                tl = over_top
-                tl_node = 1
-                br = over_bottom
-                br_node = 3
+                tr_node                = under_top
+                tr_node_crossing_index = 0
+                bl_node                = under_bottom
+                bl_node_crossing_index = 2
+                tl_node                = over_top
+                tl_node_crossing_index = 1
+                br_node                = over_bottom
+                br_node_crossing_index = 3
+
             elif under_top_position[0] < over_top_position[0]:
-                tr = over_top
-                tr_node = 1
-                bl = over_bottom
-                bl_node = 3
-                tl = under_top
-                tl_node = 2
-                br = under_bottom
-                br_node = 0
-
-
-
+                tr_node                = over_top
+                tr_node_crossing_index = 1
+                bl_node                = over_bottom
+                bl_node_crossing_index = 3
+                tl_node                = under_top
+                tl_node_crossing_index = 2
+                br_node                = under_bottom
+                br_node_crossing_index = 0
 
             # Get the first available indices for each node
-            node_1_index = self.nodes.index(node_1)
-            node_2_index = self.nodes.index(node_2)
+            tr_node_index = self.nodes.index(tr_node)
+            bl_node_index = self.nodes.index(bl_node)
+            tl_node_index = self.nodes.index(tl_node)
+            br_node_index = self.nodes.index(br_node)
 
-            node_1_next_available_index = vertices[node_1_index].next_available_index()
-            node_2_next_available_index = vertices[node_2_index].next_available_index()
+            tr_node_next_available_index = vertices[tr_node_index].next_available_index()
+            bl_node_next_available_index = vertices[bl_node_index].next_available_index()
+            tl_node_next_available_index = vertices[tl_node_index].next_available_index()
+            br_node_next_available_index = vertices[br_node_index].next_available_index()
 
-            # vertices[node_1_index][node_1_next_available_index] = vertices[node_2_index][
-            #     node_2_next_available_index]
+
+            # Set the vertices equal to the crossing nodes
+            crossing[tr_node_crossing_index] = vertices[tr_node_index][tr_node_next_available_index]
+            crossing[bl_node_crossing_index] = vertices[bl_node_index][bl_node_next_available_index]
+            crossing[tl_node_crossing_index] = vertices[tl_node_index][tl_node_next_available_index]
+            crossing[br_node_crossing_index] = vertices[br_node_index][br_node_next_available_index]
+
 
         return vertices, crossings
 
