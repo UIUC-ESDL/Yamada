@@ -6,15 +6,44 @@ from sympy import symbols, solve, Eq
 
 from calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
+
 class InputValidation:
+    """
+    TODO Check that all nodes are unique
+    TODO Check that all edges are unique
+    TODO Check that all nodes adjoin at least 2 edges (no braids)
+    TODO Do I need to check if a graph is planar?
+    """
     pass
 
-class SpatialGraph:
+
+class Geometry:
+    """
+    A class that contains static methods for necessary geometric calculations.
+    """
+    def __init__(self):
+        self.rotation = None
+        self.rotation_generator_object = self.rotation_generator()
+    @staticmethod
+    def rotation_generator():
+        """
+        A generator to generate random rotations for projecting a spatial graph onto a 2D plane.
+        """
+        rotation = np.zeros(3)
+        while True:
+            yield rotation
+            rotation = np.random.rand(3) * 2 * np.pi
+
+    def randomize_rotation(self):
+        self.rotation = next(self.rotation_generator_object)
+
+
+class SpatialGraph(InputValidation, Geometry):
     """
     A class to represent a spatial graph.
 
-    TODO Create a SpatialGraphDiagram subclass
-    TODO Check that no two intersecting edges are planar
+    TODO Link to the SpatialGraphDiagram subclass
+    TODO Check that no two intersecting edges are planar (in 3D
     """
 
     def __init__(self, nodes, node_positions, edges):
@@ -22,8 +51,10 @@ class SpatialGraph:
         self.node_positions = node_positions
         self.edges = edges
 
-        self.rotation_generator_object = self.rotation_generator()
-        self.rotation = None
+        # Initialize the necessary Geometry attributes
+        Geometry.__init__(self)
+
+
         self.rotated_node_positions = None
         self.projected_node_positions = None
         self.collision_points = None
@@ -59,18 +90,7 @@ class SpatialGraph:
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-    @staticmethod
-    def rotation_generator():
-        """
-        A generator to generate random rotations for projecting a spatial graph onto a 2D plane.
-        """
-        rotation = np.zeros(3)
-        while True:
-            yield rotation
-            rotation = np.random.rand(3) * 2 * np.pi
 
-    def randomize_rotation(self):
-        self.rotation = next(self.rotation_generator_object)
 
     def rotate(self):
         """
@@ -197,6 +217,25 @@ class SpatialGraph:
 
         return overlap_order
 
+    @staticmethod
+    def get_line_equation(p1, p2):
+        """
+        Get the line equation in the form y = mx + b
+
+        This function assumes lines are not vertical or horizontal since the projection method generates
+        random projections until one contains no vertical or horizontal lines.
+
+        p1 = (x1, y1)
+        p2 = (x2, y2)
+        m = (y2 - y1) / (x2 - x1)
+        y = mx + b --> b = y - mx
+        """
+
+        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+        intercept = p1[1] - slope * p1[0]
+
+        return slope, intercept
+
     def get_line_intersection(self, a, b, c, d):
         """
         Get the intersection point of two lines.
@@ -217,26 +256,10 @@ class SpatialGraph:
         :param d: Point B of line 2
         """
 
-        def get_line_equation(p1, p2):
-            """
-            Get the line equation in the form y = mx + b
 
-            This function assumes lines are not vertical or horizontal since the projection method generates
-            random projections until one contains no vertical or horizontal lines.
 
-            p1 = (x1, y1)
-            p2 = (x2, y2)
-            m = (y2 - y1) / (x2 - x1)
-            y = mx + b --> b = y - mx
-            """
-
-            slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
-            intercept = p1[1] - slope * p1[0]
-
-            return slope, intercept
-
-        m1, b1 = get_line_equation(a, b)
-        m2, b2 = get_line_equation(c, d)
+        m1, b1 = self.get_line_equation(a, b)
+        m2, b2 = self.get_line_equation(c, d)
 
         # If slope and intercept are the same then the lines are overlapping
         if m1 == m2 and b1 == b2:
