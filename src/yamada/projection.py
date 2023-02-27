@@ -465,46 +465,52 @@ class SpatialGraph(InputValidation, Geometry):
 
                     collision_point = self.get_line_intersection(a, b, c, d)
 
-                    if collision_point is None:
-                        valid_projection = True
+                    # Nonadjacent segments should not intersect at the endpoints of either segment.
+                    if collision_point is not None and collision_point is not np.inf:
+                        x, y = collision_point
+                        assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
+                        assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
+                        assertion_3 = not np.isclose(x, c[0]) and not np.isclose(y, c[1])
+                        assertion_4 = not np.isclose(x, d[0]) and not np.isclose(y, d[1])
+                        assert all([assertion_1, assertion_2, assertion_3, assertion_4])
+
+                    elif collision_point is None:
+                        pass
 
                     elif collision_point is np.inf:
-                        valid_projection = False
-                        break
+                        raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     else:
                         x, y = collision_point
 
+                        less_than_a = x < a[0] and y < a[1]
+                        less_than_b = x < b[0] and y < b[1]
+                        greater_than_a = x > a[0] and y > a[1]
+                        greater_than_b = x > b[0] and y > b[1]
+                        out_of_bounds = any([less_than_a, less_than_b, greater_than_a, greater_than_b])
+
                         # If x or y is not between the two points, then the intersection is outside the line segment
-                        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                                x == d[0] and y == d[1]):
+                        # Do not append the collision point
+                        if out_of_bounds:
                             pass
 
-                        elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
-                                y > a[1] and y > b[1]):
-                            valid_projection = True
-                            # collision_point = None
-
                         else:
-                            valid_projection = True
-                            collision_point = (x, y)
-                            # TODO Check which edge is on top
-                            collision_points.append(collision_point)
 
+                            collision_points.append(collision_point)
                             collision_order = self.get_edge_overlap_order(line_1, line_2, collision_point)
                             colliding_edges.append(collision_order)
-
-                        if valid_projection is False:
-                            break
 
                     self.collision_points = collision_points
                     self.colliding_edges = colliding_edges
 
             except ValueError:
+                # If the projection is not valid, try again with a new random rotation
                 self.randomize_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
 
+                # Increment the while loop counter
+                iter += 1
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
