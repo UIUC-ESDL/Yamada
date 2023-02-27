@@ -305,7 +305,7 @@ class SpatialGraph(InputValidation, Geometry):
     def __init__(self,
                  nodes:          list[str],
                  node_positions: np.ndarray,
-                 edges:          list[list[str, str]]):
+                 edges:          list[tuple[str, str]]):
 
         # Initialize validated inputs
         InputValidation.__init__(self, nodes, node_positions, edges)
@@ -313,6 +313,7 @@ class SpatialGraph(InputValidation, Geometry):
         # Initialize attributes necessary for geometric calculations
         Geometry.__init__(self)
 
+        # Initialize attributes that are calculated later
         self.collision_points = None
         self.colliding_edges = None
 
@@ -469,21 +470,30 @@ class SpatialGraph(InputValidation, Geometry):
                         valid_projection = True
 
                     elif collision_point is np.inf:
-                        valid_projection = False
-                        break
+                        raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     else:
                         x, y = collision_point
 
-                        # If x or y is not between the two points, then the intersection is outside the line segment
-                        if (x == a[0] and y == a[1]) or (x == b[0] and y == b[1]) or (x == c[0] and y == c[1]) or (
-                                x == d[0] and y == d[1]):
-                            pass
+                        assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
+                        assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
+                        assertion_3 = not np.isclose(x, c[0]) and not np.isclose(y, c[1])
+                        assertion_4 = not np.isclose(x, d[0]) and not np.isclose(y, d[1])
+                        if not all([assertion_1, assertion_2, assertion_3, assertion_4]):
+                            raise ValueError('Nonadjacent segments should not intersect at the endpoints of either segment.')
 
-                        elif (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (
-                                y > a[1] and y > b[1]):
+                        # If x or y is not between the two points, then the intersection is outside the line segment
+                        less_than_a = x < a[0] and y < a[1]
+                        less_than_b = x < b[0] and y < b[1]
+                        greater_than_a = x > a[0] and y > a[1]
+                        greater_than_b = x > b[0] and y > b[1]
+                        out_of_bounds = any([less_than_a, less_than_b, greater_than_a, greater_than_b])
+
+                        # If x or y is not between the two points, then the intersection is outside the line segment
+                        # Do not append the collision point
+                        if out_of_bounds:
                             valid_projection = True
-                            # collision_point = None
+                            # TODO set collision point to none?
 
                         else:
                             valid_projection = True
@@ -494,9 +504,6 @@ class SpatialGraph(InputValidation, Geometry):
                             collision_order = self.get_edge_overlap_order(line_1, line_2, collision_point)
                             colliding_edges.append(collision_order)
 
-                        if valid_projection is False:
-                            break
-
                     self.collision_points = collision_points
                     self.colliding_edges = colliding_edges
 
@@ -505,6 +512,8 @@ class SpatialGraph(InputValidation, Geometry):
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
 
+                # Increment the while loop counter
+                iter += 1
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
