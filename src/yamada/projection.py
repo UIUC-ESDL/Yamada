@@ -371,7 +371,10 @@ class SpatialGraph(InputValidation, Geometry):
     def edges_with_crossings(self):
         # Use a set comprehension to remove duplicates
         # Use zero index because extra tuple nesting was added somewhere...
-        return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing[0]}
+        if len(self.edge_pairs_with_crossing) == 0:
+            return set()
+        else:
+            return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing[0]}
 
     @property
     def edge_pairs_with_crossing(self):
@@ -623,108 +626,110 @@ class SpatialGraph(InputValidation, Geometry):
             # TODO Check if already assigned
 
             if (common_node, other_node_1) not in self.edges_with_crossings and (other_node_1, common_node) not in self.edges_with_crossings:
-                common_node_next_available_index = vertices[common_node_index].next_available_index()
-                other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
+
 
                 if not vertices[common_node_index].already_assigned(vertices[other_node_1_index]):
+                    common_node_next_available_index = vertices[common_node_index].next_available_index()
+                    other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
                     vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
 
             if (common_node, other_node_2) not in self.edges_with_crossings and (other_node_2, common_node) not in self.edges_with_crossings:
-                common_node_next_available_index = vertices[common_node_index].next_available_index()
-                other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
 
                 if not vertices[common_node_index].already_assigned(vertices[other_node_2_index]):
+                    common_node_next_available_index = vertices[common_node_index].next_available_index()
+                    other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
                     vertices[common_node_index][common_node_next_available_index] = vertices[other_node_2_index][other_node_2_next_available_index]
 
 
 
-        # Second, connect edges that cross.
+        # Second, connect edges that cross (only if there are crossings).
+
+        if len(self.crossing_positions) > 0:
+
+            for [under_edge, over_edge], crossing in zip(self.edge_pairs_with_crossing, crossings):
+
+                # Per convention, the first edge is under and the second edge is over.
+
+                # Relative node positions: top right (tr), top left (tl), bottom left (bl), bottom right (br)
+                # Figure out which edge nodes are tr, tl, bl, br
+                # Each edge must have one node in the top half, and one node in the bottom half
+
+                a, b = under_edge
+                c, d = over_edge
+
+                a_index = self.nodes.index(a)
+                b_index = self.nodes.index(b)
+                c_index = self.nodes.index(c)
+                d_index = self.nodes.index(d)
+
+                a_position = self.projected_node_positions[a_index]
+                b_position = self.projected_node_positions[b_index]
+                c_position = self.projected_node_positions[c_index]
+                d_position = self.projected_node_positions[d_index]
+
+                if a_position[1] > b_position[1]:
+                    under_top = a
+                    under_bottom = b
+
+                elif a_position[1] < b_position[1]:
+                    under_top = b
+                    under_bottom = a
+                else:
+                    raise Exception('Under edge is horizontal')
+
+                if c_position[1] > d_position[1]:
+                    over_top = c
+                    over_bottom = d
+                elif c_position[1] < d_position[1]:
+                    over_top = d
+                    over_bottom = c
+                else:
+                    raise Exception('Over edge is horizontal')
+
+                under_top_position = self.projected_node_positions[self.nodes.index(under_top)]
+                over_top_position = self.projected_node_positions[self.nodes.index(over_top)]
+
+                # Nodes 0 and 2 are under
+                # Nodes 1 and 3 are over
+                # Nodes are numbered in CCW order
+
+                if under_top_position[0] > over_top_position[0]:
+                    tr_node                = under_top
+                    tr_node_crossing_index = 0
+                    bl_node                = under_bottom
+                    bl_node_crossing_index = 2
+                    tl_node                = over_top
+                    tl_node_crossing_index = 1
+                    br_node                = over_bottom
+                    br_node_crossing_index = 3
+
+                elif under_top_position[0] < over_top_position[0]:
+                    tr_node                = over_top
+                    tr_node_crossing_index = 1
+                    bl_node                = over_bottom
+                    bl_node_crossing_index = 3
+                    tl_node                = under_top
+                    tl_node_crossing_index = 2
+                    br_node                = under_bottom
+                    br_node_crossing_index = 0
+
+                # Get the first available indices for each node
+                tr_node_index = self.nodes.index(tr_node)
+                bl_node_index = self.nodes.index(bl_node)
+                tl_node_index = self.nodes.index(tl_node)
+                br_node_index = self.nodes.index(br_node)
+
+                tr_node_next_available_index = vertices[tr_node_index].next_available_index()
+                bl_node_next_available_index = vertices[bl_node_index].next_available_index()
+                tl_node_next_available_index = vertices[tl_node_index].next_available_index()
+                br_node_next_available_index = vertices[br_node_index].next_available_index()
 
 
-        for [under_edge, over_edge], crossing in zip(self.edge_pairs_with_crossing, crossings):
-
-            # Per convention, the first edge is under and the second edge is over.
-
-            # Relative node positions: top right (tr), top left (tl), bottom left (bl), bottom right (br)
-            # Figure out which edge nodes are tr, tl, bl, br
-            # Each edge must have one node in the top half, and one node in the bottom half
-
-            a, b = under_edge
-            c, d = over_edge
-
-            a_index = self.nodes.index(a)
-            b_index = self.nodes.index(b)
-            c_index = self.nodes.index(c)
-            d_index = self.nodes.index(d)
-
-            a_position = self.projected_node_positions[a_index]
-            b_position = self.projected_node_positions[b_index]
-            c_position = self.projected_node_positions[c_index]
-            d_position = self.projected_node_positions[d_index]
-
-            if a_position[1] > b_position[1]:
-                under_top = a
-                under_bottom = b
-
-            elif a_position[1] < b_position[1]:
-                under_top = b
-                under_bottom = a
-            else:
-                raise Exception('Under edge is horizontal')
-
-            if c_position[1] > d_position[1]:
-                over_top = c
-                over_bottom = d
-            elif c_position[1] < d_position[1]:
-                over_top = d
-                over_bottom = c
-            else:
-                raise Exception('Over edge is horizontal')
-
-            under_top_position = self.projected_node_positions[self.nodes.index(under_top)]
-            over_top_position = self.projected_node_positions[self.nodes.index(over_top)]
-
-            # Nodes 0 and 2 are under
-            # Nodes 1 and 3 are over
-            # Nodes are numbered in CCW order
-
-            if under_top_position[0] > over_top_position[0]:
-                tr_node                = under_top
-                tr_node_crossing_index = 0
-                bl_node                = under_bottom
-                bl_node_crossing_index = 2
-                tl_node                = over_top
-                tl_node_crossing_index = 1
-                br_node                = over_bottom
-                br_node_crossing_index = 3
-
-            elif under_top_position[0] < over_top_position[0]:
-                tr_node                = over_top
-                tr_node_crossing_index = 1
-                bl_node                = over_bottom
-                bl_node_crossing_index = 3
-                tl_node                = under_top
-                tl_node_crossing_index = 2
-                br_node                = under_bottom
-                br_node_crossing_index = 0
-
-            # Get the first available indices for each node
-            tr_node_index = self.nodes.index(tr_node)
-            bl_node_index = self.nodes.index(bl_node)
-            tl_node_index = self.nodes.index(tl_node)
-            br_node_index = self.nodes.index(br_node)
-
-            tr_node_next_available_index = vertices[tr_node_index].next_available_index()
-            bl_node_next_available_index = vertices[bl_node_index].next_available_index()
-            tl_node_next_available_index = vertices[tl_node_index].next_available_index()
-            br_node_next_available_index = vertices[br_node_index].next_available_index()
-
-
-            # Set the vertices equal to the crossing nodes
-            crossing[tr_node_crossing_index] = vertices[tr_node_index][tr_node_next_available_index]
-            crossing[bl_node_crossing_index] = vertices[bl_node_index][bl_node_next_available_index]
-            crossing[tl_node_crossing_index] = vertices[tl_node_index][tl_node_next_available_index]
-            crossing[br_node_crossing_index] = vertices[br_node_index][br_node_next_available_index]
+                # Set the vertices equal to the crossing nodes
+                crossing[tr_node_crossing_index] = vertices[tr_node_index][tr_node_next_available_index]
+                crossing[bl_node_crossing_index] = vertices[bl_node_index][bl_node_next_available_index]
+                crossing[tl_node_crossing_index] = vertices[tl_node_index][tl_node_next_available_index]
+                crossing[br_node_crossing_index] = vertices[br_node_index][br_node_next_available_index]
 
 
         inputs = vertices + crossings
@@ -811,27 +816,7 @@ class SpatialGraph(InputValidation, Geometry):
 
 
 # Set random seed for consistency
-# np.random.seed(1)
-#
-# sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-#                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-#                    edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-#
-#
-# sp1.project()
-#
-# sp1.plot()
-#
-#
-# sgd1 = sp1.create_spatial_graph_diagram()
-#
-# yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
-#
-# print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
-#
-# # Should say "Infinity Symbol Yamada Polynomial: A^3 + A^2 + A"
-
-np.random.seed(15)
+np.random.seed(1)
 
 sp1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),

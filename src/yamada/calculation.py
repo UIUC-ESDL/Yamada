@@ -222,7 +222,7 @@ class BaseVertex:
 
         TODO Verify indexing is correct, since degree should start with 1 not 0
         """
-        for i in range(self.degree+1):
+        for i in range(self.degree):
             if self.adjacent[i] is None:
                 return i
         raise ValueError("No available index")
