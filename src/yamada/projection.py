@@ -315,7 +315,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         # Initialize attributes that are calculated later
         self.collision_points = None
-        self.colliding_edges = None
+        self.edge_pairs_with_crossings = None
 
     @property
     def edge_pairs(self):
@@ -335,10 +335,6 @@ class SpatialGraph(InputValidation, Geometry):
     @property
     def nonadjacent_edge_pairs(self):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
-
-    @property
-    def edge_pairs_with_crossings(self):
-        return self.colliding_edges
 
     @property
     def edge_pairs_without_crossings(self):
@@ -502,7 +498,7 @@ class SpatialGraph(InputValidation, Geometry):
                             colliding_edges.append(collision_order)
 
                     self.collision_points = collision_points
-                    self.colliding_edges = colliding_edges
+                    self.edge_pairs_with_crossings = colliding_edges
 
             except ValueError:
                 # If the projection is not valid, try again with a new random rotation
