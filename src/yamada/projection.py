@@ -417,26 +417,24 @@ class SpatialGraph(InputValidation, Geometry):
         iter = 0
         max_iter = 100
 
+        self.randomize_rotation()
+        self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
+        self.project_node_positions()
+
         while not valid_projection and iter < max_iter:
 
-            self.randomize_rotation()
-            self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
-            self.project_node_positions()
+            try:
 
-            # Make sure no edge is vertical or horizontal:
-            vertical_or_horizontal = False
-            for edge in self.edges:
-                x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
-                x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
+                for edge in self.edges:
+                    x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
+                    x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
 
-                if x1 == x2 or z1 == z2:
-                    valid_projection = False
-                    vertical_or_horizontal = True
-                    break
+                    if x1 == x2 or z1 == z2:
+                        raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
-            # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap.
-            # Wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
-            if vertical_or_horizontal == False:
+                # Since adjacent segments are straight lines, the can only intersect at the endpoints or overlap.
+                # Wouldn't skip this, and then the valid_projection=True would overwrite the valid_projection=False
+
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -450,8 +448,7 @@ class SpatialGraph(InputValidation, Geometry):
                         valid_projection = True
 
                     elif collision_point is np.inf:
-                        valid_projection = False
-                        break
+                        raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     else:
                         x, y = collision_point
@@ -505,8 +502,13 @@ class SpatialGraph(InputValidation, Geometry):
                         if valid_projection is False:
                             break
 
-                self.collision_points = collision_points
-                self.colliding_edges = colliding_edges
+                    self.collision_points = collision_points
+                    self.colliding_edges = colliding_edges
+
+            except ValueError:
+                self.randomize_rotation()
+                self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
+                self.project_node_positions()
 
 
         if iter == max_iter:
