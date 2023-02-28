@@ -243,7 +243,6 @@ class Geometry:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
             crossing_position = np.array([x, y])
-            print('next')
 
         return crossing_position
 
@@ -474,8 +473,6 @@ class SpatialGraph(InputValidation, Geometry):
 
             try:
 
-                print('Try')
-
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
@@ -568,17 +565,13 @@ class SpatialGraph(InputValidation, Geometry):
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
             except ValueError:
-                # except ValueError:
-                print('VALUE ERROR HAS OCCURRED')
                 self.randomize_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
 
                 # Increment the while loop counter
                 iter += 1
-            else:
-                print('NOTHING HAS OCCURRED')
-                break
+
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
@@ -825,14 +818,9 @@ class SpatialGraph(InputValidation, Geometry):
 
 
         # Plot crossing positions
-        # for crossing_position in self.crossing_positions:
-        #     ax2.scatter(crossing_position[0], crossing_position[1],
-        #                 marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
-
-        if len(self.crossing_positions) > 0:
-            for crossing_position in self.crossing_positions:
-                ax2.scatter(crossing_position[0], crossing_position[1],
-                            marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
+        for crossing_position in self.crossing_positions:
+            ax2.scatter(crossing_position[0], crossing_position[1],
+                        marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
 
