@@ -384,12 +384,10 @@ class SpatialGraph(InputValidation, Geometry):
 
     @property
     def edges_with_crossings(self):
-        # Use a set comprehension to remove duplicates
-        # Use zero index because extra tuple nesting was added somewhere...
-        if len(self.edge_pairs_with_crossing) == 0:
-            return set()
-        else:
-            return {edge for edge in self.edges if edge in self.edge_pairs_with_crossing[0]}
+        edges_with_crossings = set()
+        for edge_pair in self.edge_pairs_with_crossing:
+            edges_with_crossings.update(edge_pair)
+        return edges_with_crossings
 
     @property
     def edge_pairs_with_crossing(self):
@@ -563,14 +561,11 @@ class SpatialGraph(InputValidation, Geometry):
                 self.randomize_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
-
-                # Increment the while loop counter
                 iter += 1
 
 
         if iter == max_iter:
-            # raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
-            print('Could not find a valid rotation after {} iterations'.format(max_iter))
+            raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
 
 
     def create_spatial_graph_diagram(self):
@@ -584,6 +579,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
         crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
+
+        print('Next')
 
 
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
@@ -626,15 +623,14 @@ class SpatialGraph(InputValidation, Geometry):
 
             # Only assign the vertices to each other if the edge does not have a crossing (consider both edge orders)
             # Also don't assign the vertex if it has already been previously assigned
-            # TODO Check if already assigned
 
             if (common_node, other_node_1) not in self.edges_with_crossings and (other_node_1, common_node) not in self.edges_with_crossings:
-
 
                 if not vertices[common_node_index].already_assigned(vertices[other_node_1_index]):
                     common_node_next_available_index = vertices[common_node_index].next_available_index()
                     other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
                     vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
+
 
             if (common_node, other_node_2) not in self.edges_with_crossings and (other_node_2, common_node) not in self.edges_with_crossings:
 
@@ -645,7 +641,10 @@ class SpatialGraph(InputValidation, Geometry):
 
 
 
+
         # Second, connect edges that cross (only if there are crossings).
+        # TODO Add logic to handle adjoining crosses
+
 
         if len(self.crossing_positions) > 0:
 
@@ -733,6 +732,9 @@ class SpatialGraph(InputValidation, Geometry):
                 crossing[bl_node_crossing_index] = vertices[bl_node_index][bl_node_next_available_index]
                 crossing[tl_node_crossing_index] = vertices[tl_node_index][tl_node_next_available_index]
                 crossing[br_node_crossing_index] = vertices[br_node_index][br_node_next_available_index]
+
+
+        # Third, TODO connect adjoining crosses
 
 
         inputs = vertices + crossings
