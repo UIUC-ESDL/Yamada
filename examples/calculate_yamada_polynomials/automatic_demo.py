@@ -18,9 +18,9 @@ sg1.plot()
 
 sgd1 = sg1.create_spatial_graph_diagram()
 
-# # yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
-#
-# # print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
+yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
+
+print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
 
 
