@@ -1,6 +1,11 @@
 import numpy as np
 from yamada.projection import SpatialGraph
 
+# Seed 0 produces no crossings
+# Seed 1 produces 2 crossings
+
+np.random.seed(1)
+
 sg1 = SpatialGraph(nodes=['a', 'b', 'c', 'd', 'e', 'f'],
                    node_positions=np.array([[0, 0.5, 0], [1, 0, 1], [2, 0.5, 0], [3, 0, 1], [1, 1, 0], [-1, 0, 1]]),
                    edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'a')])

@@ -214,6 +214,9 @@ class Geometry:
         Each line is defined by two points (a, b) and (c, d).
         Each point is represented by a tuple (x, y) or (x, y).
 
+        Formatting inputs:
+        1. (.. TODO consistent edge ordering
+
         Important logic:
         1. If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
         2. If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
@@ -224,6 +227,8 @@ class Geometry:
         :param c: Point A of line 2
         :param d: Point B of line 2
         """
+
+
 
         m1, b1 = self.get_line_equation(a, b)
         m2, b2 = self.get_line_equation(c, d)
@@ -238,6 +243,7 @@ class Geometry:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
             crossing_position = np.array([x, y])
+            print('next')
 
         return crossing_position
 
@@ -420,8 +426,8 @@ class SpatialGraph(InputValidation, Geometry):
         y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
 
         if y_crossing_1 == y_crossing_2:
-            raise ValueError('The edges are planar and therefore the interconnects they represent physically '
-                             'intersect. This is not a valid spatial graph.')
+            raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
+                             'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
         elif y_crossing_1 > y_crossing_2:
             overlap_order.append(edge_2)
@@ -439,6 +445,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         return overlap_order
 
+    def try_project(self):
+        pass
 
     def project(self):
         """
@@ -466,6 +474,7 @@ class SpatialGraph(InputValidation, Geometry):
 
             try:
 
+                print('Try')
 
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
@@ -522,7 +531,6 @@ class SpatialGraph(InputValidation, Geometry):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-
                     crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
 
@@ -534,7 +542,7 @@ class SpatialGraph(InputValidation, Geometry):
 
                     else:
                         x, y = crossing_position
-                        crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
+
 
                         assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
                         assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
@@ -547,25 +555,30 @@ class SpatialGraph(InputValidation, Geometry):
                         x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
                         y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
 
+                        # No crossing within the segments
                         if x_outside_ab or y_outside_ab:
                             valid_projection = True
-                            crossing_position  = None
 
                         else:
                             valid_projection = True
                             crossing_positions.append(crossing_position)
+                            crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
                             crossing_edge_pairs.append(crossing_edge_pair)
 
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
-
             except ValueError:
+                # except ValueError:
+                print('VALUE ERROR HAS OCCURRED')
                 self.randomize_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
 
                 # Increment the while loop counter
                 iter += 1
+            else:
+                print('NOTHING HAS OCCURRED')
+                break
 
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
@@ -812,9 +825,14 @@ class SpatialGraph(InputValidation, Geometry):
 
 
         # Plot crossing positions
-        for crossing_position in self.crossing_positions:
-            ax2.scatter(crossing_position[0], crossing_position[1],
-                        marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
+        # for crossing_position in self.crossing_positions:
+        #     ax2.scatter(crossing_position[0], crossing_position[1],
+        #                 marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
+
+        if len(self.crossing_positions) > 0:
+            for crossing_position in self.crossing_positions:
+                ax2.scatter(crossing_position[0], crossing_position[1],
+                            marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
 
