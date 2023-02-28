@@ -574,7 +574,10 @@ class SpatialGraph(InputValidation, Geometry):
 
         Crossing Convention: ...
 
-
+        TODO Create CCW node indexing logic
+        -Look at projected positions
+        -Figure out order
+        -
         """
 
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
