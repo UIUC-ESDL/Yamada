@@ -790,29 +790,48 @@ class SpatialGraph(InputValidation, Geometry):
         ax3.zaxis.label.set_text('z')
 
         # Figure layout
-        plt.tight_layout(pad=2, w_pad=5, h_pad=0)
+        plt.tight_layout(pad=2, w_pad=7, h_pad=0)
 
         # Plot 3D
         for edge in self.edges:
             point_1 = self.node_positions[self.nodes.index(edge[0])]
             point_2 = self.node_positions[self.nodes.index(edge[1])]
             ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-        ax1.legend(self.edges)
+
+        # Shrink current axis by 40%
+        box = ax1.get_position()
+        ax1.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+
+        # Put a legend to the right of the current axis
+        # ax1.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
 
         # Plot 3D
         for edge in self.edges:
             point_1 = self.rotated_node_positions[self.nodes.index(edge[0])]
             point_2 = self.rotated_node_positions[self.nodes.index(edge[1])]
             ax3.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-        ax3.legend(self.edges)
+        # ax3.legend(self.edges)
 
+        # Shrink current axis by 40%
+        box = ax3.get_position()
+        ax3.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+
+        # Put a legend to the right of the current axis
+        # ax3.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
 
         # Plot 2D
         for edge in self.edges:
             point_1 = self.projected_node_positions[self.nodes.index(edge[0])]
             point_2 = self.projected_node_positions[self.nodes.index(edge[1])]
             ax2.plot([point_1[0], point_2[0]], [point_1[1], point_2[1]])
-        ax2.legend(self.edges)
+        # ax2.legend(self.edges)
+
+        # Shrink current axis by 40%
+        box = ax2.get_position()
+        ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
+
+        # Put a legend to the right of the current axis
+        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, 0.5))
 
 
         # Plot crossing positions
