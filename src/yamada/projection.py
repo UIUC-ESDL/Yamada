@@ -244,6 +244,16 @@ class Geometry:
             y = m1 * x + b1
             crossing_position = np.array([x, y])
 
+            # # If x or y is not between the two points, then the intersection is outside the line segment
+            # x_outside_ab = (x < a and x < c) or (x > a and x > c)
+            # y_outside_ab = (y < b and y < d) or (y > b and y > d)
+            #
+            # # No crossing within the segments
+            # if x_outside_ab or y_outside_ab:
+            #     crossing_position = None
+            # else:
+            #     crossing_position = np.array([x, y])
+
         return crossing_position
 
     @staticmethod
@@ -519,6 +529,7 @@ class SpatialGraph(InputValidation, Geometry):
                 # between endpoints.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
+                # TODO Consider adjoining crosses...
 
                 crossing_edge_pairs = []
                 crossing_positions     = []
@@ -574,7 +585,8 @@ class SpatialGraph(InputValidation, Geometry):
 
 
         if iter == max_iter:
-            raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+            # raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+            print('Could not find a valid rotation after {} iterations'.format(max_iter))
 
 
     def create_spatial_graph_diagram(self):
