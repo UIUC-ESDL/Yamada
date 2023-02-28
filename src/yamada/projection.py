@@ -242,17 +242,17 @@ class Geometry:
         else:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
-            crossing_position = np.array([x, y])
+            # crossing_position = np.array([x, y])
 
-            # # If x or y is not between the two points, then the intersection is outside the line segment
-            # x_outside_ab = (x < a and x < c) or (x > a and x > c)
-            # y_outside_ab = (y < b and y < d) or (y > b and y > d)
-            #
-            # # No crossing within the segments
-            # if x_outside_ab or y_outside_ab:
-            #     crossing_position = None
-            # else:
-            #     crossing_position = np.array([x, y])
+            # If x or y is not between the two points, then the intersection is outside the line segment
+            x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
+            y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
+
+            # No crossing within the segments
+            if x_outside_ab or y_outside_ab:
+                crossing_position = None
+            else:
+                crossing_position = np.array([x, y])
 
         return crossing_position
 
@@ -535,46 +535,30 @@ class SpatialGraph(InputValidation, Geometry):
                 crossing_positions     = []
 
                 for line_1, line_2 in self.nonadjacent_edge_pairs:
+
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
+
                     crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
 
-                    if crossing_position is None:
-                        valid_projection = True
-
-                    elif crossing_position is np.inf:
+                    if crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
+                    elif crossing_position is None:
+                        valid_projection = True
+
                     else:
-                        x, y = crossing_position
-
-
-                        assertion_1 = not np.isclose(x, a[0]) and not np.isclose(y, a[1])
-                        assertion_2 = not np.isclose(x, b[0]) and not np.isclose(y, b[1])
-                        assertion_3 = not np.isclose(x, c[0]) and not np.isclose(y, c[1])
-                        assertion_4 = not np.isclose(x, d[0]) and not np.isclose(y, d[1])
-                        if not all([assertion_1, assertion_2, assertion_3, assertion_4]):
-                            raise ValueError('Nonadjacent segments should not intersect at the endpoints of either segment.')
-
-                        # If x or y is not between the two points, then the intersection is outside the line segment
-                        x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
-                        y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
-
-                        # No crossing within the segments
-                        if x_outside_ab or y_outside_ab:
-                            valid_projection = True
-
-                        else:
-                            valid_projection = True
-                            crossing_positions.append(crossing_position)
-                            crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
-                            crossing_edge_pairs.append(crossing_edge_pair)
+                        valid_projection = True
+                        crossing_positions.append(crossing_position)
+                        crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
+                        crossing_edge_pairs.append(crossing_edge_pair)
 
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
+
             except ValueError:
                 self.randomize_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
