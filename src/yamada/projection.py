@@ -373,30 +373,28 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_edge_pairs
 
+    def get_adjacent_edges(self, reference_node):
+
+        adjacent_edges = []
+
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_edges.append(edge)
+
+        return adjacent_edges
 
     def get_adjacent_edges_without_crossings(self, reference_node):
 
-        """
-        Get the adjacent edge pairs that do not have crossings.
+        adjacent_edges_without_crossings = []
 
-        When we are connecting nodes together, we don't want to try to connect nodes on opposing sides of a crossing.
-        """
-
-        edge_pairs = []
-
-        adjacent_edge_pairs = self.adjacent_edge_pairs
+        adjacent_edges = self.get_adjacent_edges(reference_node)
         edges_with_crossing = self.edges_with_crossings
 
-        for edge_pair in adjacent_edge_pairs:
-            # condition_1 =
+        for adjacent_edge in adjacent_edges:
+            if adjacent_edge not in edges_with_crossing:
+                adjacent_edges_without_crossings.append(adjacent_edge)
 
-
-            if not any([edge_with_crossing in edge_pair for edge_with_crossing in edges_with_crossing]):
-                edge_pairs += [edge_pair]
-
-
-        return edge_pairs
-
+        return adjacent_edges_without_crossings
 
     @property
     def nonadjacent_edge_pairs(self):
@@ -671,6 +669,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         print('Next')
 
+
+        # TODO Create a dictionary of all edge orderings
 
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
 
