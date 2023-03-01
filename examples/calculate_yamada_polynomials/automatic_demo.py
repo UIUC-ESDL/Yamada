@@ -16,7 +16,7 @@ node_list = sg1.get_adjacent_nodes('a')
 
 node_ordering = sg1.cyclical_edge_order('a')
 
-node_pairs = sg1.get_adjacent_edges_without_crossings('a')
+# node_pairs = sg1.get_adjacent_edges_without_crossings('a')
 
 # sg1 = SpatialGraph(nodes=['a', 'b', 'c', 'd', 'e', 'f'],
 #                    node_positions=np.array([[0, 0.5, 0], [1, 0, 1], [2, 0.5, 0], [3, 0, 1], [1, 1, 0], [-1, 0, 1]]),

@@ -388,7 +388,7 @@ class SpatialGraph(InputValidation, Geometry):
         edges_with_crossing = self.edges_with_crossings
 
         for edge_pair in adjacent_edge_pairs:
-            condition_1 =
+            # condition_1 =
 
 
             if not any([edge_with_crossing in edge_pair for edge_with_crossing in edges_with_crossing]):
@@ -600,7 +600,8 @@ class SpatialGraph(InputValidation, Geometry):
                         assertion_2 = np.isclose(x, b[0]) and np.isclose(y, b[1])
                         assertion_3 = np.isclose(x, c[0]) and np.isclose(y, c[1])
                         assertion_4 = np.isclose(x, d[0]) and np.isclose(y, d[1])
-                        assert any([assertion_1, assertion_2, assertion_3, assertion_4])
+                        if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
+                            raise ValueError('Adjacent edges must intersect at the endpoints.')
 
                     elif crossing_position is None:
                         raise ValueError('Adjacent edges must intersect at the endpoints.')
