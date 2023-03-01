@@ -301,6 +301,26 @@ class Geometry:
         """
         self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
+    @property
+    def projected_node_position(self, node):
+        """
+        Get the projected node position
+        """
+        return self.projected_node_positions[self.node_index[node]]
+
+    @property
+    def projected_node_positions(self, nodes):
+        """
+        Get the projected node positions
+        """
+        projected_node_positions = []
+
+        for node in nodes:
+            projected_node_positions.append(self.projected_node_position[node])
+
+        return np.array(projected_node_positions)
+
+
 
 class SpatialGraph(InputValidation, Geometry):
     """
@@ -397,8 +417,67 @@ class SpatialGraph(InputValidation, Geometry):
     def edge_pairs_without_crossing(self):
         return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.edge_pairs_with_crossing]
 
+    def get_adjacent_nodes(self, reference_node):
+        """
+        Returns the nodes directly adjacent to a given node.
+        """
+        adjacent_nodes = []
+        for edge in self.edges:
+            if reference_node in edge:
+                adjacent_nodes += [node for node in edge if node != reference_node]
+
+        return adjacent_nodes
+
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
+
+    def cyclical_edge_order(self, reference_node):
+        """
+        Get the cyclical edge order for a given node.
+
+        The spatial-topological calculations presume that nodes are ordered in a CCW rotation. While it does not matter
+        which node is used as the reference node, it is important that the node order is consistent.
+        """
+        print('Start')
+        # reference_node_position = self.projected_node_position[reference_node]
+        # reference_node_index = self.nodes.index(reference_node)
+        #
+        # adjacent_nodes = self.get_adjacent_nodes(reference_node)
+        # adjacent_node_positions = self.projected_node_positions[adjacent_nodes]
+        #
+        # # Shift nodes to the origin
+        # shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
+        #
+        #
+        # # Horizontal line (reference for angles)
+        # reference_vector = [1, 0]
+        #
+        # def unit_vector(vector):
+        #     """ Returns the unit vector of the vector.  """
+        #     return vector / np.linalg.norm(vector)
+        #
+        # def angle_between(v1, v2):
+        #     """ Returns the angle in radians between vectors 'v1' and 'v2'"""
+        #     v1_u = unit_vector(v1)
+        #     v2_u = unit_vector(v2)
+        #     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+        #
+        # rotations = []
+        #
+        # for shifted_adjacent_node_position in shifted_adjacent_node_positions:
+        #     rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
+        #
+        # sorted_index = np.argsort(rotations)
+        #
+        # ccw_edge_ordering = {}
+        # for edge, order in zip(adjacent_nodes, sorted_index):
+        #     ccw_edge_ordering[edge] = order
+        #
+        #
+        # return ccw_edge_ordering
+
+        print('Ordered')
+        return 1
 
     def edge_overlap_order(self, edge_1, edge_2, crossing_position):
         """
@@ -451,9 +530,6 @@ class SpatialGraph(InputValidation, Geometry):
         overlap_order = tuple(overlap_order)
 
         return overlap_order
-
-    def try_project(self):
-        pass
 
     def project(self):
         """

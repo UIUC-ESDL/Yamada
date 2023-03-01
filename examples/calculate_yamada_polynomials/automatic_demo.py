@@ -12,6 +12,10 @@ sgd1 = sg1.create_spatial_graph_diagram()
 yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
 print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
+sg1.get_adjacent_nodes('a')
+
+# sg1.cyclical_edge_order('a')
+
 
 # sg1 = SpatialGraph(nodes=['a', 'b', 'c', 'd', 'e', 'f'],
 #                    node_positions=np.array([[0, 0.5, 0], [1, 0, 1], [2, 0.5, 0], [3, 0, 1], [1, 1, 0], [-1, 0, 1]]),
