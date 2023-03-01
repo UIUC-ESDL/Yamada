@@ -320,6 +320,14 @@ class Geometry:
         return np.array(projected_node_positions)
 
 
+class Diagram:
+
+    def __init__(self):
+
+        # Initialize attributes that are calculated later
+        self.crossing_positions = None
+        self.crossing_edge_pairs = None
+
 
 class SpatialGraph(InputValidation, Geometry):
     """
@@ -344,12 +352,13 @@ class SpatialGraph(InputValidation, Geometry):
         # Initialize attributes necessary for geometric calculations
         Geometry.__init__(self)
 
+        # Initialize attributes necessary for diagramming
+        Diagram.__init__(self)
+
         self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
         self.project_node_positions()
 
-        # Initialize attributes that are calculated later
-        self.crossing_positions = None
-        self.crossing_edge_pairs = None
+
 
     @property
     def edge_pairs(self):
@@ -372,31 +381,6 @@ class SpatialGraph(InputValidation, Geometry):
                 adjacent_edge_pairs += [(edge_1, edge_2)]
 
         return adjacent_edge_pairs
-
-
-    def get_adjacent_edges_without_crossings(self, reference_node):
-
-        """
-        Get the adjacent edge pairs that do not have crossings.
-
-        When we are connecting nodes together, we don't want to try to connect nodes on opposing sides of a crossing.
-        """
-
-        edge_pairs = []
-
-        adjacent_edge_pairs = self.adjacent_edge_pairs
-        edges_with_crossing = self.edges_with_crossings
-
-        for edge_pair in adjacent_edge_pairs:
-            condition_1 =
-
-
-            if not any([edge_with_crossing in edge_pair for edge_with_crossing in edges_with_crossing]):
-                edge_pairs += [edge_pair]
-
-
-        return edge_pairs
-
 
     @property
     def nonadjacent_edge_pairs(self):
@@ -452,9 +436,7 @@ class SpatialGraph(InputValidation, Geometry):
         which node is used as the reference node, it is important that the node order is consistent.
         """
 
-
         reference_node_position = self.get_projected_node_position(reference_node)
-        reference_node_index = self.nodes.index(reference_node)
 
         # Include edges with crossings
         adjacent_nodes = self.get_adjacent_nodes(reference_node)
@@ -462,7 +444,6 @@ class SpatialGraph(InputValidation, Geometry):
 
         # Shift nodes to the origin
         shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
-
 
         # Horizontal line (reference for angles)
         reference_vector = np.array([1, 0])
