@@ -442,13 +442,16 @@ class SpatialGraph(InputValidation, Geometry):
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-    def cyclical_edge_order(self, reference_node):
+    def cyclical_edge_order(self, reference_node, node_ordering_dict=None):
         """
         Get the cyclical edge order for a given node.
 
         The spatial-topological calculations presume that nodes are ordered in a CCW rotation. While it does not matter
         which node is used as the reference node, it is important that the node order is consistent.
         """
+
+        if node_ordering_dict is None:
+            node_ordering_dict = {}
 
         reference_node_position = self.get_projected_node_position(reference_node)
 
@@ -483,7 +486,9 @@ class SpatialGraph(InputValidation, Geometry):
         for edge, order in zip(adjacent_nodes, sorted_index):
             ccw_edge_ordering[edge] = order
 
-        return ccw_edge_ordering
+        node_ordering_dict[reference_node] = ccw_edge_ordering
+
+        return node_ordering_dict
 
 
     def edge_overlap_order(self, edge_1, edge_2, crossing_position):
@@ -671,6 +676,11 @@ class SpatialGraph(InputValidation, Geometry):
 
 
         # TODO Create a dictionary of all edge orderings
+        node_ordering_dict = {}
+        for node in self.nodes:
+            node_ordering_dict = self.cyclical_edge_order(node, node_ordering_dict)
+
+        print('Next')
 
         # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
 
