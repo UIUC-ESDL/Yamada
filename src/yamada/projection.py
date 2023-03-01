@@ -373,8 +373,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_edge_pairs
 
-    @property
-    def adjacent_edge_pairs_without_crossings(self):
+
+    def get_adjacent_edges_without_crossings(self, reference_node):
 
         """
         Get the adjacent edge pairs that do not have crossings.
@@ -388,14 +388,15 @@ class SpatialGraph(InputValidation, Geometry):
         edges_with_crossing = self.edges_with_crossings
 
         for edge_pair in adjacent_edge_pairs:
+            condition_1 =
+
 
             if not any([edge_with_crossing in edge_pair for edge_with_crossing in edges_with_crossing]):
                 edge_pairs += [edge_pair]
 
-            else:
-                print('else')
 
         return edge_pairs
+
 
     @property
     def nonadjacent_edge_pairs(self):
@@ -427,6 +428,19 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_nodes
 
+    def get_adjacent_nodes_without_crossings(self, reference_node):
+        """
+        Returns the nodes directly adjacent to a given node.
+        TODO Implement
+        """
+        adjacent_nodes = []
+        for edge in self.edges:
+            if reference_node in edge:
+                # adjacent_nodes += [node for node in edge if node != reference_node]
+                pass
+
+        return adjacent_nodes
+
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
@@ -442,6 +456,7 @@ class SpatialGraph(InputValidation, Geometry):
         reference_node_position = self.get_projected_node_position(reference_node)
         reference_node_index = self.nodes.index(reference_node)
 
+        # Include edges with crossings
         adjacent_nodes = self.get_adjacent_nodes(reference_node)
         adjacent_node_positions = self.get_projected_node_positions(adjacent_nodes)
 
@@ -472,7 +487,6 @@ class SpatialGraph(InputValidation, Geometry):
         ccw_edge_ordering = {}
         for edge, order in zip(adjacent_nodes, sorted_index):
             ccw_edge_ordering[edge] = order
-
 
         return ccw_edge_ordering
 
