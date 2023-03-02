@@ -457,9 +457,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         # Order edge crossings from left to right
         # Since we are using straight lines, we can simply compare x-coordinates.
-
         edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
-        
+
         return edge_crossings
 
 
