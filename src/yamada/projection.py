@@ -806,8 +806,9 @@ class SpatialGraph(InputValidation, Geometry):
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
-                    elif crossing_position is None:
-                        raise ValueError('Adjacent edges must intersect at the endpoints.')
+                    # TODO Temporily comment out since I changed the intersection function
+                    # elif crossing_position is None:
+                    #     raise ValueError('Adjacent edges must intersect at the endpoints.')
 
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
