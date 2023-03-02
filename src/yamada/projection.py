@@ -490,7 +490,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         reference_node_position = self.get_projected_node_position(reference_node)
 
-        # TODO Determine if any adjacent nodes need to be replaced with crossing nodes
+
         adjacent_nodes = []
         adjacent_node_positions = []
 
@@ -538,6 +538,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
             rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
+
+        print('next')
 
         sorted_index = np.argsort(rotations)
 
