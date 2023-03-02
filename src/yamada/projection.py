@@ -228,8 +228,6 @@ class Geometry:
         :param d: Point B of line 2
         """
 
-
-
         m1, b1 = self.get_line_equation(a, b)
         m2, b2 = self.get_line_equation(c, d)
 
@@ -242,29 +240,9 @@ class Geometry:
         else:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
-            # crossing_position = np.array([x, y])
-
-            # If x or y is not between the two points, then the intersection is outside the line segment
 
             crossing_point_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
             crossing_point_outside_cd = (x < c[0] and x < d[0]) or (x > c[0] and x > d[0]) or (y < c[1] and y < d[1]) or (y > c[1] and y > d[1])
-
-            # x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
-            # y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
-            #
-            # crossing_is_on_a = np.isclose(x, a[0]) and np.isclose(y, a[1])
-            # crossing_is_on_b = np.isclose(x, b[0]) and np.isclose(y, b[1])
-            # crossing_is_on_c = np.isclose(x, c[0]) and np.isclose(y, c[1])
-            # crossing_is_on_d = np.isclose(x, d[0]) and np.isclose(y, d[1])
-
-            # # If x or y is not between the two points, then the intersection is outside the line segment
-            # # TODO Try including equal to as well, they should pass within?
-            # x_outside_ab = (x <= a[0] and x <= b[0]) or (x >= a[0] and x >= b[0])
-            # y_outside_ab = (y <= a[1] and y <= b[1]) or (y >= a[1] and y >= b[1])
-
-            # No crossing within the segments
-            # if crossing_is_on_a or crossing_is_on_b or crossing_is_on_c or crossing_is_on_d:
-            #     raise ValueError("Crossing is on a point")
 
             if crossing_point_outside_ab or crossing_point_outside_cd:
                 crossing_position = None
