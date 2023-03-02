@@ -348,6 +348,7 @@ class SpatialGraph(InputValidation, Geometry):
         self.project_node_positions()
 
         # Initialize attributes that are calculated later
+        self.crossings = None
         self.crossing_positions = None
         self.crossing_edge_pairs = None
 
@@ -443,7 +444,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_nodes
 
-    def get_edge_crossings(self, edge):
+    def get_edge_nodes_and_crossings(self, edge):
         """
         Get the edge crossings for a given edge. Edge crossings are ordered left to right.
         """
@@ -451,13 +452,15 @@ class SpatialGraph(InputValidation, Geometry):
         # Unordered Edge Crossings
         edge_crossings = []
 
-        for edge_pair, position in zip(self.crossing_edge_pairs, self.crossing_positions):
+        for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
             if edge in edge_pair:
-                edge_crossings.append(position)
+                edge_crossings.append([crossing, position])
 
         # Order edge crossings from left to right
         # Since we are using straight lines, we can simply compare x-coordinates.
         edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
+
+        # Pad it with first and last node positions (?)
 
         return edge_crossings
 
@@ -465,9 +468,9 @@ class SpatialGraph(InputValidation, Geometry):
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
-    def cyclical_edge_order(self, reference_node, node_ordering_dict=None):
+    def cyclic_edge_order_vertex(self, reference_node, node_ordering_dict=None):
         """
-        Get the cyclical edge order for a given node.
+        Get the cyclic edge order for a given node.
 
         The spatial-topological calculations presume that nodes are ordered in a CCW rotation. While it does not matter
         which node is used as the reference node, it is important that the node order is consistent.
@@ -514,7 +517,7 @@ class SpatialGraph(InputValidation, Geometry):
         return node_ordering_dict
 
 
-    def edge_overlap_order(self, edge_1, edge_2, crossing_position):
+    def cyclic_edge_order_crossing(self, edge_1, edge_2, crossing_position, node_ordering_dict=None):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
@@ -523,8 +526,21 @@ class SpatialGraph(InputValidation, Geometry):
         :param edge_1: Edge 1
         :param edge_2: Edge 2
         :param crossing_position: The point of intersection between the projections of edge 1 and edge 2
+        :param node_ordering_dict: A dictionary of node ordering for each node
         :return: overlap_order: The order of the overlapping nodes in edge 1 and edge 2
         """
+
+        if node_ordering_dict is None:
+            node_ordering_dict = {}
+
+        # Look at the position of the crossing. Is a node to the left or right or both? Is it adjoining another crossing?
+
+        # Edge 1: What is to the left and right of this crossing?
+
+        # Edge 2: What is to the left and right of this crossing?
+
+
+
 
         overlap_order = []
 
@@ -640,7 +656,8 @@ class SpatialGraph(InputValidation, Geometry):
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
                 # TODO Consider adjoining crosses...
-
+                crossing_num = 0
+                crossings = []
                 crossing_edge_pairs = []
                 crossing_positions     = []
 
@@ -664,10 +681,13 @@ class SpatialGraph(InputValidation, Geometry):
 
                     else:
                         valid_projection = True
+                        crossings.append(crossing_num)
+                        crossing_num += 1
                         crossing_positions.append(crossing_position)
-                        crossing_edge_pair = self.edge_overlap_order(line_1, line_2, crossing_position)
+                        crossing_edge_pair = self.cyclic_edge_order_crossing(line_1, line_2, crossing_position)
                         crossing_edge_pairs.append(crossing_edge_pair)
 
+                    self.crossings = crossings
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
 
@@ -700,7 +720,7 @@ class SpatialGraph(InputValidation, Geometry):
         # Create a dictionary that contains the cyclical ordering of every node
         node_ordering_dict = {}
         for node in self.nodes:
-            node_ordering_dict = self.cyclical_edge_order(node, node_ordering_dict)
+            node_ordering_dict = self.cyclic_edge_order_vertex(node, node_ordering_dict)
 
 
         # First, connect adjacent nodes that are not separated by a crossing

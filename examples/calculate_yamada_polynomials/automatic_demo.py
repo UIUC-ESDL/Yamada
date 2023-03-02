@@ -14,7 +14,7 @@ print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
 node_list = sg1.get_adjacent_nodes('a')
 
-node_ordering = sg1.cyclical_edge_order('a')
+node_ordering = sg1.cyclic_edge_order_vertex('a')
 
 # node_pairs = sg1.get_adjacent_edges_without_crossings('a')
 
