@@ -486,6 +486,8 @@ class SpatialGraph(InputValidation, Geometry):
 
         The spatial-topological calculations presume that nodes are ordered in a CCW rotation. While it does not matter
         which node is used as the reference node, it is important that the node order is consistent.
+
+        TODO Instead of grabbing adjacent vertices (crossing or not) it must check if a crossing is in middle
         """
 
         if node_ordering_dict is None:
@@ -519,6 +521,27 @@ class SpatialGraph(InputValidation, Geometry):
             rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
 
         sorted_index = np.argsort(rotations)
+
+
+        # TODO Determine if any adjacent nodes need to be replaced with crossing nodes
+        adjacent_edges = self.get_adjacent_edges(reference_node)
+
+        for adjacent_edge in adjacent_edges:
+
+            adjacent_nodes_and_crossings = self.get_edge_nodes_and_crossings(adjacent_edge)
+            adjacent_nodes, adjacent_node_positions = zip(*adjacent_nodes_and_crossings)
+
+            # TODO change this to make it work...
+
+            edge_1_positions_list = [tuple(position) for position in edge_1_positions]
+            edge_1_crossing_index = edge_1_positions_list.index(tuple(crossing_position))
+
+            edge_1_left_node = edge_1_nodes[edge_1_crossing_index - 1]
+            edge_1_right_node = edge_1_nodes[edge_1_crossing_index + 1]
+
+            edge_1_left_node_position = edge_1_positions[edge_1_crossing_index - 1]
+            edge_1_right_node_position = edge_1_positions[edge_1_crossing_index + 1]
+
 
         ccw_edge_ordering = {}
         for edge, order in zip(adjacent_nodes, sorted_index):
@@ -883,7 +906,7 @@ class SpatialGraph(InputValidation, Geometry):
             for adjacent_node in adjacent_nodes:
 
                 if type(adjacent_node) == str:
-
+                    pass
 
 
                 vertex_1_index = self.nodes.index(node)
