@@ -559,8 +559,6 @@ class SpatialGraph(InputValidation, Geometry):
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
             rotations.append(find_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
-        print('next')
-
         sorted_index = np.argsort(rotations)
 
         # Reverse the index because we want the nodes in CCW order
