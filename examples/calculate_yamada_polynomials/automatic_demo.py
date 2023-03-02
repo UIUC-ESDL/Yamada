@@ -3,6 +3,9 @@ from yamada.projection import SpatialGraph
 
 np.random.seed(0)
 
+# Random seed 0 works
+# Random seed 1 does not work
+
 # sg1 = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
 #                    node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
 #                    edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])

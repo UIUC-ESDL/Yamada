@@ -951,6 +951,7 @@ class SpatialGraph(InputValidation, Geometry):
             # assign to both strings (vertices) and ints (crossings)
 
             crossing_1_index = crossing  # Crossing name is the index
+            crossing_object = crossings[crossing_1_index]
 
             for adjacent_node in adjacent_nodes:
 
@@ -958,7 +959,7 @@ class SpatialGraph(InputValidation, Geometry):
                     vertex_2_index = self.nodes.index(adjacent_node)
                     vertex_2 = vertices[vertex_2_index]
 
-                    crossing_object = crossings[crossing_1_index]
+
 
                     if not crossing_object.already_assigned(vertex_2):
                         adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
