@@ -449,8 +449,16 @@ class SpatialGraph(InputValidation, Geometry):
         Get the edge crossings for a given edge. Edge crossings are ordered left to right.
         """
 
+        # Get edge nodes
+        edge_nodes = [node for node in edge]
+
+        # Get node positions
+        edge_node_positions = self.get_projected_node_positions(edge_nodes)
+
         # Unordered Edge Crossings
         edge_crossings = []
+
+
 
         for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
             if edge in edge_pair:
@@ -460,7 +468,11 @@ class SpatialGraph(InputValidation, Geometry):
         # Since we are using straight lines, we can simply compare x-coordinates.
         edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
 
-        # Pad it with first and last node positions (?)
+        # Prepend the first node
+        edge_crossings.insert(0, [edge_nodes[0], edge_node_positions[0]])
+
+        # Add the final node
+        edge_crossings.append([edge_nodes[1], edge_node_positions[1]])
 
         return edge_crossings
 
@@ -517,15 +529,13 @@ class SpatialGraph(InputValidation, Geometry):
         return node_ordering_dict
 
 
-    def cyclic_edge_order_crossing3(self, edge_1, edge_2, crossing_position, node_ordering_dict=None):
+    def cyclic_edge_order_crossing(self, crossing, node_ordering_dict=None):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
         Use rotated node positions since rotation and project may change the overlap order.
 
-        :param edge_1: Edge 1
-        :param edge_2: Edge 2
-        :param crossing_position: The point of intersection between the projections of edge 1 and edge 2
+        :param crossing: The crossing
         :param node_ordering_dict: A dictionary of node ordering for each node
         :return: overlap_order: The order of the overlapping nodes in edge 1 and edge 2
         """
@@ -533,35 +543,51 @@ class SpatialGraph(InputValidation, Geometry):
         if node_ordering_dict is None:
             node_ordering_dict = {}
 
+        # Get the edges that are connected to the crossing
+        edge_1, edge_2 = self.edge_pairs_with_crossing[crossing]
+        crossing_position = self.crossing_positions[crossing]
+
         # Figure out which nodes and crossings directly adjoin the crossing
 
         # Edge 1: What is to the left and right of this crossing?
         edge_1_nodes_and_crossings = self.get_edge_nodes_and_crossings(edge_1)
+
         edge_1_nodes, edge_1_positions = zip(*edge_1_nodes_and_crossings)
-        edge_1_crossing_index = edge_1_positions.index(crossing_position)
+
+        # Find the index of the numpy array in a list
+        edge_1_positions_list = [tuple(position) for position in edge_1_positions]
+        edge_1_crossing_index = edge_1_positions_list.index(tuple(crossing_position))
+
+
+
         edge_1_left_node = edge_1_nodes[edge_1_crossing_index - 1]
         edge_1_right_node = edge_1_nodes[edge_1_crossing_index + 1]
-        edge_1_left_node_position = edge_1_nodes[edge_1_crossing_index - 1]
-        edge_1_right_node_position = edge_1_nodes[edge_1_crossing_index + 1]
+
+        edge_1_left_node_position = edge_1_positions[edge_1_crossing_index - 1]
+        edge_1_right_node_position = edge_1_positions[edge_1_crossing_index + 1]
 
         if edge_1_crossing_index == 0 or edge_1_crossing_index == len(edge_1_positions) - 1:
             raise ValueError("Crossing is at the end of the edge. This is not supported.")
 
         # Edge 2: What is to the left and right of this crossing?
         edge_2_nodes_and_crossings = self.get_edge_nodes_and_crossings(edge_2)
+
         edge_2_nodes, edge_2_positions = zip(*edge_2_nodes_and_crossings)
-        edge_2_crossing_index = edge_2_positions.index(crossing_position)
+
+        edge_2_positions_list = [tuple(position) for position in edge_2_positions]
+        edge_2_crossing_index = edge_2_positions_list.index(tuple(crossing_position))
+
         edge_2_left_node = edge_2_nodes[edge_2_crossing_index - 1]
         edge_2_right_node = edge_2_nodes[edge_2_crossing_index + 1]
-        edge_2_left_node_position = edge_2_nodes[edge_2_crossing_index - 1]
-        edge_2_right_node_position = edge_2_nodes[edge_2_crossing_index + 1]
+
+        edge_2_left_node_position = edge_2_positions[edge_2_crossing_index - 1]
+        edge_2_right_node_position = edge_2_positions[edge_2_crossing_index + 1]
 
         if edge_2_crossing_index == 0 or edge_2_crossing_index == len(edge_2_positions) - 1:
             raise ValueError("Crossing is at the end of the edge. This is not supported.")
 
 
         # Figure out which left edge is TL and which is BL
-        # TODO tweak assigned values
         if edge_1_left_node_position[1] > edge_2_left_node_position[1]:
             top_left_edge = edge_1_left_node
             bottom_left_edge = edge_2_left_node
@@ -576,45 +602,62 @@ class SpatialGraph(InputValidation, Geometry):
             raise ValueError("Top left edge cannot be determined.")
 
         # Now figure out which one is in front
-        y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_node_position,
-                                                                   edge_1_right_node_position,
+        # Get the 3D positions of the nodes
+        edge_1_left_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_1_left_node)]
+        edge_1_right_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_1_right_node)]
+        edge_2_left_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_2_left_node)]
+        edge_2_right_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_2_right_node)]
+
+        top_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_left_edge)]
+        top_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_right_edge)]
+        bottom_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_left_edge)]
+        bottom_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_edge)]
+
+        y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_node_position_3d,
+                                                                   edge_1_right_node_position_3d,
                                                                    crossing_position[0],
                                                                    crossing_position[1])
 
-        y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_node_position,
-                                                                   edge_2_right_node_position,
+        y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_node_position_3d,
+                                                                   edge_2_right_node_position_3d,
                                                                    crossing_position[0],
                                                                    crossing_position[1])
 
         overlap_order = []
 
-        node_1, node_2 = edge_1
-        node_3, node_4 = edge_2
 
-        node_1_index = self.nodes.index(node_1)
-        node_2_index = self.nodes.index(node_2)
-        node_3_index = self.nodes.index(node_3)
-        node_4_index = self.nodes.index(node_4)
-
-        node_1_position = self.rotated_node_positions[node_1_index]
-        node_2_position = self.rotated_node_positions[node_2_index]
-        node_3_position = self.rotated_node_positions[node_3_index]
-        node_4_position = self.rotated_node_positions[node_4_index]
-
-        x_crossing, z_crossing = crossing_position
-
-        y_crossing_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing, z_crossing)
-        y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
-
-        if y_crossing_1 == y_crossing_2:
+        if y_crossing_edge_1 == y_crossing_edge_2:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
                              'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
-        elif y_crossing_1 > y_crossing_2:
-            overlap_order.append(edge_2)
-            overlap_order.append(edge_1)
+        elif y_crossing_edge_1 > y_crossing_edge_2:
+            # Edge 1 is on top
+            # Edge 2 is on bottom
 
-        elif y_crossing_1 < y_crossing_2:
+            if top_right_edge == edge_1_right_node:
+                node_ordering_dict[]
+
+            elif top_left_edge == edge_1_left_node:
+                pass
+
+            else:
+                raise ValueError('The edge ordering is not supported.')
+
+
+        elif y_crossing_edge_1 < y_crossing_edge_2:
+            # Edge 2 is on top
+            # Edge 1 is on bottom
+
+            if top_right_edge == edge_1_right_node:
+                pass
+
+            elif top_left_edge == edge_1_left_node:
+                pass
+
+            else:
+                raise ValueError('The edge ordering is not supported.')
+
+
             overlap_order.append(edge_1)
             overlap_order.append(edge_2)
 
@@ -624,7 +667,8 @@ class SpatialGraph(InputValidation, Geometry):
         # Convert list to tuple for hashing later on...
         overlap_order = tuple(overlap_order)
 
-        return overlap_order
+
+        return node_ordering_dict
 
     def get_crossing_edge_pairs(self, edge_1, edge_2, crossing_position):
         """
