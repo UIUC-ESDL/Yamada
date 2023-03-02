@@ -2,8 +2,7 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
-from sympy import symbols, solve, Eq, nsolve
-import math
+from sympy import symbols, solve, Eq
 from math import acos
 from math import sqrt
 from math import pi

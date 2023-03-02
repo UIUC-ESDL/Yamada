@@ -24,7 +24,8 @@ dependencies = [
 "pytest",
 "sphinx",
 "nbsphinx",
-"cypari~=2.4.1"
+"cypari~=2.4.1",
+"sympy"
 ]
 
 [project.urls]
