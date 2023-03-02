@@ -492,6 +492,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         # TODO Determine if any adjacent nodes need to be replaced with crossing nodes
         adjacent_nodes = []
+        adjacent_node_positions = []
 
         adjacent_edges = self.get_adjacent_edges(reference_node)
         for edge in adjacent_edges:
@@ -506,29 +507,16 @@ class SpatialGraph(InputValidation, Geometry):
             if reference_node_index == 0:
                 adjacent_node = nodes[reference_node_index + 1]
                 adjacent_nodes.append(adjacent_node)
+                adjacent_node_positions.append(positions[reference_node_index + 1])
 
             elif reference_node_index == len(nodes) - 1:
                 adjacent_node = nodes[reference_node_index - 1]
                 adjacent_nodes.append(adjacent_node)
+                adjacent_node_positions.append(positions[reference_node_index - 1])
 
             else:
                 raise ValueError('Reference node is not the first or last node in the edge.')
 
-
-        # Include edges with crossings
-        # adjacent_nodes = self.get_adjacent_nodes(reference_node)
-
-        # TODO Must check if adjacent nodes are node or crossing
-        adjacent_node_positions = []
-        for adjacent_node in adjacent_nodes:
-            if type(adjacent_node) == str:
-                adjacent_node_positions.append(self.get_projected_node_position(adjacent_node))
-            elif type(adjacent_node) == int:
-                adjacent_node_positions.append(self.crossing_positions[adjacent_node])
-            else:
-                raise ValueError('Adjacent node is not a string or integer.')
-
-        # adjacent_node_positions = self.get_projected_node_positions(adjacent_nodes)
 
         # Shift nodes to the origin
         shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
