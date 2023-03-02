@@ -605,6 +605,11 @@ class SpatialGraph(InputValidation, Geometry):
         edge_1_left_node_position = edge_1_positions[edge_1_crossing_index - 1]
         edge_1_right_node_position = edge_1_positions[edge_1_crossing_index + 1]
 
+        # Swap the left and right nodes if the left node is to the right of the right node
+        if edge_1_left_node_position[0] > edge_1_right_node_position[0]:
+            edge_1_left_node, edge_1_right_node = edge_1_right_node, edge_1_left_node
+            edge_1_left_node_position, edge_1_right_node_position = edge_1_right_node_position, edge_1_left_node_position
+
         if edge_1_crossing_index == 0 or edge_1_crossing_index == len(edge_1_positions) - 1:
             raise ValueError("Crossing is at the end of the edge. This is not supported.")
 
@@ -619,8 +624,14 @@ class SpatialGraph(InputValidation, Geometry):
         edge_2_left_node = edge_2_nodes[edge_2_crossing_index - 1]
         edge_2_right_node = edge_2_nodes[edge_2_crossing_index + 1]
 
+
         edge_2_left_node_position = edge_2_positions[edge_2_crossing_index - 1]
         edge_2_right_node_position = edge_2_positions[edge_2_crossing_index + 1]
+
+        # Swap "left" and "right" if indexing went negative
+        if edge_2_left_node_position[0] > edge_2_right_node_position[0]:
+            edge_2_left_node, edge_2_right_node = edge_2_right_node, edge_2_left_node
+            edge_2_left_node_position, edge_2_right_node_position = edge_2_right_node_position, edge_2_left_node_position
 
         if edge_2_crossing_index == 0 or edge_2_crossing_index == len(edge_2_positions) - 1:
             raise ValueError("Crossing is at the end of the edge. This is not supported.")
