@@ -6,8 +6,9 @@ from sympy import symbols, solve, Eq
 from math import acos
 from math import sqrt
 from math import pi
+import numpy.typing as npt
 
-from .calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
+from .calculation import (Vertex, Crossing, SpatialGraphDiagram)
 
 
 class InputValidation:
@@ -476,7 +477,44 @@ class SpatialGraph(InputValidation, Geometry):
 
 
     def node_degree(self, node):
+        """
+        Returns the degree of a node.
+
+        The node degree is the number of edges that are incident to the node.
+        """
         return len([edge for edge in self.edges if node in edge])
+
+    @staticmethod
+    def calculate_counter_clockwise_angle(vector_a: np.ndarray,
+                                          vector_b: np.ndarray) -> float:
+        """
+        Returns the angle in degrees between vectors 'A' and 'B'.
+
+        :param vector_a: A numpy array of shape (2,) representing containing positions x_a and y_a.
+        :param vector_b: A numpy array of shape (2,) representing containing positions x_b and y_b.
+        :return: The angle in degrees between vectors A and B, where 0 <= angle < 360.
+        """
+
+        def length(v):
+            return sqrt(v[0] ** 2 + v[1] ** 2)
+
+        def dot_product(v, w):
+            return v[0] * w[0] + v[1] * w[1]
+
+        def determinant(v, w):
+            return v[0] * w[1] - v[1] * w[0]
+
+        def inner_angle(v, w):
+            cosx = dot_product(v, w) / (length(v) * length(w))
+            rad = acos(cosx)  # in radians
+            return rad * 180 / pi  # returns degrees
+
+        inner = inner_angle(vector_a, vector_b)
+        det = determinant(vector_a, vector_b)
+        if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
+            return inner
+        else:  # if the det > 0 then A is immediately clockwise of B
+            return 360 - inner
 
     def cyclic_edge_order_vertex(self, reference_node, node_ordering_dict=None):
         """
@@ -484,8 +522,6 @@ class SpatialGraph(InputValidation, Geometry):
 
         The spatial-topological calculations presume that nodes are ordered in a CCW rotation. While it does not matter
         which node is used as the reference node, it is important that the node order is consistent.
-
-        TODO Instead of grabbing adjacent vertices (crossing or not) it must check if a crossing is in middle
         """
 
         if node_ordering_dict is None:
@@ -529,64 +565,13 @@ class SpatialGraph(InputValidation, Geometry):
         # Horizontal line (reference for angles)
         reference_vector = np.array([1, 0])
 
-        # def unit_vector(vector):
-        #     """ Returns the unit vector of the vector.  """
-        #     return vector / np.linalg.norm(vector)
-        #
-        # def angle_between(v1, v2):
-        #     """ Returns the angle in radians between vectors 'v1' and 'v2'"""
-        #     v1_u = unit_vector(v1)
-        #     v2_u = unit_vector(v2)
-        #     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
-
-        # def find_counter_clockwise_angle(v1, v2):
-        #     a1, b1 = v1
-        #     a2, b2 = v2
-        #     length_1 = math.sqrt(a1 ** 2 + b1 ** 2)
-        #     length_2 = math.sqrt(a2 ** 2 + b2 ** 2)
-        #
-        #     angle = math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
-        #
-        #     if angle < 0:
-        #         angle = -angle
-        #         angle += 90
-        #
-        #     return angle
-
-        def length(v):
-            return sqrt(v[0] ** 2 + v[1] ** 2)
-
-        def dot_product(v, w):
-            return v[0] * w[0] + v[1] * w[1]
-
-        def determinant(v, w):
-            return v[0] * w[1] - v[1] * w[0]
-
-        def inner_angle(v, w):
-            cosx = dot_product(v, w) / (length(v) * length(w))
-            rad = acos(cosx)  # in radians
-            return rad * 180 / pi  # returns degrees
-
-        def angle_counter_clockwise(A, B):
-            inner = inner_angle(A, B)
-            det = determinant(A, B)
-            if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
-                return inner
-            else:  # if the det > 0 then A is immediately clockwise of B
-                return 360 - inner
-
         rotations = []
 
-        # for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-        #     rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
-
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-            rotations.append(angle_counter_clockwise(reference_vector, shifted_adjacent_node_position))
+            rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
+        # Sort the nodes in CCW order
         sorted_index = np.argsort(rotations)
-
-        # Reverse the index because we want the nodes in CCW order
-        # sorted_index = sorted_index[::-1]
 
 
         ccw_edge_ordering = {}
