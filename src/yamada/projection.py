@@ -3,6 +3,7 @@ from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
 from sympy import symbols, solve, Eq, nsolve
+import math
 
 from .calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
@@ -524,20 +525,30 @@ class SpatialGraph(InputValidation, Geometry):
         # Horizontal line (reference for angles)
         reference_vector = np.array([1, 0])
 
-        def unit_vector(vector):
-            """ Returns the unit vector of the vector.  """
-            return vector / np.linalg.norm(vector)
+        # def unit_vector(vector):
+        #     """ Returns the unit vector of the vector.  """
+        #     return vector / np.linalg.norm(vector)
+        #
+        # def angle_between(v1, v2):
+        #     """ Returns the angle in radians between vectors 'v1' and 'v2'"""
+        #     v1_u = unit_vector(v1)
+        #     v2_u = unit_vector(v2)
+        #     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
-        def angle_between(v1, v2):
-            """ Returns the angle in radians between vectors 'v1' and 'v2'"""
-            v1_u = unit_vector(v1)
-            v2_u = unit_vector(v2)
-            return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+        def find_counter_clockwise_angle(v1, v2):
+            a1, b1 = v1
+            a2, b2 = v2
+            length_1 = math.sqrt(a1 ** 2 + b1 ** 2)
+            length_2 = math.sqrt(a2 ** 2 + b2 ** 2)
+            return math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
 
         rotations = []
 
+        # for shifted_adjacent_node_position in shifted_adjacent_node_positions:
+        #     rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
+
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-            rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
+            rotations.append(find_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
         print('next')
 
