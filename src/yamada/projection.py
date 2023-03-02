@@ -587,7 +587,7 @@ class SpatialGraph(InputValidation, Geometry):
         sorted_index = np.argsort(rotations)
 
         # Reverse the index because we want the nodes in CCW order
-        sorted_index = sorted_index[::-1]
+        # sorted_index = sorted_index[::-1]
 
 
         ccw_edge_ordering = {}
