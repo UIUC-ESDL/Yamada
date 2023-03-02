@@ -7,14 +7,14 @@ def find_counter_clockwise_angle(a1, b1, a2, b2):
     return math.degrees(math.asin((a1 * b2 - b1 * a2)/(length_1 * length_2)))
 
 
-N = 12
-theta = [i * 2 * math.pi / N for i in range(N)]
-result = []
-for t in theta:
-    vector2 = (math.cos(t), math.sin(t))
-    angle = find_counter_clockwise_angle(2, 0, vector2[0], vector2[1])
-    result.append((math.degrees(t), angle))
+reference_vector = (1, 0)
 
-print('t')
-for t in theta:
-    print(t)
+#             0             1               2
+positions = [(0.33, 0.80), (-0.35, -1.95), (-0.02, -1.15)]
+
+for position in positions:
+    angle = find_counter_clockwise_angle(reference_vector[0], reference_vector[1], position[0], position[1])
+    print('Angle:', angle, 'radians')
+
+
+
