@@ -245,11 +245,28 @@ class Geometry:
             # crossing_position = np.array([x, y])
 
             # If x or y is not between the two points, then the intersection is outside the line segment
-            x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
-            y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
+
+            crossing_point_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
+            crossing_point_outside_cd = (x < c[0] and x < d[0]) or (x > c[0] and x > d[0]) or (y < c[1] and y < d[1]) or (y > c[1] and y > d[1])
+
+            # x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
+            # y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
+            #
+            # crossing_is_on_a = np.isclose(x, a[0]) and np.isclose(y, a[1])
+            # crossing_is_on_b = np.isclose(x, b[0]) and np.isclose(y, b[1])
+            # crossing_is_on_c = np.isclose(x, c[0]) and np.isclose(y, c[1])
+            # crossing_is_on_d = np.isclose(x, d[0]) and np.isclose(y, d[1])
+
+            # # If x or y is not between the two points, then the intersection is outside the line segment
+            # # TODO Try including equal to as well, they should pass within?
+            # x_outside_ab = (x <= a[0] and x <= b[0]) or (x >= a[0] and x >= b[0])
+            # y_outside_ab = (y <= a[1] and y <= b[1]) or (y >= a[1] and y >= b[1])
 
             # No crossing within the segments
-            if x_outside_ab or y_outside_ab:
+            # if crossing_is_on_a or crossing_is_on_b or crossing_is_on_c or crossing_is_on_d:
+            #     raise ValueError("Crossing is on a point")
+
+            if crossing_point_outside_ab or crossing_point_outside_cd:
                 crossing_position = None
             else:
                 crossing_position = np.array([x, y])
@@ -730,6 +747,7 @@ class SpatialGraph(InputValidation, Geometry):
         y_crossing_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing, z_crossing)
         y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
 
+        # todo Only check if crossing is in bounds!
         if y_crossing_1 == y_crossing_2:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
                              'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
@@ -847,13 +865,17 @@ class SpatialGraph(InputValidation, Geometry):
                     elif crossing_position is None:
                         valid_projection = True
 
-                    else:
+                    elif type(crossing_position) is np.ndarray:
                         valid_projection = True
                         crossings.append(crossing_num)
                         crossing_num += 1
                         crossing_positions.append(crossing_position)
                         crossing_edge_pair = self.get_crossing_edge_pairs(line_1, line_2, crossing_position)
                         crossing_edge_pairs.append(crossing_edge_pair)
+
+                    else:
+                        raise NotImplementedError('There should be no else case.')
+
 
                     self.crossings = crossings
                     self.crossing_positions = crossing_positions
