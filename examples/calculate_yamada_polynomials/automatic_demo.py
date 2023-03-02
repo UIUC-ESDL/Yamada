@@ -1,7 +1,7 @@
 import numpy as np
 from yamada.projection import SpatialGraph
 
-np.random.seed(0)
+np.random.seed(1)
 
 # Random seed 0 works
 # Random seed 1 does not work

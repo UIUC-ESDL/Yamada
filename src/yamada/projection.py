@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from itertools import combinations
 from sympy import symbols, solve, Eq, nsolve
 import math
+from math import acos
+from math import sqrt
+from math import pi
 
 from .calculation import (Vertex, Edge, Crossing, SpatialGraphDiagram)
 
@@ -537,19 +540,41 @@ class SpatialGraph(InputValidation, Geometry):
         #     v2_u = unit_vector(v2)
         #     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
-        def find_counter_clockwise_angle(v1, v2):
-            a1, b1 = v1
-            a2, b2 = v2
-            length_1 = math.sqrt(a1 ** 2 + b1 ** 2)
-            length_2 = math.sqrt(a2 ** 2 + b2 ** 2)
+        # def find_counter_clockwise_angle(v1, v2):
+        #     a1, b1 = v1
+        #     a2, b2 = v2
+        #     length_1 = math.sqrt(a1 ** 2 + b1 ** 2)
+        #     length_2 = math.sqrt(a2 ** 2 + b2 ** 2)
+        #
+        #     angle = math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
+        #
+        #     if angle < 0:
+        #         angle = -angle
+        #         angle += 90
+        #
+        #     return angle
 
-            angle = math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
+        def length(v):
+            return sqrt(v[0] ** 2 + v[1] ** 2)
 
-            if angle < 0:
-                angle = -angle
-                angle += 90
+        def dot_product(v, w):
+            return v[0] * w[0] + v[1] * w[1]
 
-            return angle
+        def determinant(v, w):
+            return v[0] * w[1] - v[1] * w[0]
+
+        def inner_angle(v, w):
+            cosx = dot_product(v, w) / (length(v) * length(w))
+            rad = acos(cosx)  # in radians
+            return rad * 180 / pi  # returns degrees
+
+        def angle_clockwise(A, B):
+            inner = inner_angle(A, B)
+            det = determinant(A, B)
+            if det < 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
+                return inner
+            else:  # if the det > 0 then A is immediately clockwise of B
+                return 360 - inner
 
         rotations = []
 
