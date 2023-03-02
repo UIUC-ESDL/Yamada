@@ -884,59 +884,90 @@ class SpatialGraph(InputValidation, Geometry):
 
 
         for node in self.nodes:
-            adjacent_nodes = self.get_adjacent_nodes_without_crossings(node)
+
+            adjacent_nodes = list(node_ordering_dict[node].keys())
+            # adjacent_nodes = self.get_adjacent_nodes_without_crossings(node)
 
             for adjacent_node in adjacent_nodes:
 
-                vertex_1_index = self.nodes.index(node)
-                vertex_2_index = self.nodes.index(adjacent_node)
 
-                vertex_1 = vertices[vertex_1_index]
-                vertex_2 = vertices[vertex_2_index]
+                # Only if not int which is crossing
+                if type(adjacent_node) is not int:
+                    vertex_1_index = self.nodes.index(node)
+                    vertex_2_index = self.nodes.index(adjacent_node)
 
-                if not vertex_1.already_assigned(vertex_2):
+                    vertex_1 = vertices[vertex_1_index]
+                    vertex_2 = vertices[vertex_2_index]
 
-                    adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
-                    node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
+                    if not vertex_1.already_assigned(vertex_2):
 
-                    vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+                        adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
+                        node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
+
+                        vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+                else:
+                    pass
 
 
         # Second, connect nodes to adjoining crossings
 
 
-        # # Create a dictionary that contains the cyclical ordering of every crossing
-        # crossing_ordering_dict = {}
-        # for crossing in self.crossings:
-        #     crossing_ordering_dict = self.cyclic_edge_order_crossing(crossing, crossing_ordering_dict)
-        #
-        # print('Next')
-        #
-        # # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
-        # # Since one node can adjoin multiple crossings.
-        #
-        # for crossing in self.crossings:
-        #     adjacent_nodes = crossing_ordering_dict[crossing].keys()
-        #     # If str then node, if number then crossing
-        #
-        #     for adjacent_node in adjacent_nodes:
-        #
-        #         if type(adjacent_node) == str:
-        #             pass
-        #
-        #
-        #         vertex_1_index = self.nodes.index(node)
-        #         vertex_2_index = self.nodes.index(adjacent_node)
-        #
-        #         vertex_1 = vertices[vertex_1_index]
-        #         vertex_2 = vertices[vertex_2_index]
-        #
-        #         if not vertex_1.already_assigned(vertex_2):
-        #
-        #             adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
-        #             node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
-        #
-        #             vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+        # Create a dictionary that contains the cyclical ordering of every crossing
+        crossing_ordering_dict = {}
+        for crossing in self.crossings:
+            crossing_ordering_dict = self.cyclic_edge_order_crossing(crossing, crossing_ordering_dict)
+
+        print('Next')
+
+        # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
+        # Since one node can adjoin multiple crossings.
+
+        for crossing in self.crossings:
+
+            adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
+            # assign to both strings (vertices) and ints (crossings)
+
+            crossing_1_index = crossing  # Crossing name is the index
+
+            for adjacent_node in adjacent_nodes:
+
+                if type(adjacent_node) == str:
+                    vertex_2_index = self.nodes.index(adjacent_node)
+                    vertex_2 = vertices[vertex_2_index]
+
+                    crossing_object = crossings[crossing_1_index]
+
+                    if not crossing_object.already_assigned(vertex_2):
+                        adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
+                        node_index_for_adjacent = node_ordering_dict[adjacent_node][crossing]
+                        crossing_object[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+
+
+                elif type(adjacent_node) == int:
+                    crossing_2 = adjacent_node
+                    crossing_2_object = crossings[crossing_2]
+
+                    if not crossing.already_assigned(crossing_2):
+                        adjacent_index_for_crossing = crossing_ordering_dict[crossing][crossing_2]
+                        crossing_index_for_crossing_2 = node_ordering_dict[crossing_2][crossing]
+                        crossing_object[adjacent_index_for_crossing] = crossing_2_object[crossing_index_for_crossing_2]
+
+
+                else:
+                    raise ValueError('Adjacent node must be a string or an integer.')
+
+
+
+
+                # vertex_1 = vertices[vertex_1_index]
+                # vertex_2 = vertices[vertex_2_index]
+                #
+                # if not vertex_1.already_assigned(vertex_2):
+                #
+                #     adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
+                #     node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
+                #
+                #     vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
 
 
         # if len(self.crossing_positions) > 0:
@@ -1030,12 +1061,12 @@ class SpatialGraph(InputValidation, Geometry):
         # Third, TODO connect adjoining crosses
 
 
-        # inputs = vertices + crossings
-        #
-        # sgd = SpatialGraphDiagram(inputs)
+        inputs = vertices + crossings
 
-        # return sgd
-        return 1
+        sgd = SpatialGraphDiagram(inputs)
+
+        return sgd
+
 
 
     def plot(self):
