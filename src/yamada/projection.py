@@ -443,6 +443,26 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_nodes
 
+    def get_edge_crossings(self, edge):
+        """
+        Get the edge crossings for a given edge. Edge crossings are ordered left to right.
+        """
+
+        # Unordered Edge Crossings
+        edge_crossings = []
+
+        for edge_pair, position in zip(self.crossing_edge_pairs, self.crossing_positions):
+            if edge in edge_pair:
+                edge_crossings.append(position)
+
+        # Order edge crossings from left to right
+        # Since we are using straight lines, we can simply compare x-coordinates.
+
+        edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
+        
+        return edge_crossings
+
+
     def node_degree(self, node):
         return len([edge for edge in self.edges if node in edge])
 
@@ -625,6 +645,8 @@ class SpatialGraph(InputValidation, Geometry):
                 crossing_edge_pairs = []
                 crossing_positions     = []
 
+
+
                 for line_1, line_2 in self.nonadjacent_edge_pairs:
 
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -676,15 +698,14 @@ class SpatialGraph(InputValidation, Geometry):
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
         crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
 
-        print('Next')
-
-
-        # TODO Create a dictionary of all edge orderings
+        # Create a dictionary that contains the cyclical ordering of every node
         node_ordering_dict = {}
         for node in self.nodes:
             node_ordering_dict = self.cyclical_edge_order(node, node_ordering_dict)
 
-        print('Next')
+
+        # First, connect adjacent nodes that are not separated by a crossing
+
 
         for node in self.nodes:
             adjacent_nodes = self.get_adjacent_nodes_without_crossings(node)
@@ -705,68 +726,8 @@ class SpatialGraph(InputValidation, Geometry):
                     vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
 
 
-
-        # First, connect adjacent edges. Since they are adjacent they cannot have crossings.
-
-
-        # for [node_1, node_2], [node_3, node_4] in self.adjacent_edge_pairs:
-        #
-        #     # Figure out which 2 of the 4 nodes are connected together
-        #     # The nodes must come from opposing edges
-        #
-        #
-        #     if node_1 == node_3:
-        #         common_node = node_1
-        #         other_node_1 = node_2
-        #         other_node_2 = node_4
-        #
-        #     elif node_1 == node_4:
-        #         common_node = node_1
-        #         other_node_1 = node_2
-        #         other_node_2 = node_3
-        #
-        #     elif node_2 == node_3:
-        #         common_node = node_2
-        #         other_node_1 = node_1
-        #         other_node_2 = node_4
-        #
-        #     elif node_2 == node_4:
-        #         common_node = node_2
-        #         other_node_1 = node_1
-        #         other_node_2 = node_3
-        #
-        #     else:
-        #         raise Exception('Edges are not adjacent')
-        #
-        #
-        #     # Get the first available indices for each node
-        #     common_node_index = self.nodes.index(common_node)
-        #     other_node_1_index = self.nodes.index(other_node_1)
-        #     other_node_2_index = self.nodes.index(other_node_2)
-        #
-        #     # Only assign the vertices to each other if the edge does not have a crossing (consider both edge orders)
-        #     # Also don't assign the vertex if it has already been previously assigned
-        #
-        #     if (common_node, other_node_1) not in self.edges_with_crossings and (other_node_1, common_node) not in self.edges_with_crossings:
-        #
-        #         if not vertices[common_node_index].already_assigned(vertices[other_node_1_index]):
-        #             common_node_next_available_index = vertices[common_node_index].next_available_index()
-        #             other_node_1_next_available_index = vertices[other_node_1_index].next_available_index()
-        #             vertices[common_node_index][common_node_next_available_index] = vertices[other_node_1_index][other_node_1_next_available_index]
-        #
-        #
-        #     if (common_node, other_node_2) not in self.edges_with_crossings and (other_node_2, common_node) not in self.edges_with_crossings:
-        #
-        #         if not vertices[common_node_index].already_assigned(vertices[other_node_2_index]):
-        #             common_node_next_available_index = vertices[common_node_index].next_available_index()
-        #             other_node_2_next_available_index = vertices[other_node_2_index].next_available_index()
-        #             vertices[common_node_index][common_node_next_available_index] = vertices[other_node_2_index][other_node_2_next_available_index]
-
-
-
-
-        # Second, connect edges that cross (only if there are crossings).
-        # TODO Add logic to handle adjoining crosses
+        # Second, connect nodes to adjoining crossings
+        # TODO Add cyclical logic to handle adjoining crosses
 
 
         if len(self.crossing_positions) > 0:
