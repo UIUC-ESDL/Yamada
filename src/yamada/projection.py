@@ -383,55 +383,6 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_edges
 
-    def get_adjacent_edges_without_crossings(self, reference_node):
-
-        adjacent_edges_without_crossings = []
-
-        adjacent_edges = self.get_adjacent_edges(reference_node)
-        edges_with_crossing = self.edges_with_crossings
-
-        for adjacent_edge in adjacent_edges:
-            if adjacent_edge not in edges_with_crossing:
-                adjacent_edges_without_crossings.append(adjacent_edge)
-
-        return adjacent_edges_without_crossings
-
-    def get_adjacent_nodes_without_crossings(self, reference_node):
-        """
-        Returns the nodes directly adjacent to a given node.
-        TODO Implement
-        """
-        adjacent_nodes_without_crossings = []
-
-        adjacent_edges_without_crossings = self.get_adjacent_edges_without_crossings(reference_node)
-
-        for adjacent_edge in adjacent_edges_without_crossings:
-            if reference_node == adjacent_edge[0]:
-                adjacent_nodes_without_crossings.append(adjacent_edge[1])
-            elif reference_node == adjacent_edge[1]:
-                adjacent_nodes_without_crossings.append(adjacent_edge[0])
-
-        return adjacent_nodes_without_crossings
-
-    @property
-    def nonadjacent_edge_pairs(self):
-        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
-
-    @property
-    def edges_with_crossings(self):
-        edges_with_crossings = set()
-        for edge_pair in self.edge_pairs_with_crossing:
-            edges_with_crossings.update(edge_pair)
-        return edges_with_crossings
-
-    @property
-    def edge_pairs_with_crossing(self):
-        return self.crossing_edge_pairs
-
-    @property
-    def edge_pairs_without_crossing(self):
-        return [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.edge_pairs_with_crossing]
-
     def get_adjacent_nodes(self, reference_node):
         """
         Returns the nodes directly adjacent to a given node.
@@ -598,7 +549,7 @@ class SpatialGraph(InputValidation, Geometry):
             node_ordering_dict = {}
 
         # Get the edges that are connected to the crossing
-        edge_1, edge_2 = self.edge_pairs_with_crossing[crossing]
+        edge_1, edge_2 = self.crossing_edge_pairs[crossing]
         crossing_position = self.crossing_positions[crossing]
 
         # Figure out which nodes and crossings directly adjoin the crossing
@@ -846,9 +797,9 @@ class SpatialGraph(InputValidation, Geometry):
                 crossing_edge_pairs = []
                 crossing_positions     = []
 
+                nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
 
-
-                for line_1, line_2 in self.nonadjacent_edge_pairs:
+                for line_1, line_2 in nonadjacent_edge_pairs:
 
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
@@ -918,7 +869,6 @@ class SpatialGraph(InputValidation, Geometry):
         for node in self.nodes:
 
             adjacent_nodes = list(node_ordering_dict[node].keys())
-            # adjacent_nodes = self.get_adjacent_nodes_without_crossings(node)
 
             for adjacent_node in adjacent_nodes:
 
