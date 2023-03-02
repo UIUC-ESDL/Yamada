@@ -603,69 +603,47 @@ class SpatialGraph(InputValidation, Geometry):
 
         # Now figure out which one is in front
         # Get the 3D positions of the nodes
-        edge_1_left_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_1_left_node)]
-        edge_1_right_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_1_right_node)]
-        edge_2_left_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_2_left_node)]
-        edge_2_right_node_position_3d = self.rotated_node_positions[self.nodes.index(edge_2_right_node)]
 
         top_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_left_edge)]
         top_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_right_edge)]
         bottom_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_left_edge)]
         bottom_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_edge)]
 
-        y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_node_position_3d,
-                                                                   edge_1_right_node_position_3d,
-                                                                   crossing_position[0],
-                                                                   crossing_position[1])
 
-        y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_node_position_3d,
-                                                                   edge_2_right_node_position_3d,
-                                                                   crossing_position[0],
-                                                                   crossing_position[1])
+        y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_edge_position_3d,
+                                                                  bottom_right_edge_position_3d,
+                                                                  crossing_position[0],
+                                                                  crossing_position[1])
 
-        overlap_order = []
+        y_crossing_tr_bl = self.calculate_intermediate_y_position(top_right_edge_position_3d,
+                                                                  bottom_left_edge_position_3d,
+                                                                  crossing_position[0],
+                                                                  crossing_position[1])
 
 
-        if y_crossing_edge_1 == y_crossing_edge_2:
+        if y_crossing_tl_br == y_crossing_tr_bl:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
                              'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
-        elif y_crossing_edge_1 > y_crossing_edge_2:
-            # Edge 1 is on top
-            # Edge 2 is on bottom
-
-            if top_right_edge == edge_1_right_node:
-                node_ordering_dict[]
-
-            elif top_left_edge == edge_1_left_node:
-                pass
-
-            else:
-                raise ValueError('The edge ordering is not supported.')
+        elif y_crossing_tl_br > y_crossing_tr_bl:
+            # Top right edge is under and should be zero, then follow CCW rotation
+            node_ordering_dict[top_right_edge] = 0
+            node_ordering_dict[top_left_edge] = 1
+            node_ordering_dict[bottom_left_edge] = 2
+            node_ordering_dict[bottom_right_edge] = 3
 
 
-        elif y_crossing_edge_1 < y_crossing_edge_2:
-            # Edge 2 is on top
-            # Edge 1 is on bottom
-
-            if top_right_edge == edge_1_right_node:
-                pass
-
-            elif top_left_edge == edge_1_left_node:
-                pass
-
-            else:
-                raise ValueError('The edge ordering is not supported.')
 
 
-            overlap_order.append(edge_1)
-            overlap_order.append(edge_2)
+        elif y_crossing_tl_br < y_crossing_tr_bl:
+            # Top left edge is under and should be zero, then follow CCW rotation
+            node_ordering_dict[top_left_edge] = 0
+            node_ordering_dict[bottom_left_edge] = 1
+            node_ordering_dict[bottom_right_edge] = 2
+            node_ordering_dict[top_right_edge] = 3
 
         else:
             raise NotImplementedError('There should be no else case.')
-
-        # Convert list to tuple for hashing later on...
-        overlap_order = tuple(overlap_order)
 
 
         return node_ordering_dict
