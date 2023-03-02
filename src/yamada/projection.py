@@ -373,26 +373,7 @@ class SpatialGraph(InputValidation, Geometry):
 
         return adjacent_edge_pairs
 
-    def get_adjacent_edges(self, reference_node):
 
-        adjacent_edges = []
-
-        for edge in self.edges:
-            if reference_node == edge[0] or reference_node == edge[1]:
-                adjacent_edges.append(edge)
-
-        return adjacent_edges
-
-    def get_adjacent_nodes(self, reference_node):
-        """
-        Returns the nodes directly adjacent to a given node.
-        """
-        adjacent_nodes = []
-        for edge in self.edges:
-            if reference_node in edge:
-                adjacent_nodes += [node for node in edge if node != reference_node]
-
-        return adjacent_nodes
 
     def get_edge_nodes_and_crossings(self, edge):
         """
@@ -486,7 +467,12 @@ class SpatialGraph(InputValidation, Geometry):
         adjacent_nodes = []
         adjacent_node_positions = []
 
-        adjacent_edges = self.get_adjacent_edges(reference_node)
+        # Get the adjacent edges
+        adjacent_edges = []
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_edges.append(edge)
+
         for edge in adjacent_edges:
             nodes_and_crossings = self.get_edge_nodes_and_crossings(edge)
             nodes, positions = zip(*nodes_and_crossings)
