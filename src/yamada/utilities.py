@@ -1,29 +1,20 @@
 import math
 
-class Vect:
 
-   def __init__(self, a, b):
-        self.a = a
-        self.b = b
+def find_counter_clockwise_angle(a1, b1, a2, b2):
+    length_1 = math.sqrt(a1**2 + b1**2)
+    length_2 = math.sqrt(a2**2 + b2**2)
+    return math.degrees(math.asin((a1 * b2 - b1 * a2)/(length_1 * length_2)))
 
-   def findCounterClockwiseAngle(self, other):
-       # using cross-product formula
-       return math.degrees(math.asin((self.a * other.b - self.b * other.a)/(self.length()*other.length())))
-       # the dot-product formula, left here just for comparison (does not return angles in the desired range)
-       # return math.degrees(math.acos((self.a * other.a + self.b * other.b)/(self.length()*other.length())))
-
-   def length(self):
-       return math.sqrt(self.a**2 + self.b**2)
-
-vector1 = Vect(2,0)
 
 N = 12
 theta = [i * 2 * math.pi / N for i in range(N)]
 result = []
 for t in theta:
-    vector2 = Vect(math.cos(t), math.sin(t))  ## a2*i + b2*j
-    angle = vector1.findCounterClockwiseAngle(vector2)
+    vector2 = (math.cos(t), math.sin(t))
+    angle = find_counter_clockwise_angle(2, 0, vector2[0], vector2[1])
     result.append((math.degrees(t), angle))
 
-print('{:>10}{:>10}'.format('t', 'angle'))
-print('\n'.join(['{:>10.2f}{:>10.2f}'.format(*pair) for pair in result]))
+print('t')
+for t in theta:
+    print(t)
