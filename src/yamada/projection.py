@@ -568,10 +568,10 @@ class SpatialGraph(InputValidation, Geometry):
             rad = acos(cosx)  # in radians
             return rad * 180 / pi  # returns degrees
 
-        def angle_clockwise(A, B):
+        def angle_counter_clockwise(A, B):
             inner = inner_angle(A, B)
             det = determinant(A, B)
-            if det < 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
+            if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
                 return inner
             else:  # if the det > 0 then A is immediately clockwise of B
                 return 360 - inner
@@ -582,7 +582,7 @@ class SpatialGraph(InputValidation, Geometry):
         #     rotations.append(angle_between(reference_vector, shifted_adjacent_node_position))
 
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-            rotations.append(find_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
+            rotations.append(angle_counter_clockwise(reference_vector, shifted_adjacent_node_position))
 
         sorted_index = np.argsort(rotations)
 

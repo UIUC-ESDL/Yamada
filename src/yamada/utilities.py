@@ -80,7 +80,7 @@ def inner_angle(v,w):
 def angle_clockwise(A, B):
     inner=inner_angle(A,B)
     det = determinant(A,B)
-    if det<0: #this is a property of the det. If the det < 0 then B is clockwise of A
+    if det>0: #this is a property of the det. If the det < 0 then B is clockwise of A
         return inner
     else: # if the det > 0 then A is immediately clockwise of B
         return 360-inner
