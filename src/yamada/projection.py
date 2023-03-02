@@ -489,6 +489,8 @@ class SpatialGraph(InputValidation, Geometry):
         if node_ordering_dict is None:
             node_ordering_dict = {}
 
+        print('Reference node:', reference_node)
+
         reference_node_position = self.get_projected_node_position(reference_node)
 
 
@@ -540,7 +542,14 @@ class SpatialGraph(InputValidation, Geometry):
             a2, b2 = v2
             length_1 = math.sqrt(a1 ** 2 + b1 ** 2)
             length_2 = math.sqrt(a2 ** 2 + b2 ** 2)
-            return math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
+
+            angle = math.degrees(math.asin((a1 * b2 - b1 * a2) / (length_1 * length_2)))
+
+            if angle < 0:
+                angle = -angle
+                angle += 90
+
+            return angle
 
         rotations = []
 
