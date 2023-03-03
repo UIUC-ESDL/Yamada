@@ -20,10 +20,6 @@ np.random.seed(0)
 
 
 
-
-
-
-
 # Making it -1 0.5 1 breaks it
 
 sg1 = SpatialGraph(nodes=['a', 'b', 'c','d'],
