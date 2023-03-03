@@ -716,7 +716,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         # Initialize while loop exit conditions
         valid_projection = False
         iter             = 0
-        max_iter         = 100
+        max_iter         = 10
 
         while not valid_projection and iter < max_iter:
 
@@ -726,6 +726,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
 
+                print('one')
 
                 for edge in self.edges:
                     x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
@@ -739,6 +740,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
+                print('two')
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -759,6 +761,10 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
+                    else:
+                        # They are adjacent
+                        print('else...')
+
 
                 # Third, Check nonadjacent edge pairs for validity.
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
@@ -772,6 +778,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 crossing_positions     = []
 
                 nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
+
+                print('three')
 
                 for line_1, line_2 in nonadjacent_edge_pairs:
 
@@ -804,6 +812,11 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                     self.crossings = crossings
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
+
+                print('four')
+
+                # # TODO Remove this
+                # iter += 1
 
             except ValueError:
                 self.rotation = self.random_rotation()
