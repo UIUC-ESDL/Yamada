@@ -758,12 +758,14 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
+
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     else:
                         # They are adjacent
                         print('else...')
+
 
 
                 # Third, Check nonadjacent edge pairs for validity.
@@ -795,10 +797,9 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
                     elif crossing_position is None:
-                        valid_projection = True
+                        pass
 
                     elif type(crossing_position) is np.ndarray:
-                        valid_projection = True
                         crossings.append(crossing_num)
                         crossing_num += 1
                         crossing_positions.append(crossing_position)
@@ -815,8 +816,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
                 print('four')
 
-                # # TODO Remove this
-                # iter += 1
+                # If we made it this far without raising an exception, then we have a valid projection
+                valid_projection = True
 
             except ValueError:
                 self.rotation = self.random_rotation()
