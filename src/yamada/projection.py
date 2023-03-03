@@ -423,13 +423,17 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Unordered Edge Crossings
         edge_crossings = []
-        for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
-            if edge in edge_pair:
-                edge_crossings.append([crossing, position])
 
-        # Order edge crossings from left to right
-        # Since we are using straight lines, we can simply compare x-coordinates.
-        edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
+
+        if self.crossing_edge_pairs is not None:
+
+            for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
+                if edge in edge_pair:
+                    edge_crossings.append([crossing, position])
+
+            # Order edge crossings from left to right
+            # Since we are using straight lines, we can simply compare x-coordinates.
+            edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
 
         # Prepend the first node
         edge_crossings.insert(0, [edge_nodes[0], edge_node_positions[0]])
@@ -726,7 +730,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
 
-                print('one')
 
                 for edge in self.edges:
                     x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
@@ -740,7 +743,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
-                print('two')
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -758,13 +760,10 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
-
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                    else:
-                        # They are adjacent
-                        print('else...')
+
 
 
 
@@ -780,8 +779,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 crossing_positions     = []
 
                 nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
-
-                print('three')
 
                 for line_1, line_2 in nonadjacent_edge_pairs:
 
@@ -814,8 +811,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
 
-                print('four')
-
                 # If we made it this far without raising an exception, then we have a valid projection
                 valid_projection = True
 
@@ -837,7 +832,11 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Create the vertex and crossing objects
         vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
-        crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
+
+        if self.crossing_positions is not None:
+            crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
+        else:
+            crossings = []
 
         # Create a dictionary that contains the cyclical ordering of every node
         node_ordering_dict = {}
@@ -875,47 +874,48 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Second, connect nodes to adjoining crossings
 
+        if len(crossings) > 0:
 
-        # Create a dictionary that contains the cyclical ordering of every crossing
-        crossing_ordering_dict = {}
-        for crossing in self.crossings:
-            crossing_ordering_dict = self.cyclical_edge_order_crossing(crossing, crossing_ordering_dict)
+            # Create a dictionary that contains the cyclical ordering of every crossing
+            crossing_ordering_dict = {}
+            for crossing in self.crossings:
+                crossing_ordering_dict = self.cyclical_edge_order_crossing(crossing, crossing_ordering_dict)
 
 
 
-        # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
-        # Since one node can adjoin multiple crossings.
+            # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
+            # Since one node can adjoin multiple crossings.
 
-        for crossing in self.crossings:
+            for crossing in self.crossings:
 
-            adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
-            # assign to both strings (vertices) and ints (crossings)
+                adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
+                # assign to both strings (vertices) and ints (crossings)
 
-            crossing_1_index = crossing  # Crossing name is the index
-            crossing_object = crossings[crossing_1_index]
+                crossing_1_index = crossing  # Crossing name is the index
+                crossing_object = crossings[crossing_1_index]
 
-            for adjacent_node in adjacent_nodes:
+                for adjacent_node in adjacent_nodes:
 
-                if type(adjacent_node) == str:
-                    vertex_2_index = self.nodes.index(adjacent_node)
-                    vertex_2 = vertices[vertex_2_index]
+                    if type(adjacent_node) == str:
+                        vertex_2_index = self.nodes.index(adjacent_node)
+                        vertex_2 = vertices[vertex_2_index]
 
-                    if not crossing_object.already_assigned(vertex_2):
-                        adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
-                        node_index_for_adjacent = node_ordering_dict[adjacent_node][crossing]
-                        crossing_object[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+                        if not crossing_object.already_assigned(vertex_2):
+                            adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
+                            node_index_for_adjacent = node_ordering_dict[adjacent_node][crossing]
+                            crossing_object[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
 
-                elif type(adjacent_node) == int:
-                    crossing_2 = adjacent_node
-                    crossing_2_object = crossings[crossing_2]
+                    elif type(adjacent_node) == int:
+                        crossing_2 = adjacent_node
+                        crossing_2_object = crossings[crossing_2]
 
-                    if not crossing.already_assigned(crossing_2):
-                        adjacent_index_for_crossing = crossing_ordering_dict[crossing][crossing_2]
-                        crossing_index_for_crossing_2 = node_ordering_dict[crossing_2][crossing]
-                        crossing_object[adjacent_index_for_crossing] = crossing_2_object[crossing_index_for_crossing_2]
+                        if not crossing.already_assigned(crossing_2):
+                            adjacent_index_for_crossing = crossing_ordering_dict[crossing][crossing_2]
+                            crossing_index_for_crossing_2 = node_ordering_dict[crossing_2][crossing]
+                            crossing_object[adjacent_index_for_crossing] = crossing_2_object[crossing_index_for_crossing_2]
 
-                else:
-                    raise ValueError('Adjacent node must be a string or an integer.')
+                    else:
+                        raise ValueError('Adjacent node must be a string or an integer.')
 
 
         inputs = vertices + crossings
@@ -1014,11 +1014,11 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
 
         # Plot crossing positions
-        for crossing_position in self.crossing_positions:
-            ax2.scatter(crossing_position[0], crossing_position[1],
-                        marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
+        if self.crossing_positions is not None:
+            for crossing_position in self.crossing_positions:
+                ax2.scatter(crossing_position[0], crossing_position[1],
+                            marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
 
-        return None
 
