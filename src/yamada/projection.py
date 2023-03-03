@@ -122,16 +122,16 @@ class InputValidation:
         return node_positions
 
 
-class Geometry:
+class LinearAlgebra:
     """
-    A class that contains static methods for necessary geometric calculations.
+    A class that contains static methods for necessary linear algebra calculations.
     """
     def __init__(self):
         self.rotated_node_positions    = None
         self.projected_node_positions  = None
-        self.rotation                  = None
         self.rotation_generator_object = self.rotation_generator()
-        self.randomize_rotation()
+        self.rotation                  = self.random_rotation()
+
 
     @staticmethod
     def rotation_generator():
@@ -146,11 +146,11 @@ class Geometry:
             yield rotation
             rotation = np.random.rand(3) * 2 * np.pi
 
-    def randomize_rotation(self):
+    def random_rotation(self):
         """
         Query the rotation generator for a new rotation.
         """
-        self.rotation = next(self.rotation_generator_object)
+        return next(self.rotation_generator_object)
 
     @staticmethod
     def rotate(positions, rotation):
@@ -218,9 +218,6 @@ class Geometry:
         Each line is defined by two points (a, b) and (c, d).
         Each point is represented by a tuple (x, y) or (x, y).
 
-        Formatting inputs:
-        1. (.. TODO consistent edge ordering
-
         Important logic:
         1. If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
         2. If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
@@ -245,8 +242,13 @@ class Geometry:
             x = (b2 - b1) / (m1 - m2)
             y = m1 * x + b1
 
-            crossing_point_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0]) or (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
-            crossing_point_outside_cd = (x < c[0] and x < d[0]) or (x > c[0] and x > d[0]) or (y < c[1] and y < d[1]) or (y > c[1] and y > d[1])
+            x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
+            y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
+            x_outside_cd = (x < c[0] and x < d[0]) or (x > c[0] and x > d[0])
+            y_outside_cd = (y < c[1] and y < d[1]) or (y > c[1] and y > d[1])
+
+            crossing_point_outside_ab = x_outside_ab or y_outside_ab
+            crossing_point_outside_cd = x_outside_cd or y_outside_cd
 
             if crossing_point_outside_ab or crossing_point_outside_cd:
                 crossing_position = None
@@ -318,9 +320,41 @@ class Geometry:
 
         return np.array(projected_node_positions)
 
+    @staticmethod
+    def calculate_counter_clockwise_angle(vector_a: np.ndarray,
+                                          vector_b: np.ndarray) -> float:
+        """
+        Returns the angle in degrees between vectors 'A' and 'B'.
+
+        :param vector_a: A numpy array of shape (2,) representing containing positions x_a and y_a.
+        :param vector_b: A numpy array of shape (2,) representing containing positions x_b and y_b.
+        :return: The angle in degrees between vectors A and B, where 0 <= angle < 360.
+        """
+
+        def length(v):
+            return sqrt(v[0] ** 2 + v[1] ** 2)
+
+        def dot_product(v, w):
+            return v[0] * w[0] + v[1] * w[1]
+
+        def determinant(v, w):
+            return v[0] * w[1] - v[1] * w[0]
+
+        def inner_angle(v, w):
+            cosx = dot_product(v, w) / (length(v) * length(w))
+            rad = acos(cosx)  # in radians
+            return rad * 180 / pi  # returns degrees
+
+        inner = inner_angle(vector_a, vector_b)
+        det = determinant(vector_a, vector_b)
+        if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
+            return inner
+        else:  # if the det > 0 then A is immediately clockwise of B
+            return 360 - inner
 
 
-class SpatialGraph(InputValidation, Geometry):
+
+class SpatialGraph(InputValidation, LinearAlgebra):
     """
     A class to represent a spatial graph.
 
@@ -341,7 +375,7 @@ class SpatialGraph(InputValidation, Geometry):
         InputValidation.__init__(self, nodes, node_positions, edges)
 
         # Initialize attributes necessary for geometric calculations
-        Geometry.__init__(self)
+        LinearAlgebra.__init__(self)
 
         self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
         self.project_node_positions()
@@ -416,37 +450,7 @@ class SpatialGraph(InputValidation, Geometry):
         """
         return len([edge for edge in self.edges if node in edge])
 
-    @staticmethod
-    def calculate_counter_clockwise_angle(vector_a: np.ndarray,
-                                          vector_b: np.ndarray) -> float:
-        """
-        Returns the angle in degrees between vectors 'A' and 'B'.
 
-        :param vector_a: A numpy array of shape (2,) representing containing positions x_a and y_a.
-        :param vector_b: A numpy array of shape (2,) representing containing positions x_b and y_b.
-        :return: The angle in degrees between vectors A and B, where 0 <= angle < 360.
-        """
-
-        def length(v):
-            return sqrt(v[0] ** 2 + v[1] ** 2)
-
-        def dot_product(v, w):
-            return v[0] * w[0] + v[1] * w[1]
-
-        def determinant(v, w):
-            return v[0] * w[1] - v[1] * w[0]
-
-        def inner_angle(v, w):
-            cosx = dot_product(v, w) / (length(v) * length(w))
-            rad = acos(cosx)  # in radians
-            return rad * 180 / pi  # returns degrees
-
-        inner = inner_angle(vector_a, vector_b)
-        det = determinant(vector_a, vector_b)
-        if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
-            return inner
-        else:  # if the det > 0 then A is immediately clockwise of B
-            return 360 - inner
 
     def cyclic_edge_order_vertex(self, reference_node, node_ordering_dict=None):
         """
@@ -818,7 +822,7 @@ class SpatialGraph(InputValidation, Geometry):
                     self.crossing_edge_pairs = crossing_edge_pairs
 
             except ValueError:
-                self.randomize_rotation()
+                self.rotation = self.random_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
                 self.project_node_positions()
                 iter += 1

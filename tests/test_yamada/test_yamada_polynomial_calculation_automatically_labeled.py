@@ -15,5 +15,17 @@ def test_unknot():
     # yamada_polynomial_infinity_symbol = sgd1.yamada_polynomial()
     # print("Infinity Symbol Yamada Polynomial:", yamada_polynomial_infinity_symbol)
 
-def test_inifty_symbol_single_twist():
+def test_infinity_symbol_single_twist():
+    # TODO Implement this test.
+    pass
+
+def test_double_crossing_single_edge():
+    # TODO Implement this test.
+    pass
+
+def test_triple_crossing_single_edge():
+    # TODO Implement this test.
+    pass
+
+def test_quadrivalent_node():
     pass
