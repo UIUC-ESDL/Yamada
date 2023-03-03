@@ -213,7 +213,7 @@ class LinearAlgebra:
 
     def get_line_segment_intersection(self, a, b, c, d):
         """
-        Get the intersection point of two lines.
+        Get the intersection point of two line segments, if it exists. Otherwise, return None.
 
         Each line is defined by two points (a, b) and (c, d).
         Each point is represented by a tuple (x, y) or (x, y).
@@ -258,7 +258,10 @@ class LinearAlgebra:
         return crossing_position
 
     @staticmethod
-    def calculate_intermediate_y_position(a, b, x_int, z_int):
+    def calculate_intermediate_y_position(a:     np.ndarray,
+                                          b:     np.ndarray,
+                                          x_int: float,
+                                          z_int: float) -> float:
         """
         Calculates the intermediate y position given two points and the intermediate x and z position.
 
@@ -302,14 +305,16 @@ class LinearAlgebra:
         """
         self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
-    def get_projected_node_position(self, node):
+    def get_projected_node_position(self,
+                                    node: str) -> np.ndarray:
         """
         Get the projected node position
         """
         return self.projected_node_positions[self.nodes.index(node)]
 
 
-    def get_projected_node_positions(self, nodes):
+    def get_projected_node_positions(self,
+                                     nodes: list[str]) -> np.ndarray:
         """
         Get the projected node positions
         """
@@ -342,11 +347,11 @@ class LinearAlgebra:
 
         def inner_angle(v, w):
             cosx = dot_product(v, w) / (length(v) * length(w))
-            rad = acos(cosx)  # in radians
+            rad  = acos(cosx)  # in radians
             return rad * 180 / pi  # returns degrees
 
         inner = inner_angle(vector_a, vector_b)
-        det = determinant(vector_a, vector_b)
+        det   = determinant(vector_a, vector_b)
         if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
             return inner
         else:  # if the det > 0 then A is immediately clockwise of B
@@ -361,9 +366,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
     Notes:
         1. Component ports must be individually represented as nodes. In other words, a control valve servicing an
         actuator must employ separate nodes for the supply and return ports, along with their associated edges.
-
-    TODO Link to the SpatialGraphDiagram subclass
-    TODO Check that no two intersecting edges are planar (in 3D
     """
 
     def __init__(self,
@@ -409,7 +411,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
 
 
-    def get_edge_nodes_and_crossings(self, edge):
+    def get_edge_with_vertices_and_crossings(self, edge):
         """
         Get the edge crossings for a given edge. Edge crossings are ordered left to right.
         """
@@ -422,8 +424,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Unordered Edge Crossings
         edge_crossings = []
-
-
 
         for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
             if edge in edge_pair:
@@ -478,7 +478,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 adjacent_edges.append(edge)
 
         for edge in adjacent_edges:
-            nodes_and_crossings = self.get_edge_nodes_and_crossings(edge)
+            nodes_and_crossings = self.get_edge_with_vertices_and_crossings(edge)
             nodes, positions = zip(*nodes_and_crossings)
 
             positions_list = [tuple(position) for position in positions]
@@ -545,7 +545,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         # Figure out which nodes and crossings directly adjoin the crossing
 
         # Edge 1: What is to the left and right of this crossing?
-        edge_1_nodes_and_crossings = self.get_edge_nodes_and_crossings(edge_1)
+        edge_1_nodes_and_crossings = self.get_edge_with_vertices_and_crossings(edge_1)
 
         edge_1_nodes, edge_1_positions = zip(*edge_1_nodes_and_crossings)
 
@@ -570,7 +570,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             raise ValueError("Crossing is at the end of the edge. This is not supported.")
 
         # Edge 2: What is to the left and right of this crossing?
-        edge_2_nodes_and_crossings = self.get_edge_nodes_and_crossings(edge_2)
+        edge_2_nodes_and_crossings = self.get_edge_with_vertices_and_crossings(edge_2)
 
         edge_2_nodes, edge_2_positions = zip(*edge_2_nodes_and_crossings)
 
