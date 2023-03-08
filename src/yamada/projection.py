@@ -1,3 +1,9 @@
+"""
+
+TODO Create AbstractGraph Subclass
+TODO Create SpatialGraphDiagram Subclass
+"""
+
 import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
@@ -15,6 +21,8 @@ class InputValidation:
     """
     TODO Check that all nodes adjoin at least 2 edges (no braids)
     TODO Do I need to check if a graph is planar?
+    TODO Check if dangling nodes impact calculator
+    TODO Need to link ports...
     """
 
     def __init__(self,
@@ -34,8 +42,8 @@ class InputValidation:
         Checks:
         1. The input is a list
         2. Each node is a string
-        3. Each node is a single character
-        4. All nodes unique
+        3. Each node string only contains alphanumeric characters
+        4. All nodes are unique
         """
 
         if type(nodes) != list:
@@ -46,15 +54,15 @@ class InputValidation:
                 raise TypeError('Nodes must be strings.')
 
         for node in nodes:
-            if len(node) == 0 or len(node) > 1:
-                raise ValueError('Nodes must be a single character.')
+            if len(node) == 0:
+                raise ValueError('Nodes must be a at least a single character.')
 
         if len(nodes) != len(set(nodes)):
             raise ValueError('All nodes must be unique.')
 
         for node in nodes:
-            if not node.isalpha():
-                raise ValueError('Nodes must be letters.')
+            if not node.isalnum():
+                raise ValueError('Nodes must be alphanumeric.')
 
         return nodes
 

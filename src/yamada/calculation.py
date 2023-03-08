@@ -40,6 +40,16 @@ Compared to Dobrynin and Vesnin:
 Note: The way this script is written w/ pickling you must import this script into another script
 rather than directly calculate Yamada polynomials in this script (you'll get error messages)
 
+TODO Make Reidemeister Class
+R0 -> if two adjacent crossings on the same edge have different orientation then simplify
+R1 -> Switch crossing order
+R2 -> if two edges share two crossings then check if you can simplify them
+R3 -> You can slide an edge
+R4 -> if one edge is fully under or over a set then move...
+R5 -> You can untwist a bunch
+R6 -> ?
+
+
 """
 
 import networkx as nx
