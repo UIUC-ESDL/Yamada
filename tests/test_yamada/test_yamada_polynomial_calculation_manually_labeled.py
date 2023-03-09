@@ -99,7 +99,7 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
 
     T = nx.MultiGraph(3 * [(0, 1)])
 
-    assert D.yamada_polynomial() == h_poly(T)
+    assert D._yamada_polynomial() == h_poly(T)
 
 
 def test_yamada_polynomial_infinity_symbol_1():
@@ -107,7 +107,7 @@ def test_yamada_polynomial_infinity_symbol_1():
     C = Crossing('X')
     C[0], C[2] = C[1], C[3]
     D = SpatialGraphDiagram([C])
-    assert D.yamada_polynomial() == A**3 + A**2 + A
+    assert D.yamada_polynomial() == -A**2 - A - 1
 
 
 def test_yamada_polynomial_infinity_symbol_2():
@@ -115,7 +115,7 @@ def test_yamada_polynomial_infinity_symbol_2():
     C = Crossing('X')
     C[1], C[3] = C[2], C[0]
     D = SpatialGraphDiagram([C])
-    assert D.yamada_polynomial() == (A**2 + A + 1)/A**3
+    assert D.yamada_polynomial() == -A**2 - A - 1
 
 
 def test_yamada_polynomial_theta_2_graph():
@@ -137,7 +137,7 @@ def test_yamada_polynomial_theta_2_graph():
 
     assert nx.is_isomorphic(G, T)
 
-    assert D.yamada_polynomial() == (A**12 - A**8 - A**6 - A**4 - A**3 - A**2 - A - 1)/A**6
+    assert D.yamada_polynomial() == A**12 - A**8 - A**6 - A**4 - A**3 - A**2 - A - 1
 
 
 def test_yamada_polynomial_omega_2_graph():
@@ -159,7 +159,7 @@ def test_yamada_polynomial_omega_2_graph():
     G = D.underlying_graph()
     assert nx.is_isomorphic(G, nx.complete_graph(4))
 
-    assert D.yamada_polynomial() == (A**13 + A**11 + A**10 - A**9 + A**8 - 2*A**7 + A**6 - A**5 + A**4 + A**3 + A**2 + A + 1)/A**5
+    assert D.yamada_polynomial() == A**-5 + A**-4 + A**-3 + A**-2 + A**-1 - 1 + A - 2*A**2 + A**3 - A**4 + A**5 + A**6 + A**8
 
 # TODO Implement tests for get_coefficients_and_exponents
 

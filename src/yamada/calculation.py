@@ -469,8 +469,10 @@ class SpatialGraphDiagram:
                         return True
         return False
 
-    def yamada_polynomial(self, check_pieces=False):
-
+    def _yamada_polynomial(self, check_pieces=False):
+        """
+        Return the non-normalized Yamada polynomial of the knot.
+        """
         A = pari('A')
 
         if len(self.crossings) == 0:
@@ -512,19 +514,19 @@ class SpatialGraphDiagram:
         if check_pieces:
             S_0._check()
 
-        Y_plus = S_plus.yamada_polynomial()
-        Y_minus = S_minus.yamada_polynomial()
-        Y_0 = S_0.yamada_polynomial()
+        Y_plus = S_plus._yamada_polynomial()
+        Y_minus = S_minus._yamada_polynomial()
+        Y_0 = S_0._yamada_polynomial()
 
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
-    def normalized_yamada_polynomial(self):
+    def yamada_polynomial(self):
         """normalized_yamada_polynomial
 
         TODO Why does the normalizer work this way?
         """
 
-        yamada_polynomial = self.yamada_polynomial()
+        yamada_polynomial = self._yamada_polynomial()
 
         A = pari('A')
 
