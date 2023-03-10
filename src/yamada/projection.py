@@ -20,9 +20,7 @@ from .calculation import (Vertex, Crossing, SpatialGraphDiagram)
 class InputValidation:
     """
     TODO Check that all nodes adjoin at least 2 edges (no braids)
-    TODO Do I need to check if a graph is planar?
     TODO Check if dangling nodes impact calculator
-    TODO Need to link ports...
     """
 
     def __init__(self,
