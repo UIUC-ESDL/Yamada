@@ -469,7 +469,7 @@ class SpatialGraphDiagram:
                         return True
         return False
 
-    def _yamada_polynomial(self, check_pieces=False):
+    def yamada_polynomial(self, check_pieces=False):
         """
         Return the non-normalized Yamada polynomial of the knot.
         """
@@ -514,19 +514,19 @@ class SpatialGraphDiagram:
         if check_pieces:
             S_0._check()
 
-        Y_plus = S_plus._yamada_polynomial()
-        Y_minus = S_minus._yamada_polynomial()
-        Y_0 = S_0._yamada_polynomial()
+        Y_plus = S_plus.yamada_polynomial()
+        Y_minus = S_minus.yamada_polynomial()
+        Y_0 = S_0.yamada_polynomial()
 
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
-    def yamada_polynomial(self):
+    def normalized_yamada_polynomial(self):
         """normalized_yamada_polynomial
 
         TODO Why does the normalizer work this way?
         """
 
-        yamada_polynomial = self._yamada_polynomial()
+        yamada_polynomial = self.yamada_polynomial()
 
         A = pari('A')
 
@@ -538,6 +538,24 @@ class SpatialGraphDiagram:
         normalized_yamada_polynomial = min([ans1, ans2], key=list)
 
         return normalized_yamada_polynomial
+
+
+def normalize_yamada_polynomial(yamada_polynomial):
+    """normalized_yamada_polynomial
+
+    TODO Why does the normalizer work this way?
+    """
+
+    A = pari('A')
+
+    _, exps = get_coefficients_and_exponents(yamada_polynomial)
+    a, b = min(exps), max(exps)
+    ans1 = (-A) ** (-a) * yamada_polynomial
+    ans2 = (-A) ** b * reverse_poly(yamada_polynomial)
+
+    normalized_yamada_polynomial = min([ans1, ans2], key=list)
+
+    return normalized_yamada_polynomial
 
 
 def get_coefficients_and_exponents(poly):

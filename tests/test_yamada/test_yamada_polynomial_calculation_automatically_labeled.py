@@ -11,7 +11,7 @@ def test_unknot():
                            edges=[('a', 'b'), ('b', 'c'), ('c', 'a')])
         sg1.project()
         sgd1 = sg1.create_spatial_graph_diagram()
-        sgd1.yamada_polynomial()
+        sgd1.normalized_yamada_polynomial()
 
 
 
@@ -23,7 +23,7 @@ def test_infinity_symbol_single_twist():
                        edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
     sg1.project()
     sgd1 = sg1.create_spatial_graph_diagram()
-    sgd1.yamada_polynomial()
+    sgd1.normalized_yamada_polynomial()
 
 def test_infinity_symbol_double_twist():
     for i in range(6):
@@ -33,7 +33,7 @@ def test_infinity_symbol_double_twist():
                            edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'a')])
         sg1.project()
         sgd1 = sg1.create_spatial_graph_diagram()
-        sgd1.yamada_polynomial()
+        sgd1.normalized_yamada_polynomial()
 
 def test_double_crossing_single_edge():
     # TODO Implement this test.
@@ -56,4 +56,4 @@ def test_complicated_topology_1():
 
         sg1.project()
         sgd1 = sg1.create_spatial_graph_diagram()
-        sgd1.yamada_polynomial()
+        sgd1.normalized_yamada_polynomial()

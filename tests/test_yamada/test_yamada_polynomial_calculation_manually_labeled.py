@@ -1,6 +1,6 @@
 import networkx as nx
 from cypari import pari
-from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, Crossing, reverse_poly
+from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, Crossing, reverse_poly, normalize_yamada_polynomial
 
 
 
@@ -91,6 +91,8 @@ def test_spatial_graph_diagram_unknotted_theta_graph_2():
 
 
 def test_yamada_polynomial_unknotted_theta_graph_1():
+    A = pari('A')
+
     a, b = Vertex(3, 'a'), Vertex(3, 'b')
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
     a[0], a[1], a[2] = e0[0], e1[0], e2[0]
@@ -99,7 +101,9 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
 
     T = nx.MultiGraph(3 * [(0, 1)])
 
-    assert D._yamada_polynomial() == h_poly(T)
+    assert D.yamada_polynomial() == h_poly(T)
+
+    assert D.normalized_yamada_polynomial() == normalize_yamada_polynomial( -A ** 4 - A ** 3 - 2 * A ** 2 - A - 1)
 
 
 def test_yamada_polynomial_infinity_symbol_1():
@@ -107,7 +111,7 @@ def test_yamada_polynomial_infinity_symbol_1():
     C = Crossing('X')
     C[0], C[2] = C[1], C[3]
     D = SpatialGraphDiagram([C])
-    assert D.yamada_polynomial() == -A**2 - A - 1
+    assert D.normalized_yamada_polynomial() == normalize_yamada_polynomial(-A ** 2 - A - 1)
 
 
 def test_yamada_polynomial_infinity_symbol_2():
@@ -115,7 +119,7 @@ def test_yamada_polynomial_infinity_symbol_2():
     C = Crossing('X')
     C[1], C[3] = C[2], C[0]
     D = SpatialGraphDiagram([C])
-    assert D.yamada_polynomial() == -A**2 - A - 1
+    assert D.normalized_yamada_polynomial() == normalize_yamada_polynomial(-A ** 2 - A - 1)
 
 
 def test_yamada_polynomial_theta_2_graph():
@@ -137,7 +141,7 @@ def test_yamada_polynomial_theta_2_graph():
 
     assert nx.is_isomorphic(G, T)
 
-    assert D.yamada_polynomial() == A**12 - A**8 - A**6 - A**4 - A**3 - A**2 - A - 1
+    assert D.normalized_yamada_polynomial() == normalize_yamada_polynomial(A ** 12 - A ** 8 - A ** 6 - A ** 4 - A ** 3 - A ** 2 - A - 1)
 
 
 def test_yamada_polynomial_omega_2_graph():
@@ -159,7 +163,7 @@ def test_yamada_polynomial_omega_2_graph():
     G = D.underlying_graph()
     assert nx.is_isomorphic(G, nx.complete_graph(4))
 
-    assert D.yamada_polynomial() == A**-5 + A**-4 + A**-3 + A**-2 + A**-1 - 1 + A - 2*A**2 + A**3 - A**4 + A**5 + A**6 + A**8
+    assert D.normalized_yamada_polynomial() == normalize_yamada_polynomial(A ** -5 + A ** -4 + A ** -3 + A ** -2 + A ** -1 - 1 + A - 2 * A ** 2 + A ** 3 - A ** 4 + A ** 5 + A ** 6 + A ** 8)
 
 # TODO Implement tests for get_coefficients_and_exponents
 
