@@ -41,21 +41,26 @@ np.random.seed(0)
 # print("Yamada Polynomial:", sgd1.normalized_yamada_polynomial())
 
 
-A = pari('A')
+a = pari('A')
 
-a, b, c, d = [Vertex(3, L) for L in 'abcd']
-X, Y, Z = [Crossing(L) for L in 'XYZ']
-a[0], a[1], a[2] = d[0], b[2], X[2]
-b[0], b[1] = c[0], X[3]
-c[1], c[2] = d[2], Z[0]
-d[1] = Z[1]
-X[0], X[1] = Y[3], Y[2]
-Y[0], Y[1] = Z[3], Z[2]
-D = SpatialGraphDiagram([a, b, c, d, X, Y, Z])
-G = D.underlying_graph()
+va = Vertex(3, 'a')
+vb = Vertex(3, 'b')
+vc = Vertex(4, 'c')
+vd = Vertex(4, 'd')
 
-expected = A ** -5 + A ** -4 + A ** -3 + A ** -2 + A ** -1 - 1 + A - 2 * A ** 2 + A ** 3 - A ** 4 + A ** 5 + A ** 6 + A ** 8
+va[2] = vc[0]
+va[1] = vd[1]
+va[0] = vb[2]
 
-yp = D.yamada_polynomial()
+vb[0] = vc[3]
+vb[1] = vd[2]
 
-nyp = D.normalized_yamada_polynomial()
+vc[1] = vd[0]
+vc[2] = vd[3]
+
+D = SpatialGraphDiagram([va, vb, vc, vd])
+
+expected_normalized_yamada_polynomial = normalize_yamada_polynomial(
+    -1 * a ** 4 - 3 * a ** 3 - 7 * a ** 2 - 8 * a - 10 - 8 * a ** (-1) - 7 * a ** (-2) - 3 * a ** (-3) - a ** (-4))
+
+assert D.normalized_yamada_polynomial() == expected_normalized_yamada_polynomial

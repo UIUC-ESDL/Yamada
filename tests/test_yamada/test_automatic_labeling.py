@@ -14,7 +14,6 @@ def test_unknot():
         sgd1.normalized_yamada_polynomial()
 
 
-
 def test_infinity_symbol_single_twist():
     np.random.seed(0)
 
@@ -24,6 +23,7 @@ def test_infinity_symbol_single_twist():
     sg1.project()
     sgd1 = sg1.create_spatial_graph_diagram()
     sgd1.normalized_yamada_polynomial()
+
 
 def test_infinity_symbol_double_twist():
     for i in range(6):
@@ -35,16 +35,20 @@ def test_infinity_symbol_double_twist():
         sgd1 = sg1.create_spatial_graph_diagram()
         sgd1.normalized_yamada_polynomial()
 
+
 def test_double_crossing_single_edge():
     # TODO Implement this test.
     pass
+
 
 def test_triple_crossing_single_edge():
     # TODO Implement this test.
     pass
 
+
 def test_quadrivalent_node():
     pass
+
 
 def test_complicated_topology_1():
 
