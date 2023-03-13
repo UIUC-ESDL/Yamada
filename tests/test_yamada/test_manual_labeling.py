@@ -7,7 +7,6 @@ from cypari import pari
 from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
     Crossing, reverse_poly, normalize_yamada_polynomial
 
-
 def test_has_cut_edge_1():
     g = nx.MultiGraph(nx.barbell_graph(3, 0))
     assert has_cut_edge(g)
