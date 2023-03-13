@@ -28,6 +28,11 @@ dependencies = [
 "sympy"
 ]
 
+[tool.pytest.ini_options]
+pythonpath = [
+  ".","tests/",
+]
+
 [project.urls]
-"Homepage" = "https://github.com/SPI2Py/Yamada"
-"Bug Tracker" = "https://github.com/SPI2Py/Yamada/issues"
+"Homepage" = "https://github.com/Chad-Peterson/Yamada"
+"Bug Tracker" = "https://github.com/Chad-Peterson/Yamada/issues"
