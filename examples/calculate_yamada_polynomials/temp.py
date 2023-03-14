@@ -76,6 +76,7 @@ for i in range(6):
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
     sg.project()
+    sg.plot()
     sgd = sg.create_spatial_graph_diagram()
 
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
