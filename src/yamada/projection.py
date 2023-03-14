@@ -395,6 +395,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         self.project_node_positions()
 
         # Initialize attributes that are calculated later
+        self.crossings = None
         self.crossing_indices = None
         self.crossing_positions = None
         self.crossing_edge_pairs = None
@@ -460,8 +461,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
     def get_vertices_and_crossings_of_edge(self, edge):
         """
         Returns the vertices and crossings of an edge, ordered from left to right.
-
-        TODO IMPLEMENT!
         """
 
         # Get edge nodes and positions
@@ -608,13 +607,16 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         """
 
         sub_edge_pairs = []
-        edge_nodes_and_crossings = {}
 
+        edge_nodes_and_crossings = {}
         for edge in self.edges:
-            edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge_with_positions(edge)
+            edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge(edge)
 
         for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
             print(edge, nodes_and_crossings)
+
+
+        # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
 
         nodes_and_crossings, edge_1_positions = zip(*reference_edge_nodes_and_crossings)
 
@@ -770,6 +772,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
     def cyclic_node_ordering_crossings(self):
         """
         Get the node ordering of the graph with crossings.
+
+        TODO Replace crossing indices with crossings
         """
         # Create a dictionary that contains the cyclical ordering of every crossing
         crossing_ordering_dict = {}
@@ -906,6 +910,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
                 crossing_num = 0
                 crossings = []
+                crossing_indices = []
                 crossing_edge_pairs = []
                 crossing_positions     = []
 
@@ -928,7 +933,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                         pass
 
                     elif type(crossing_position) is np.ndarray:
-                        crossings.append(crossing_num)
+                        crossings.append(str(crossing_num))
+                        crossing_indices.append(crossing_num)
                         crossing_num += 1
                         crossing_positions.append(crossing_position)
                         crossing_edge_pair = self.get_crossing_edge_pairs(line_1, line_2, crossing_position)
@@ -937,8 +943,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                     else:
                         raise NotImplementedError('There should be no else case.')
 
-
-                    self.crossing_indices = crossings
+                    self.crossings = crossings
+                    self.crossing_indices = crossing_indices
                     self.crossing_positions = crossing_positions
                     self.crossing_edge_pairs = crossing_edge_pairs
 

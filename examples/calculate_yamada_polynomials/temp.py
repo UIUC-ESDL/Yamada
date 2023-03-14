@@ -79,9 +79,10 @@ sg.project()
 sg.plot()
 # sgd = sg.create_spatial_graph_diagram()
 
-# sep = sg.get_sub_edge_pairs()
+sep = sg.get_sub_edge_pairs()
+print(sep)
 
-print(sg.get_vertices_and_crossings_of_edge(('a','b')))
+# print(sg.get_vertices_and_crossings_of_edge(('a','b')))
 
 
 # assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
