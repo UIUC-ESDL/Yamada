@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[10]:
 
 
 import networkx as nx
@@ -12,10 +12,11 @@ from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly
 
 # 
 
-# In[ ]:
+# In[11]:
 
 
 def test_spatial_graph_diagram_unknotted_theta_graph_1():
+
     va, vb = Vertex(3, 'a'), Vertex(3, 'b')
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
@@ -33,14 +34,18 @@ def test_spatial_graph_diagram_unknotted_theta_graph_1():
 
 # 
 
-# In[ ]:
+# In[12]:
 
 
 def test_spatial_graph_diagram_unknotted_theta_graph_2():
+
     va, vb = Vertex(3, 'a'), Vertex(3, 'b')
+
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
+
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
+
     sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
 
     g = sgd.projection_graph()
@@ -49,18 +54,25 @@ def test_spatial_graph_diagram_unknotted_theta_graph_2():
     assert nx.is_isomorphic(remove_valence_two_vertices(g), t)
 
 
+# ## Unknotted Theta Graph 1
+# 
+# ![Unknotted Theta Graph](./images/theta_graphs/unknotted_theta_graph.png)
 # 
 
-# In[ ]:
+# In[13]:
 
 
 def test_yamada_polynomial_unknotted_theta_graph_1():
+
     a = pari('A')
 
     va, vb = Vertex(3, 'a'), Vertex(3, 'b')
+
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
+
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
+
     sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
 
     t = nx.MultiGraph(3 * [(0, 1)])
@@ -70,35 +82,71 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
 
+# ## Unknotted Theta Graph 1 Alternate
+# 
+# ![Unknotted Theta Graph](./images/theta_graphs/unknotted_theta_graph_alternate.png)
+
+# In[14]:
+
+
+def test_yamada_polynomial_unknotted_theta_graph_2():
+
+    a = pari('A')
+
+    va, vb = Vertex(3, 'A'), Vertex(3, 'B')
+    vc, vd = Vertex(2, 'C'), Vertex(2, 'D')
+
+    va[1] = vc[0]
+    va[0] = vb[1]
+    va[2] = vd[0]
+
+    vb[0] = vc[1]
+    vb[2] = vd[1]
+
+    sgd = SpatialGraphDiagram([va, vb, vc, vd])
+
+    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
+
+
 # 
 
-# In[ ]:
+# In[15]:
 
 
-def test_yamada_polynomial_infinity_symbol_1():
+def test_unknot_single_twist_1():
+
     a = pari('A')
+
     x1 = Crossing('X')
+
     x1[0], x1[2] = x1[1], x1[3]
+
     sgd = SpatialGraphDiagram([x1])
+
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
 # 
 
-# In[ ]:
+# In[16]:
 
 
-def test_yamada_polynomial_infinity_symbol_2():
+def test_unknot_single_twist_2():
+
     a = pari('A')
+
     x1 = Crossing('X')
+
     x1[1], x1[3] = x1[2], x1[0]
+
     sgd = SpatialGraphDiagram([x1])
+
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
 # 
 
-# In[ ]:
+# In[17]:
 
 
 def test_yamada_polynomial_theta_2_graph():
@@ -124,9 +172,11 @@ def test_yamada_polynomial_theta_2_graph():
         a ** 12 - a ** 8 - a ** 6 - a ** 4 - a ** 3 - a ** 2 - a - 1)
 
 
+# ## Omega 2 Graph
 # 
+# ![Omega 2 Graph](./images/omega_graphs/omega_2_graph.png)
 
-# In[ ]:
+# In[18]:
 
 
 def test_yamada_polynomial_omega_2_graph():

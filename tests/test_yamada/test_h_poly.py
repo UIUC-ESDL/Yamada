@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Pytest Examples
-
 # ## Importing the necessary functions
 
-# In[24]:
+# In[53]:
 
 
 import networkx as nx
 from cypari import pari
-from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
-    Crossing, reverse_poly, normalize_yamada_polynomial
+from yamada.calculation import h_poly
 
 
 # ## H Polynomials
@@ -20,7 +17,7 @@ from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly
 
 # 
 
-# In[ ]:
+# In[41]:
 
 
 def test_h_poly_1():
@@ -30,7 +27,7 @@ def test_h_poly_1():
 
 # 
 
-# In[ ]:
+# In[42]:
 
 
 def test_h_poly_2():
@@ -40,7 +37,7 @@ def test_h_poly_2():
 
 # 
 
-# In[ ]:
+# In[43]:
 
 
 def test_h_poly_3():
@@ -50,7 +47,7 @@ def test_h_poly_3():
 
 # 
 
-# In[ ]:
+# In[44]:
 
 
 def test_h_poly_4():
@@ -61,7 +58,7 @@ def test_h_poly_4():
 
 # 
 
-# In[ ]:
+# In[45]:
 
 
 def test_h_poly_5():
@@ -72,7 +69,7 @@ def test_h_poly_5():
 
 # 
 
-# In[ ]:
+# In[46]:
 
 
 def test_h_poly_6():
@@ -83,7 +80,7 @@ def test_h_poly_6():
 
 # 
 
-# In[ ]:
+# In[47]:
 
 
 def test_h_poly_7():
@@ -94,9 +91,9 @@ def test_h_poly_7():
 
 # ## Abstract Graph G1
 # 
-# ![Abstract Graph G1](./images/abstract_graph_G1.png)
+# ![Abstract Graph G1](./images/abstract_graphs/abstract_graph_G1.png)
 
-# In[25]:
+# In[48]:
 
 
 def test_h_poly_g1():
@@ -112,21 +109,24 @@ def test_h_poly_g1():
 
 # ## Abstract Graph G2
 # 
-# ![Abstract Graph G2](./images/abstract_graph_G2.png)
+# ![Abstract Graph G2](./images/abstract_graphs/abstract_graph_G2.png)
+# 
+# The graph G2 from Drobrynin and Vesnin.
+# 
+# Nodes: a, b, c
+# Edges: (a,b), (a,c), (a,c), (b,c), (b,b)
+# 
+# Does the paper's solution contain a typo? The final three terms are -4*a**(-1) - 2*a**(-3) - a**(-3) but
+# the last two terms could be simplified. I believe the middle term should be 2*a**(-2).
 
 # 
 
-# In[26]:
+# In[49]:
 
 
 def test_h_poly_g2():
     """
-    The graph G2 from Drobrynin and Vesnin.
-
     TODO Verify that the paper's solution is correct.
-
-    Does the paper's solution contain a typo? The final three terms are -4*a**(-1) - 2*a**(-3) - a**(-3) but
-    the last two terms could be simplified. I believe the middle term should be 2*a**(-2).
     """
     g2 = nx.MultiGraph()
     g2.add_nodes_from(['a', 'b', 'c'])
@@ -141,9 +141,9 @@ def test_h_poly_g2():
 
 # ## Abstract Graph G3
 # 
-# ![Abstract Graph G3](./images/abstract_graph_G3.png)
+# ![Abstract Graph G3](./images/abstract_graphs/abstract_graph_G3.png)
 
-# In[27]:
+# In[50]:
 
 
 def test_h_poly_g3():
@@ -163,9 +163,9 @@ def test_h_poly_g3():
 
 # ## Abstract Graph G4
 # 
-# ![Abstract Graph G4](./images/abstract_graph_G4.png)
+# ![Abstract Graph G4](./images/abstract_graphs/abstract_graph_G4.png)
 
-# In[28]:
+# In[51]:
 
 
 def test_h_poly_g4():
@@ -187,15 +187,15 @@ def test_h_poly_g4():
 
 # ## Abstract Graph G5
 # 
-# ![Abstract Graph G5](./images/abstract_graph_G5.png)
+# The graph G5 from Drobrynin and Vesnin which contains two quadrivalent vertices
+# 
+# ![Abstract Graph G5](./images/abstract_graphs/abstract_graph_G5.png)
 
-# In[29]:
+# In[52]:
 
 
 def test_h_poly_g5():
     """
-    The graph G5 from Drobrynin and Vesnin which contains two quadrivalent vertices
-
     TODO Figure out why solution does not match the paper's solution.
     """
 
