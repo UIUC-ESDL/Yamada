@@ -539,7 +539,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
             rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
-
         ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
 
         ccw_node_ordering = {}

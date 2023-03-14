@@ -37,9 +37,9 @@ print("Expected Order:", expected_order)
 
 print("Order Correct?", order == expected_order)
 
-# sgd = sg.create_spatial_graph_diagram()
+sgd = sg.create_spatial_graph_diagram()
 
-# print("Yamada Polynomial:", sgd.yamada_polynomial())
+print("Yamada Polynomial:", sgd.normalized_yamada_polynomial())
 
 
 
