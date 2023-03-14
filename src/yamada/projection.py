@@ -463,6 +463,50 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         """
         return len([edge for edge in self.edges if node in edge])
 
+    def get_projected_node_position(self, node):
+        """
+        Get the node position
+        TODO Validate
+        """
+        return self.projected_node_positions[self.nodes.index(node)]
+
+    def get_adjacent_nodes(self, reference_node):
+        """
+        Get the adjacent nodes to a given node.
+        TODO Validate
+        """
+        adjacent_nodes = []
+
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_nodes += [node for node in edge if node != reference_node]
+
+        return adjacent_nodes
+
+    def get_adjacent_nodes_projected_positions(self, reference_node):
+        """
+        Get the adjacent nodes to a given node.
+        TODO Validate
+        """
+        adjacent_nodes = self.get_adjacent_nodes(reference_node)
+
+        node_indices = [self.nodes.index(node) for node in adjacent_nodes]
+
+        return self.projected_node_positions[node_indices]
+
+    def get_adjacent_edges(self, reference_node):
+        """
+        Get the adjacent edges to a given node.
+        TODO Validate
+        """
+        adjacent_edges = []
+
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_edges.append(edge)
+
+        return adjacent_edges
+
     def cyclical_edge_order_vertex(self,
                                    reference_node,
                                    node_ordering_dict=None):
@@ -481,39 +525,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         reference_node_position = self.get_projected_node_position(reference_node)
 
         # Initialize lists to store the adjacent node and edge information
-        adjacent_nodes = []
-        adjacent_node_positions = []
-        adjacent_edges = []
-
-        # Get the adjacent edges
-        for edge in self.edges:
-            if reference_node == edge[0] or reference_node == edge[1]:
-                adjacent_edges.append(edge)
-
-        # Get the adjacent nodes and their positions
-        for edge in adjacent_edges:
-            nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge)
-            nodes, positions = zip(*nodes_and_crossings)
-
-            positions_list = [tuple(position) for position in positions]
-
-            reference_node_index = positions_list.index(tuple(reference_node_position))
-
-            # If the reference node is the first node in the edge
-            if reference_node_index == 0:
-                adjacent_node = nodes[reference_node_index + 1]
-                adjacent_nodes.append(adjacent_node)
-                adjacent_node_positions.append(positions[reference_node_index + 1])
-
-            # If the reference node is the last node in the edge
-            elif reference_node_index == len(nodes) - 1:
-                adjacent_node = nodes[reference_node_index - 1]
-                adjacent_nodes.append(adjacent_node)
-                adjacent_node_positions.append(positions[reference_node_index - 1])
-
-            else:
-                raise ValueError('Reference node is not the first or last node in the edge.')
-
+        adjacent_nodes          = self.get_adjacent_nodes(reference_node)
+        adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
 
         # Shift nodes to the origin
         shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
@@ -526,14 +539,14 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
             rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
-        # Sort the nodes in CCW order
-        sorted_index = np.argsort(rotations)
 
-        ccw_edge_ordering = {}
-        for edge, order in zip(adjacent_nodes, sorted_index):
-            ccw_edge_ordering[edge] = order
+        ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
 
-        node_ordering_dict[reference_node] = ccw_edge_ordering
+        ccw_node_ordering = {}
+        for node in ordered_nodes:
+            ccw_node_ordering[node] = ordered_nodes.index(node)
+
+        node_ordering_dict[reference_node] = ccw_node_ordering
 
         return node_ordering_dict
 
