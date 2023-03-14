@@ -159,7 +159,8 @@ class LinearAlgebra:
         return next(self.rotation_generator_object)
 
     @staticmethod
-    def rotate(positions, rotation):
+    def rotate(positions: np.ndarray,
+               rotation: np.ndarray) -> np.ndarray:
         """
         Rotates a set of points about the first 3D point in the array.
 
@@ -168,7 +169,7 @@ class LinearAlgebra:
 
         # Shift the object to origin
         reference_position = positions[0]
-        origin_positions = positions - reference_position
+        origin_positions   = positions - reference_position
 
         alpha, beta, gamma = rotation
 
@@ -199,7 +200,8 @@ class LinearAlgebra:
         return rotated_node_positions
 
     @staticmethod
-    def get_line_equation(p1, p2):
+    def get_line_equation(p1: np.ndarray,
+                          p2: np.ndarray) -> tuple[float, float]:
         """
         Get the line equation in the form y = mx + b
 
@@ -212,12 +214,16 @@ class LinearAlgebra:
         y = mx + b --> b = y - mx
         """
 
-        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
+        slope     = (p2[1] - p1[1]) / (p2[0] - p1[0])
         intercept = p1[1] - slope * p1[0]
 
         return slope, intercept
 
-    def get_line_segment_intersection(self, a, b, c, d):
+    def get_line_segment_intersection(self,
+                                      a: np.ndarray,
+                                      b: np.ndarray,
+                                      c: np.ndarray,
+                                      d: np.ndarray) -> np.ndarray:
         """
         Get the intersection point of two line segments, if it exists. Otherwise, return None.
 
@@ -457,7 +463,9 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         """
         return len([edge for edge in self.edges if node in edge])
 
-    def cyclical_edge_order_vertex(self, reference_node, node_ordering_dict=None):
+    def cyclical_edge_order_vertex(self,
+                                   reference_node,
+                                   node_ordering_dict=None):
         """
         Get the cyclical edge order for a given node.
 
@@ -526,7 +534,9 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         return node_ordering_dict
 
 
-    def cyclical_edge_order_crossing(self, crossing, node_ordering_dict=None):
+    def cyclical_edge_order_crossing(self,
+                                     crossing,
+                                     node_ordering_dict=None):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
@@ -653,7 +663,10 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         return node_ordering_dict
 
-    def get_crossing_edge_pairs(self, edge_1, edge_2, crossing_position):
+    def get_crossing_edge_pairs(self,
+                                edge_1,
+                                edge_2,
+                                crossing_position):
         """
         Get the order of the overlapping nodes in the two edges. First is under, second is over.
 
@@ -768,9 +781,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
-
-
-
 
 
                 # Third, Check nonadjacent edge pairs for validity.
