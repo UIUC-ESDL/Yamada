@@ -473,20 +473,24 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         which node is used as index zero, it is important that the node order is consistent.
         """
 
+        # If no node ordering dictionary is provided, use the default node ordering dictionary
         if node_ordering_dict is None:
             node_ordering_dict = {}
 
+        # Get the projected node positions
         reference_node_position = self.get_projected_node_position(reference_node)
 
+        # Initialize lists to store the adjacent node and edge information
         adjacent_nodes = []
         adjacent_node_positions = []
+        adjacent_edges = []
 
         # Get the adjacent edges
-        adjacent_edges = []
         for edge in self.edges:
             if reference_node == edge[0] or reference_node == edge[1]:
                 adjacent_edges.append(edge)
 
+        # Get the adjacent nodes and their positions
         for edge in adjacent_edges:
             nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge)
             nodes, positions = zip(*nodes_and_crossings)
