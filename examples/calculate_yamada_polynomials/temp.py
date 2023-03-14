@@ -4,6 +4,8 @@ from yamada.calculation import Vertex, Edge, Crossing, SpatialGraphDiagram, h_po
 import networkx as nx
 from cypari import pari
 
+# TODO Create GitHub workflow to run notebook conversion script before each commit (?)
+
 np.random.seed(0)
 
 # Quadrivalent Example

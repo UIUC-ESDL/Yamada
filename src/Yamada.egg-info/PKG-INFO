@@ -3,8 +3,8 @@ Name: Yamada
 Version: 0.0.2
 Summary: Calculate the Yamada polynomial of spatial topologies.
 Author-email: Chad Peterson <cp44@illinois.edu>
-Project-URL: Homepage, https://github.com/SPI2Py/Yamada
-Project-URL: Bug Tracker, https://github.com/SPI2Py/Yamada/issues
+Project-URL: Homepage, https://github.com/Chad-Peterson/Yamada
+Project-URL: Bug Tracker, https://github.com/Chad-Peterson/Yamada/issues
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent

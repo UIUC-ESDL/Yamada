@@ -25,7 +25,9 @@ dependencies = [
 "sphinx",
 "nbsphinx",
 "cypari~=2.4.1",
-"sympy"
+"sympy",
+"jupyter",
+"nbconvert",
 ]
 
 [tool.pytest.ini_options]

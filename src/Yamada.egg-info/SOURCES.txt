@@ -11,5 +11,4 @@ src/yamada/calculation.py
 src/yamada/data.py
 src/yamada/enumeration.py
 src/yamada/projection.py
-src/yamada/utilities.py
 src/yamada/visualization.py
