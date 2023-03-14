@@ -68,15 +68,20 @@ np.random.seed(0)
 
 a = pari('A')
 
-for i in range(6):
+# for i in range(6):
+#
+#     np.random.seed(0)
 
-    np.random.seed(0)
+sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+                  node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+                  edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+sg.project()
+sg.plot()
+# sgd = sg.create_spatial_graph_diagram()
 
-    sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-                      node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-    sg.project()
-    sg.plot()
-    sgd = sg.create_spatial_graph_diagram()
+# sep = sg.get_sub_edge_pairs()
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+print(sg.get_vertices_and_crossings_of_edge(('a','b')))
+
+
+# assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
