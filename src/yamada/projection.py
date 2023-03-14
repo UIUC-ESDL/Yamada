@@ -521,9 +521,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         else:
 
-            for edge in self.edges:
-
-
+            for edge in self.get_sub_edges():
 
                 if reference_node == edge[0] or reference_node == edge[1]:
                     adjacent_nodes += [node for node in edge if node != reference_node]
@@ -571,7 +569,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         reference_node_position = self.get_projected_node_position(reference_node)
 
         # Initialize lists to store the adjacent node and edge information
-        adjacent_nodes          = self.get_adjacent_nodes(reference_node)
+        adjacent_nodes          = self.get_adjacent_nodes(reference_node, include_crossings=True)
         adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
 
         # Shift nodes to the origin
@@ -977,9 +975,12 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         Create a diagram of the spatial graph.
         """
 
+        nodes_and_crossings = self.nodes + self.crossings
+
         # Create the vertex and crossing objects
         vertices = self.create_vertices()
         crossings = self.create_crossings()
+        vertices_and_crossings = vertices + crossings
 
         # Create a dictionary that contains the cyclical ordering of every node and crossing
         node_ordering_dict = self.cyclic_node_ordering_vertices()
@@ -987,77 +988,113 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
 
-        # for
+        for sub_edge in self.get_sub_edges():
+            node_a, node_b = sub_edge
 
+            node_a_index = nodes_and_crossings.index(node_a)
+            node_b_index = nodes_and_crossings.index(node_b)
+
+            vertex_a = vertices_and_crossings[node_a_index]
+            vertex_b = vertices_and_crossings[node_b_index]
+
+            if not vertex_a.already_assigned(vertex_b) and not vertex_b.already_assigned(vertex_a):
+
+                vertex_b_index_for_vertex_a = cyclic_ordering_dict[node_a][node_b]
+                vertex_a_index_for_vertex_b = cyclic_ordering_dict[node_b][node_a]
+
+                vertex_a[vertex_b_index_for_vertex_a] = vertex_b[vertex_a_index_for_vertex_b]
+
+            else:
+                raise ValueError('The vertices are already assigned.')
+
+
+
+
+            # # Only if not int which is crossing
+            # if type(adjacent_node) is not int:
+            #     vertex_1_index = self.nodes.index(node)
+            #     vertex_2_index = self.nodes.index(adjacent_node)
+            #
+            #     vertex_1 = vertices[vertex_1_index]
+            #     vertex_2 = vertices[vertex_2_index]
+            #
+            #     if not vertex_1.already_assigned(vertex_2):
+            #         adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
+            #         node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
+            #
+            #         vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+            # else:
+            #     pass
 
         # First, connect adjacent nodes that are not separated by a crossing
 
 
-        # todo raise already assigned error if already assigned
 
-        for node in self.nodes:
-
-            adjacent_nodes = list(node_ordering_dict[node].keys())
-
-            for adjacent_node in adjacent_nodes:
-
-
-                # Only if not int which is crossing
-                if type(adjacent_node) is not int:
-                    vertex_1_index = self.nodes.index(node)
-                    vertex_2_index = self.nodes.index(adjacent_node)
-
-                    vertex_1 = vertices[vertex_1_index]
-                    vertex_2 = vertices[vertex_2_index]
-
-                    if not vertex_1.already_assigned(vertex_2):
-
-                        adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
-                        node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
-
-                        vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
-                else:
-                    pass
+        # # todo raise already assigned error if already assigned
+        #
+        # for node in self.nodes:
+        #
+        #     adjacent_nodes = list(node_ordering_dict[node].keys())
+        #
+        #     for adjacent_node in adjacent_nodes:
+        #
+        #
+        #         # Only if not int which is crossing
+        #         if type(adjacent_node) is not int:
+        #             vertex_1_index = self.nodes.index(node)
+        #             vertex_2_index = self.nodes.index(adjacent_node)
+        #
+        #             vertex_1 = vertices[vertex_1_index]
+        #             vertex_2 = vertices[vertex_2_index]
+        #
+        #             if not vertex_1.already_assigned(vertex_2):
+        #
+        #                 adjacent_index_for_node = node_ordering_dict[node][adjacent_node]
+        #                 node_index_for_adjacent = node_ordering_dict[adjacent_node][node]
+        #
+        #                 vertex_1[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+        #         else:
+        #             pass
 
 
         # Second, connect nodes to adjoining crossings
 
-        if len(crossings) > 0:
-
-
-            # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
-            # Since one node can adjoin multiple crossings.
-
-            for crossing in self.crossings:
-
-                adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
-                # assign to both strings (vertices) and ints (crossings)
-
-                crossing_1_index = crossing  # Crossing name is the index
-                crossing_object = crossings[crossing_1_index]
-
-                for adjacent_node in adjacent_nodes:
-
-                    if type(adjacent_node) == str:
-                        vertex_2_index = self.nodes.index(adjacent_node)
-                        vertex_2 = vertices[vertex_2_index]
-
-                        if not crossing_object.already_assigned(vertex_2):
-                            adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
-                            node_index_for_adjacent = node_ordering_dict[adjacent_node][crossing]
-                            crossing_object[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
-
-                    elif type(adjacent_node) == int:
-                        crossing_2 = adjacent_node
-                        crossing_2_object = crossings[crossing_2]
-
-                        if not crossing.already_assigned(crossing_2):
-                            adjacent_index_for_crossing = crossing_ordering_dict[crossing][crossing_2]
-                            crossing_index_for_crossing_2 = node_ordering_dict[crossing_2][crossing]
-                            crossing_object[adjacent_index_for_crossing] = crossing_2_object[crossing_index_for_crossing_2]
-
-                    else:
-                        raise ValueError('Adjacent node must be a string or an integer.')
+        # if len(crossings) > 0:
+        #
+        #
+        #     # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
+        #     # Since one node can adjoin multiple crossings.
+        #
+        #     for crossing in self.crossings:
+        #
+        #         adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
+        #         # assign to both strings (vertices) and ints (crossings)
+        #
+        #         crossing_1_index = crossing  # Crossing name is the index
+        #         crossing_object = crossings[crossing_1_index]
+        #
+        #         for adjacent_node in adjacent_nodes:
+        #
+        #             if type(adjacent_node) == str:
+        #                 vertex_2_index = self.nodes.index(adjacent_node)
+        #                 vertex_2 = vertices[vertex_2_index]
+        #
+        #                 if not crossing_object.already_assigned(vertex_2):
+        #                     adjacent_index_for_node = crossing_ordering_dict[crossing][adjacent_node]
+        #                     node_index_for_adjacent = node_ordering_dict[adjacent_node][crossing]
+        #                     crossing_object[adjacent_index_for_node] = vertex_2[node_index_for_adjacent]
+        #
+        #             elif type(adjacent_node) == int:
+        #                 crossing_2 = adjacent_node
+        #                 crossing_2_object = crossings[crossing_2]
+        #
+        #                 if not crossing.already_assigned(crossing_2):
+        #                     adjacent_index_for_crossing = crossing_ordering_dict[crossing][crossing_2]
+        #                     crossing_index_for_crossing_2 = node_ordering_dict[crossing_2][crossing]
+        #                     crossing_object[adjacent_index_for_crossing] = crossing_2_object[crossing_index_for_crossing_2]
+        #
+        #             else:
+        #                 raise ValueError('Adjacent node must be a string or an integer.')
 
 
         inputs = vertices + crossings

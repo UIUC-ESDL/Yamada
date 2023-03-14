@@ -10,13 +10,6 @@ np.random.seed(0)
 
 
 
-# sgd = sg.create_spatial_graph_diagram()
-#
-# print("Yamada Polynomial:", sgd.normalized_yamada_polynomial())
-
-
-
-
 
 # Double-Crossing Single Edge Example
 # TODO Check more than one cross per edge (i.e., 2 and 3) works
@@ -45,17 +38,17 @@ np.random.seed(0)
 #
 #     np.random.seed(0)
 
-# sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-#                   node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-#                   edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-# sg.project()
-# sg.plot()
-# sgd = sg.create_spatial_graph_diagram()
+sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+                  node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+                  edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+sg.project()
+sg.plot()
+sgd = sg.create_spatial_graph_diagram()
 
 # sep = sg.get_sub_edges()
 # print(sep)
-
-# print(sg.get_vertices_and_crossings_of_edge(('a','b')))
+#
+# print(sg.get_vertices_and_crossings_of_edge(('a', 'b')))
 
 
 # assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
