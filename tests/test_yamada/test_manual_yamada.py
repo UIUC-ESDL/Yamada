@@ -1,7 +1,7 @@
-"""Test the calculation of the Yamada polynomial of a spatial graph diagram manually labeled.
+#!/usr/bin/env python
+# coding: utf-8
 
-
-"""
+# In[ ]:
 
 
 import networkx as nx
@@ -9,53 +9,10 @@ from cypari import pari
 from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
     Crossing, reverse_poly, normalize_yamada_polynomial
 
-def test_has_cut_edge_1():
-    g = nx.MultiGraph(nx.barbell_graph(3, 0))
-    assert has_cut_edge(g)
 
+# 
 
-def test_has_cut_edge_2():
-    g = nx.MultiGraph(nx.barbell_graph(3, 0))
-    g.add_edge(2, 3)
-    assert not has_cut_edge(g)
-
-
-def test_remove_valence_two_vertices():
-    g = nx.MultiGraph([(0, 1), (1, 2), (2, 0)])
-    c = remove_valence_two_vertices(g)
-    assert list(c.edges()) == [(0, 0)]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# In[ ]:
 
 
 def test_spatial_graph_diagram_unknotted_theta_graph_1():
@@ -74,6 +31,11 @@ def test_spatial_graph_diagram_unknotted_theta_graph_1():
     assert nx.is_isomorphic(remove_valence_two_vertices(g), t)
 
 
+# 
+
+# In[ ]:
+
+
 def test_spatial_graph_diagram_unknotted_theta_graph_2():
     va, vb = Vertex(3, 'a'), Vertex(3, 'b')
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
@@ -85,6 +47,11 @@ def test_spatial_graph_diagram_unknotted_theta_graph_2():
     t = nx.MultiGraph(3 * [(0, 1)])
 
     assert nx.is_isomorphic(remove_valence_two_vertices(g), t)
+
+
+# 
+
+# In[ ]:
 
 
 def test_yamada_polynomial_unknotted_theta_graph_1():
@@ -103,6 +70,11 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
 
+# 
+
+# In[ ]:
+
+
 def test_yamada_polynomial_infinity_symbol_1():
     a = pari('A')
     x1 = Crossing('X')
@@ -111,12 +83,22 @@ def test_yamada_polynomial_infinity_symbol_1():
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
+# 
+
+# In[ ]:
+
+
 def test_yamada_polynomial_infinity_symbol_2():
     a = pari('A')
     x1 = Crossing('X')
     x1[1], x1[3] = x1[2], x1[0]
     sgd = SpatialGraphDiagram([x1])
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+
+
+# 
+
+# In[ ]:
 
 
 def test_yamada_polynomial_theta_2_graph():
@@ -140,6 +122,11 @@ def test_yamada_polynomial_theta_2_graph():
 
     assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(
         a ** 12 - a ** 8 - a ** 6 - a ** 4 - a ** 3 - a ** 2 - a - 1)
+
+
+# 
+
+# In[ ]:
 
 
 def test_yamada_polynomial_omega_2_graph():
@@ -168,19 +155,4 @@ def test_yamada_polynomial_omega_2_graph():
     assert sgd.normalized_yamada_polynomial() == expected_normalized_yamada_polynomial
 
 
-
-
-
-# TODO Implement tests for get_coefficients_and_exponents
-
-def test_reverse_poly():
-    """
-
-    """
-
-    a = pari('A')
-
-    assert reverse_poly(a ** -1 + 2) == a + 2
-
-# TODO Implement tests for normalize_poly
-# def test_normalize_poly():
+# 
