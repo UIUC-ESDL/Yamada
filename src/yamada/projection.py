@@ -442,7 +442,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         if self.crossing_edge_pairs is not None:
 
-            for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossing_indices):
+            for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
                 if edge in edge_pair:
                     edge_crossings.append([crossing, position])
 
@@ -458,29 +458,32 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         return edge_crossings
 
-    def get_vertices_and_crossings_of_edge(self, edge):
+    def get_vertices_and_crossings_of_edge(self, reference_edge):
         """
         Returns the vertices and crossings of an edge, ordered from left to right.
         """
 
         # Get edge nodes and positions
-        edge_nodes          = [node for node in edge]
+        edge_nodes          = [node for node in reference_edge]
         edge_node_positions = self.get_projected_node_positions(edge_nodes)
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
         edge_crossing_positions = []
 
-        if self.crossing_edge_pairs is not None:
+        for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
+            if reference_edge in edge_pair:
+                edge_crossings.append(crossing)
+                edge_crossing_positions.append(position)
 
-            for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossing_indices):
-                if edge in edge_pair:
-                    edge_crossings.append(crossing)
-                    edge_crossing_positions.append(position)
+        if len(edge_crossings) > 0:
+            # Merge the vertices and crossings
+            adjacent_nodes     = edge_nodes + edge_crossings
+            adjacent_positions = np.vstack((edge_node_positions, edge_crossing_positions))
 
-        # Merge the vertices and crossings
-        adjacent_nodes     = edge_nodes + edge_crossings
-        adjacent_positions = np.vstack((edge_node_positions, edge_crossing_positions))
+        else:
+            adjacent_nodes     = edge_nodes
+            adjacent_positions = edge_node_positions
 
         # Order vertices and crossings from left to right by x position (i.e., ascending position index 0)
         ordered_nodes = [node for _, node in sorted(zip(adjacent_positions, adjacent_nodes), key=lambda pair: pair[0][0])]
@@ -598,47 +601,34 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             node_ordering_dict = self.cyclic_node_ordering_vertex(node, node_ordering_dict)
         return node_ordering_dict
 
-    def get_sub_edge_pairs(self):
+    def get_sub_edges(self):
         """
-        Sub-edge pairs constitute:
+        Sub-edges constitute:
         1. Edges that are not incident of a crossing (i.e., the edge is the sub-edge)
         2. When an edge is incident to a crossing(s), the edge is divided into one or more sub-edges depending on the
         number of crossings that the edge is incident to.
         """
 
-        sub_edge_pairs = []
-
+        # Get the nodes and crossings of each edge, ordered from left to right
         edge_nodes_and_crossings = {}
         for edge in self.edges:
             edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge(edge)
 
-        for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
-            print(edge, nodes_and_crossings)
-
-
+        # Subdivide each edge if necessary.
         # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
 
-        nodes_and_crossings, edge_1_positions = zip(*reference_edge_nodes_and_crossings)
+        sub_edges = []
 
-        # Find the index of the numpy array in a list
-        edge_1_positions_list = [tuple(position) for position in edge_1_positions]
-        edge_1_crossing_index = edge_1_positions_list.index(tuple(crossing_position))
+        for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
 
-        edge_1_left_node = nodes_and_crossings[edge_1_crossing_index - 1]
-        edge_1_right_node = nodes_and_crossings[edge_1_crossing_index + 1]
+            if len(nodes_and_crossings) == 2:
+                sub_edges.append(edge)
 
-        edge_1_left_node_position = edge_1_positions[edge_1_crossing_index - 1]
-        edge_1_right_node_position = edge_1_positions[edge_1_crossing_index + 1]
+            else:
+                sub_edges += [(nodes_and_crossings[i], nodes_and_crossings[i+1]) for i in range(len(nodes_and_crossings)-1)]
 
-        # Swap the left and right nodes if the left node is to the right of the right node
-        if edge_1_left_node_position[0] > edge_1_right_node_position[0]:
-            edge_1_left_node, edge_1_right_node = edge_1_right_node, edge_1_left_node
-            edge_1_left_node_position, edge_1_right_node_position = edge_1_right_node_position, edge_1_left_node_position
 
-        if edge_1_crossing_index == 0 or edge_1_crossing_index == len(edge_1_positions) - 1:
-            raise ValueError("Crossing is at the end of the edge. This is not supported.")
-
-        return adjacent_nodes_and_crossings
+        return sub_edges
 
     def cyclic_node_ordering_crossing(self,
                                       crossing,
@@ -657,8 +647,8 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             node_ordering_dict = {}
 
         # Get the edges that are connected to the crossing
-        edge_1, edge_2    = self.crossing_edge_pairs[crossing]
-        crossing_position = self.crossing_positions[crossing]
+        edge_1, edge_2    = self.crossing_edge_pairs[self.crossings.index(crossing)]
+        crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
         # Figure out which nodes and crossings directly adjoin the crossing
 
@@ -777,7 +767,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         """
         # Create a dictionary that contains the cyclical ordering of every crossing
         crossing_ordering_dict = {}
-        for crossing in self.crossing_indices:
+        for crossing in self.crossings:
             crossing_ordering_dict = self.cyclic_node_ordering_crossing(crossing, crossing_ordering_dict)
         return crossing_ordering_dict
 
@@ -1038,7 +1028,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             # Assumption, if a crossing adjoins a Vertex, and all other valencies are already assigned... no N/A
             # Since one node can adjoin multiple crossings.
 
-            for crossing in self.crossing_indices:
+            for crossing in self.crossings:
 
                 adjacent_nodes = list(crossing_ordering_dict[crossing].keys())
                 # assign to both strings (vertices) and ints (crossings)
