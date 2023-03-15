@@ -662,11 +662,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         edge_2_left_node      = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
         edge_2_right_node     = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
 
-        # edge_1_left_node_position = self.get_projected_node_position(edge_1_left_node)
-        # edge_1_right_node_position = self.get_projected_node_position(edge_1_right_node)
-        # edge_2_left_node_position = self.get_projected_node_position(edge_2_left_node)
-        # edge_2_right_node_position = self.get_projected_node_position(edge_2_right_node)
-
         # Get the vertices that the beginning and end of each edge
         # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
         # The 3D positions of the vertices are required to determine which edge is in front of the other.
@@ -675,13 +670,12 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         edge_2_left_vertex  = edge_2_nodes_and_crossings[0]
         edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
 
+        # If the left vertex of edge 1 is higher than the left vertex of edge 2:
+        # Edge 1 goes from top left to bottom right.
+        # Edge 2 goes from bottom left to top right.
         edge_1_left_vertex_position  = self.get_projected_node_position(edge_1_left_vertex)
-        edge_1_right_vertex_position = self.get_projected_node_position(edge_1_right_vertex)
         edge_2_left_vertex_position  = self.get_projected_node_position(edge_2_left_vertex)
-        edge_2_right_vertex_position = self.get_projected_node_position(edge_2_right_vertex)
 
-        # If the z position of the left node of edge 1 is greater than the z position of the left node of edge 2,
-        # then edge 1 goes from top left to bottom right, and edge 2 goes from bottom left to top right.
         if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
 
             top_left_vertex     = edge_1_left_vertex
@@ -710,9 +704,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             raise RuntimeError("The left vertices of the edges are at the same height. This should not happen.")
 
 
-        # Now figure out which edge is in front of the other.
-
-
+        # Now determine which edge is in front of the other.
 
 
         top_left_vertex_position_3d     = self.rotated_node_positions[self.nodes.index(top_left_vertex)]
@@ -732,25 +724,29 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                                                                   crossing_position[0],
                                                                   crossing_position[1])
 
-        crossing_order_dict = {}
-
         if y_crossing_tl_br == y_crossing_tr_bl:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
                              'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
-        elif y_crossing_tl_br > y_crossing_tr_bl:
-            # Top right edge is under and should be zero, then follow CCW rotation
-            crossing_order_dict[top_right_node] = 0
-            crossing_order_dict[top_left_node] = 1
-            crossing_order_dict[bottom_left_node] = 2
+
+        # Finally, assign cyclic edge ordering based on the relative positions of the edges.
+
+
+        crossing_order_dict = {}
+
+        # If the top right edge is under then it should be index zero; then follow CCW rotation
+        if y_crossing_tl_br > y_crossing_tr_bl:
+            crossing_order_dict[top_right_node]    = 0
+            crossing_order_dict[top_left_node]     = 1
+            crossing_order_dict[bottom_left_node]  = 2
             crossing_order_dict[bottom_right_node] = 3
 
+        # If the top left edge is under then it should be index zero; then follow CCW rotation
         elif y_crossing_tl_br < y_crossing_tr_bl:
-            # Top left edge is under and should be zero, then follow CCW rotation
-            crossing_order_dict[top_left_node] = 0
-            crossing_order_dict[bottom_left_node] = 1
+            crossing_order_dict[top_left_node]     = 0
+            crossing_order_dict[bottom_left_node]  = 1
             crossing_order_dict[bottom_right_node] = 2
-            crossing_order_dict[top_right_node] = 3
+            crossing_order_dict[top_right_node]    = 3
 
         else:
             raise NotImplementedError('There should be no else case.')
