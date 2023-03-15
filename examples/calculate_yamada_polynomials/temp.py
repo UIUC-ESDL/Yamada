@@ -13,20 +13,20 @@ np.random.seed(0)
 
 # Double-Crossing Single Edge Example
 # TODO Check more than one cross per edge (i.e., 2 and 3) works
-#
-# nodes = ['a', 'b', 'c', 'd', 'e']
-# node_positions = np.array([[0,0,0], [1,0,1], [-1,0,1], [-2,0,2], [0,1,3]])
-# edges = [('a', 'b'), ('a', 'c'), ('a', 'e'), ('c', 'd'), ('c', 'b'), ('d', 'b'), ('e','b')]
-#
-# sg = SpatialGraph(nodes=nodes,
-#                   node_positions=node_positions,
-#                   edges=edges)
-#
-# sg.project()
-# sg.plot()
-#
-# sgd = sg.create_spatial_graph_diagram()
-#
+
+nodes = ['a', 'b', 'c', 'd', 'e']
+node_positions = np.array([[0,0,0], [1,0,1], [-1,0,1], [-2,0,2], [0,1,3]])
+edges = [('a', 'b'), ('a', 'c'), ('a', 'e'), ('c', 'd'), ('c', 'b'), ('d', 'b'), ('e','b')]
+
+sg = SpatialGraph(nodes=nodes,
+                  node_positions=node_positions,
+                  edges=edges)
+
+sg.project()
+sg.plot()
+
+sgd = sg.create_spatial_graph_diagram()
+
 # print("Yamada Polynomial:", sgd.normalized_yamada_polynomial())
 
 
@@ -55,9 +55,10 @@ np.random.seed(0)
 
 
 
-sg = SpatialGraph(nodes=['a', 'b', 'c'],
-                  node_positions=np.array([[0, 0.5, 0], [-1, 0.5, 1], [1, 0, 0]]),
-                  edges=[('a', 'b'), ('b', 'c'), ('c', 'a')])
-
-sg.project()
-sgd = sg.create_spatial_graph_diagram()
+# sg = SpatialGraph(nodes=['a', 'b', 'c'],
+#                   node_positions=np.array([[0, 0.5, 0], [-1, 0.5, 1], [1, 0, 0]]),
+#                   edges=[('a', 'b'), ('b', 'c'), ('c', 'a')])
+#
+# sg.project()
+# sgd = sg.create_spatial_graph_diagram()
+# print(sgd.normalized_yamada_polynomial())
