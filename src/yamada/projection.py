@@ -656,10 +656,16 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         # Get the nodes that are adjacent to the crossing (whether a vertex or another crossing)
         crossing_index_edge_1 = edge_1_nodes_and_crossings.index(crossing)
         crossing_index_edge_2 = edge_2_nodes_and_crossings.index(crossing)
+
         edge_1_left_node      = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
         edge_1_right_node     = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
         edge_2_left_node      = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
         edge_2_right_node     = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
+
+        # edge_1_left_node_position = self.get_projected_node_position(edge_1_left_node)
+        # edge_1_right_node_position = self.get_projected_node_position(edge_1_right_node)
+        # edge_2_left_node_position = self.get_projected_node_position(edge_2_left_node)
+        # edge_2_right_node_position = self.get_projected_node_position(edge_2_right_node)
 
         # Get the vertices that the beginning and end of each edge
         # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
@@ -674,54 +680,55 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         edge_2_left_vertex_position  = self.get_projected_node_position(edge_2_left_vertex)
         edge_2_right_vertex_position = self.get_projected_node_position(edge_2_right_vertex)
 
-        edge_1_left_node_position  = self.get_projected_node_position(edge_1_left_node)
-        edge_1_right_node_position = self.get_projected_node_position(edge_1_right_node)
-        edge_2_left_node_position  = self.get_projected_node_position(edge_2_left_node)
-        edge_2_right_node_position = self.get_projected_node_position(edge_2_right_node)
-
-
-
-        # Step X: Assign cyclic node ordering
-
-
         # If the z position of the left node of edge 1 is greater than the z position of the left node of edge 2,
         # then edge 1 goes from top left to bottom right, and edge 2 goes from bottom left to top right.
         if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
-            top_left_edge = edge_1_left_vertex
-            bottom_left_edge = edge_2_left_vertex
-            top_right_edge = edge_2_right_vertex
-            bottom_right_edge = edge_1_right_vertex
+
+            top_left_vertex     = edge_1_left_vertex
+            bottom_left_vertex  = edge_2_left_vertex
+            top_right_vertex    = edge_2_right_vertex
+            bottom_right_vertex = edge_1_right_vertex
+
+            top_left_node       = edge_1_left_node
+            bottom_left_node    = edge_2_left_node
+            top_right_node      = edge_2_right_node
+            bottom_right_node   = edge_1_right_node
+
         elif edge_1_left_vertex_position[1] < edge_2_left_vertex_position[1]:
-            top_left_edge = edge_2_left_vertex
-            bottom_left_edge = edge_1_left_vertex
-            top_right_edge = edge_1_right_vertex
-            bottom_right_edge = edge_2_right_vertex
+
+            top_left_vertex     = edge_2_left_vertex
+            bottom_left_vertex  = edge_1_left_vertex
+            top_right_vertex    = edge_1_right_vertex
+            bottom_right_vertex = edge_2_right_vertex
+
+            top_left_node       = edge_2_left_node
+            bottom_left_node    = edge_1_left_node
+            top_right_node      = edge_1_right_node
+            bottom_right_node   = edge_2_right_node
+
         else:
             raise RuntimeError("The left vertices of the edges are at the same height. This should not happen.")
 
 
-        # Now figure out which one is in front
-        # Get the 3D positions of the nodes
-
-        nodes_and_crossings = self.nodes + self.crossings
-        nodes_and_crossings_positions = np.vstack((self.rotated_node_positions, self.crossing_positions))
-        projected_nodes_and_crossings_positions = nodes_and_crossings_positions[[0, 2]]
+        # Now figure out which edge is in front of the other.
 
 
-        top_left_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(top_left_edge)]
-        top_right_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(top_right_edge)]
-        bottom_left_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(bottom_left_edge)]
-        bottom_right_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(bottom_right_edge)]
+
+
+        top_left_vertex_position_3d     = self.rotated_node_positions[self.nodes.index(top_left_vertex)]
+        top_right_vertex_position_3d    = self.rotated_node_positions[self.nodes.index(top_right_vertex)]
+        bottom_left_vertex_position_3d  = self.rotated_node_positions[self.nodes.index(bottom_left_vertex)]
+        bottom_right_vertex_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_vertex)]
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
-        y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_edge_position_3d,
-                                                                  bottom_right_edge_position_3d,
+        y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_vertex_position_3d,
+                                                                  bottom_right_vertex_position_3d,
                                                                   crossing_position[0],
                                                                   crossing_position[1])
 
-        y_crossing_tr_bl = self.calculate_intermediate_y_position(top_right_edge_position_3d,
-                                                                  bottom_left_edge_position_3d,
+        y_crossing_tr_bl = self.calculate_intermediate_y_position(top_right_vertex_position_3d,
+                                                                  bottom_left_vertex_position_3d,
                                                                   crossing_position[0],
                                                                   crossing_position[1])
 
@@ -733,17 +740,17 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         elif y_crossing_tl_br > y_crossing_tr_bl:
             # Top right edge is under and should be zero, then follow CCW rotation
-            crossing_order_dict[top_right_edge] = 0
-            crossing_order_dict[top_left_edge] = 1
-            crossing_order_dict[bottom_left_edge] = 2
-            crossing_order_dict[bottom_right_edge] = 3
+            crossing_order_dict[top_right_node] = 0
+            crossing_order_dict[top_left_node] = 1
+            crossing_order_dict[bottom_left_node] = 2
+            crossing_order_dict[bottom_right_node] = 3
 
         elif y_crossing_tl_br < y_crossing_tr_bl:
             # Top left edge is under and should be zero, then follow CCW rotation
-            crossing_order_dict[top_left_edge] = 0
-            crossing_order_dict[bottom_left_edge] = 1
-            crossing_order_dict[bottom_right_edge] = 2
-            crossing_order_dict[top_right_edge] = 3
+            crossing_order_dict[top_left_node] = 0
+            crossing_order_dict[bottom_left_node] = 1
+            crossing_order_dict[bottom_right_node] = 2
+            crossing_order_dict[top_right_node] = 3
 
         else:
             raise NotImplementedError('There should be no else case.')
