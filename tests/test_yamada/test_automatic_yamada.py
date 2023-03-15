@@ -82,6 +82,32 @@ def test_unknot_double_twist():
         assert sgd1.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
+# ## The Unknot with four crossings along one edge
+# 
+# ![Unknot with four crossings](./images/unknot/unknot_four_crossings.png)
+
+# In[ ]:
+
+
+def test_unknot_four_crossings():
+
+    nodes = ['a', 'b', 'c', 'd', 'e','f','g']
+    node_positions = np.array([[0,0,0], [1,1,2], [2,0,0], [3,1,2], [4,0,0],[4,0,1],[0,0,1]])
+    edges = [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'g'), ('g','a')]
+
+    sg = SpatialGraph(nodes=nodes,
+                      node_positions=node_positions,
+                      edges=edges)
+
+    sg.project()
+
+    sgd = sg.create_spatial_graph_diagram()
+
+    a = pari('A')
+
+    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+
+
 # 
 
 # In[14]:
