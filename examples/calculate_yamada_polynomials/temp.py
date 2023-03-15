@@ -24,10 +24,10 @@ np.random.seed(0)
 #
 # sg.project()
 # sg.plot()
-
-# sgd1 = sg1.create_spatial_graph_diagram()
 #
-# print("Yamada Polynomial:", sgd1.normalized_yamada_polynomial())
+# sgd = sg.create_spatial_graph_diagram()
+#
+# print("Yamada Polynomial:", sgd.normalized_yamada_polynomial())
 
 
 # def test_unknot_single_twist():
@@ -38,12 +38,12 @@ np.random.seed(0)
 #
 #     np.random.seed(0)
 
-sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-                  node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                  edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-sg.project()
-sg.plot()
-sgd = sg.create_spatial_graph_diagram()
+# sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+#                   node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+#                   edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+# sg.project()
+# sg.plot()
+# sgd = sg.create_spatial_graph_diagram()
 
 # sep = sg.get_sub_edges()
 # print(sep)
@@ -52,3 +52,12 @@ sgd = sg.create_spatial_graph_diagram()
 
 
 # assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+
+
+
+sg = SpatialGraph(nodes=['a', 'b', 'c'],
+                  node_positions=np.array([[0, 0.5, 0], [-1, 0.5, 1], [1, 0, 0]]),
+                  edges=[('a', 'b'), ('b', 'c'), ('c', 'a')])
+
+sg.project()
+sgd = sg.create_spatial_graph_diagram()

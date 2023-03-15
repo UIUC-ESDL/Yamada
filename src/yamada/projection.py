@@ -644,6 +644,35 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         if node_ordering_dict is None:
             node_ordering_dict = {}
 
+        # # Get the projected node positions
+        # reference_node_position = self.get_projected_node_position(reference_node)
+        #
+        # # Initialize lists to store the adjacent node and edge information
+        # adjacent_nodes = self.get_adjacent_nodes(reference_node, include_crossings=True)
+        # adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
+        #
+        # # Shift nodes to the origin
+        # shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
+        #
+        # # Horizontal line (reference for angles)
+        # reference_vector = np.array([1, 0])
+        #
+        # rotations = []
+        #
+        # for shifted_adjacent_node_position in shifted_adjacent_node_positions:
+        #     rotations.append(
+        #         self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
+        #
+        # ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
+        #
+        # ccw_node_ordering = {}
+        # for node in ordered_nodes:
+        #     ccw_node_ordering[node] = ordered_nodes.index(node)
+        #
+        # node_ordering_dict[reference_node] = ccw_node_ordering
+
+
+
         # Get the edges that are connected to the crossing
         edge_1, edge_2    = self.crossing_edge_pairs[self.crossings.index(crossing)]
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
@@ -770,7 +799,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         return crossing_ordering_dict
 
 
-    def get_crossing_edge_pairs(self,
+    def get_crossing_edge_order(self,
                                 edge_1,
                                 edge_2,
                                 crossing_position):
@@ -826,6 +855,49 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         overlap_order = tuple(overlap_order)
 
         return overlap_order
+
+    # def get_crossings(self):
+    #
+    #     crossing_num = 0
+    #     crossings = []
+    #     crossing_indices = []
+    #     crossing_edge_pairs = []
+    #     crossing_positions = []
+    #
+    #     nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
+    #                               edge_pair not in self.adjacent_edge_pairs]
+    #
+    #     for line_1, line_2 in nonadjacent_edge_pairs:
+    #
+    #         a = self.projected_node_positions[self.nodes.index(line_1[0])]
+    #         b = self.projected_node_positions[self.nodes.index(line_1[1])]
+    #         c = self.projected_node_positions[self.nodes.index(line_2[0])]
+    #         d = self.projected_node_positions[self.nodes.index(line_2[1])]
+    #
+    #         crossing_position = self.get_line_segment_intersection(a, b, c, d)
+    #
+    #         if crossing_position is np.inf:
+    #             raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
+    #
+    #         elif crossing_position is None:
+    #             pass
+    #
+    #         elif type(crossing_position) is np.ndarray:
+    #             crossings.append(str(crossing_num))
+    #             crossing_indices.append(crossing_num)
+    #             crossing_num += 1
+    #             crossing_positions.append(crossing_position)
+    #             crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
+    #             crossing_edge_pairs.append(crossing_edge_pair)
+    #
+    #         else:
+    #             raise NotImplementedError('There should be no else case.')
+    #
+    #     self.crossings = crossings
+    #     self.crossing_indices = crossing_indices
+    #     self.crossing_positions = crossing_positions
+    #     self.crossing_edge_pairs = crossing_edge_pairs
+
 
     def project(self):
         """
@@ -925,16 +997,16 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                         crossing_indices.append(crossing_num)
                         crossing_num += 1
                         crossing_positions.append(crossing_position)
-                        crossing_edge_pair = self.get_crossing_edge_pairs(line_1, line_2, crossing_position)
+                        crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
                         crossing_edge_pairs.append(crossing_edge_pair)
 
                     else:
                         raise NotImplementedError('There should be no else case.')
 
-                    self.crossings = crossings
-                    self.crossing_indices = crossing_indices
-                    self.crossing_positions = crossing_positions
-                    self.crossing_edge_pairs = crossing_edge_pairs
+                self.crossings = crossings
+                self.crossing_indices = crossing_indices
+                self.crossing_positions = crossing_positions
+                self.crossing_edge_pairs = crossing_edge_pairs
 
                 # If we made it this far without raising an exception, then we have a valid projection
                 valid_projection = True
