@@ -396,7 +396,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Initialize attributes that are calculated later
         self.crossings = None
-        self.crossing_indices = None
         self.crossing_positions = None
         self.crossing_edge_pairs = None
 
@@ -421,42 +420,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 adjacent_edge_pairs += [(edge_1, edge_2)]
 
         return adjacent_edge_pairs
-
-
-    def get_vertices_and_crossings_of_edge_with_positions(self, edge):
-        """
-        Returns the vertices and crossings of an edge, ordered from left to right.
-
-        TODO Rename variable... edge crossings?
-        """
-
-        # Get edge nodes
-        edge_nodes = [node for node in edge]
-
-        # Get node positions
-        edge_node_positions = self.get_projected_node_positions(edge_nodes)
-
-        # Unordered Edge Crossings
-        edge_crossings = []
-
-
-        if self.crossing_edge_pairs is not None:
-
-            for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
-                if edge in edge_pair:
-                    edge_crossings.append([crossing, position])
-
-            # Order edge crossings from left to right
-            # Since we are using straight lines, we can simply compare x-coordinates.
-            edge_crossings = [edge_crossing for _, edge_crossing in sorted(zip(self.crossing_positions, edge_crossings), key=lambda pair: pair[0][0])]
-
-        # Prepend the first node
-        edge_crossings.insert(0, [edge_nodes[0], edge_node_positions[0]])
-
-        # Add the final node
-        edge_crossings.append([edge_nodes[1], edge_node_positions[1]])
-
-        return edge_crossings
 
     def get_vertices_and_crossings_of_edge(self, reference_edge):
         """
@@ -538,18 +501,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         node_indices = [self.nodes.index(node) for node in adjacent_nodes]
 
         return self.projected_node_positions[node_indices]
-
-    def get_adjacent_edges(self, reference_node):
-        """
-        Get the adjacent edges to a given node.
-        """
-        adjacent_edges = []
-
-        for edge in self.edges:
-            if reference_node == edge[0] or reference_node == edge[1]:
-                adjacent_edges.append(edge)
-
-        return adjacent_edges
 
     def cyclic_node_ordering_vertex(self,
                                     reference_node,
@@ -829,7 +780,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         crossing_num = 0
         crossings = []
-        crossing_indices = []
         crossing_edge_pairs = []
         crossing_positions = []
 
@@ -853,7 +803,6 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
             elif type(crossing_position) is np.ndarray:
                 crossings.append(str(crossing_num))
-                crossing_indices.append(crossing_num)
                 crossing_num += 1
                 crossing_positions.append(crossing_position)
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
@@ -862,7 +811,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             else:
                 raise NotImplementedError('There should be no else case.')
 
-        return crossings, crossing_indices, crossing_positions, crossing_edge_pairs
+        return crossings, crossing_positions, crossing_edge_pairs
 
 
     def project(self):
@@ -934,7 +883,7 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                 # between endpoints.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
-                self.crossings, self.crossing_indices, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
+                self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
                 # If we made it this far without raising an exception, then we have a valid projection
                 valid_projection = True
