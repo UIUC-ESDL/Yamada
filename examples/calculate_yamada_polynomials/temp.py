@@ -14,9 +14,13 @@ np.random.seed(0)
 # Double-Crossing Single Edge Example
 # TODO Check more than one cross per edge (i.e., 2 and 3) works
 
-nodes = ['a', 'b', 'c', 'd', 'e']
-node_positions = np.array([[0,0,0], [1,0,1], [-1,0,1], [-2,0,2], [0,1,3]])
-edges = [('a', 'b'), ('a', 'c'), ('a', 'e'), ('c', 'd'), ('c', 'b'), ('d', 'b'), ('e','b')]
+# nodes = ['a', 'b', 'c', 'd', 'e']
+# node_positions = np.array([[0,0,0], [1,0,1], [-1,0,1], [-2,0,2], [0,1,3]])
+# edges = [('a', 'b'), ('a', 'c'), ('a', 'e'), ('c', 'd'), ('c', 'b'), ('d', 'b'), ('e','b')]
+
+nodes = ['a', 'b', 'c', 'd', 'e','f','g']
+node_positions = np.array([[0,0,0], [1,1,2], [2,0,0], [3,1,2], [4,0,0],[4,0,1],[0,0,1]])
+edges = [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'g'), ('g','a')]
 
 sg = SpatialGraph(nodes=nodes,
                   node_positions=node_positions,
