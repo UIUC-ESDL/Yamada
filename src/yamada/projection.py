@@ -645,131 +645,75 @@ class SpatialGraph(InputValidation, LinearAlgebra):
             node_ordering_dict = {}
 
 
-        # # Initialize lists to store the adjacent node and edge information
-        # adjacent_nodes = self.get_adjacent_nodes(reference_node, include_crossings=True)
-        # adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
-        #
-        # # Shift nodes to the origin
-        # shifted_adjacent_node_positions = adjacent_node_positions - reference_node_position
-        #
-        # # Horizontal line (reference for angles)
-        # reference_vector = np.array([1, 0])
-        #
-        # rotations = []
-        #
-        # for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-        #     rotations.append(
-        #         self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
-        #
-        # ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
-        #
-        # ccw_node_ordering = {}
-        # for node in ordered_nodes:
-        #     ccw_node_ordering[node] = ordered_nodes.index(node)
-        #
-        # node_ordering_dict[reference_node] = ccw_node_ordering
-
-
-        # Step 1: Identify the associated edges and where their projections intersect
+        # Determine which edge goes from top left to bottom right and which edge goes from bottom left to top right.
 
 
         # Get the edges that are connected to the crossing
-        edge_1, edge_2    = self.crossing_edge_pairs[self.crossings.index(crossing)]
-        # node_a, node_b = edge_1
-        # node_c, node_d = edge_2
-        crossing_position = self.crossing_positions[self.crossings.index(crossing)]
-
+        edge_1, edge_2             = self.crossing_edge_pairs[self.crossings.index(crossing)]
         edge_1_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_1)
         edge_2_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_2)
 
+        # Get the nodes that are adjacent to the crossing (whether a vertex or another crossing)
         crossing_index_edge_1 = edge_1_nodes_and_crossings.index(crossing)
         crossing_index_edge_2 = edge_2_nodes_and_crossings.index(crossing)
+        edge_1_left_node      = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
+        edge_1_right_node     = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
+        edge_2_left_node      = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
+        edge_2_right_node     = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
 
-        # Get the nodes that are adjacent to the crossing (whether a vertex or another crossing)
-        edge_1_left_node = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
-        edge_1_right_node = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
-        edge_2_left_node = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
-        edge_2_right_node = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
+        # Get the vertices that the beginning and end of each edge
+        # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
+        # The 3D positions of the vertices are required to determine which edge is in front of the other.
+        edge_1_left_vertex  = edge_1_nodes_and_crossings[0]
+        edge_1_right_vertex = edge_1_nodes_and_crossings[-1]
+        edge_2_left_vertex  = edge_2_nodes_and_crossings[0]
+        edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
 
-        # Get the positions of the nodes that are adjacent to the crossing (whether a vertex or another crossing)
-        edge_1_left_node_position = self.get_projected_node_position(edge_1_left_node)
+        edge_1_left_vertex_position  = self.get_projected_node_position(edge_1_left_vertex)
+        edge_1_right_vertex_position = self.get_projected_node_position(edge_1_right_vertex)
+        edge_2_left_vertex_position  = self.get_projected_node_position(edge_2_left_vertex)
+        edge_2_right_vertex_position = self.get_projected_node_position(edge_2_right_vertex)
+
+        edge_1_left_node_position  = self.get_projected_node_position(edge_1_left_node)
         edge_1_right_node_position = self.get_projected_node_position(edge_1_right_node)
-        edge_2_left_node_position = self.get_projected_node_position(edge_2_left_node)
+        edge_2_left_node_position  = self.get_projected_node_position(edge_2_left_node)
         edge_2_right_node_position = self.get_projected_node_position(edge_2_right_node)
-
-
-        # Figure out which nodes and crossings directly adjoin the crossing
-        # Edge 1: What is to the left and right of this crossing?
-        # edge_1_nodes_and_crossings = self.get_vertices_and_crossings_of_edge_with_positions(edge_1)
-        # edge_1_nodes, edge_1_positions = zip(*edge_1_nodes_and_crossings)
-        # Find the index of the numpy array in a list
-        # edge_1_positions_list = [tuple(position) for position in edge_1_positions]
-        # edge_1_crossing_index = edge_1_positions_list.index(tuple(crossing_position))
-        # edge_1_left_node = edge_1_nodes[edge_1_crossing_index - 1]
-        # edge_1_right_node = edge_1_nodes[edge_1_crossing_index + 1]
-        # edge_1_left_node_position = edge_1_positions[edge_1_crossing_index - 1]
-        # edge_1_right_node_position = edge_1_positions[edge_1_crossing_index + 1]
-        # Swap the left and right nodes if the left node is to the right of the right node
-        # if edge_1_left_node_position[0] > edge_1_right_node_position[0]:
-        #     edge_1_left_node, edge_1_right_node = edge_1_right_node, edge_1_left_node
-        #     edge_1_left_node_position, edge_1_right_node_position = edge_1_right_node_position, edge_1_left_node_position
-        # if edge_1_crossing_index == 0 or edge_1_crossing_index == len(edge_1_positions) - 1:
-        #     raise ValueError("Crossing is at the end of the edge. This is not supported.")
-        # Edge 2: What is to the left and right of this crossing?
-        # edge_2_nodes_and_crossings = self.get_vertices_and_crossings_of_edge_with_positions(edge_2)
-
-        edge_2_nodes, edge_2_positions = zip(*edge_2_nodes_and_crossings)
-
-        edge_2_positions_list = [tuple(position) for position in edge_2_positions]
-        edge_2_crossing_index = edge_2_positions_list.index(tuple(crossing_position))
-
-        edge_2_left_node = edge_2_nodes[edge_2_crossing_index - 1]
-        edge_2_right_node = edge_2_nodes[edge_2_crossing_index + 1]
-
-
-        edge_2_left_node_position = edge_2_positions[edge_2_crossing_index - 1]
-        edge_2_right_node_position = edge_2_positions[edge_2_crossing_index + 1]
-
-        # Swap "left" and "right" if indexing went negative
-        if edge_2_left_node_position[0] > edge_2_right_node_position[0]:
-            edge_2_left_node, edge_2_right_node = edge_2_right_node, edge_2_left_node
-            edge_2_left_node_position, edge_2_right_node_position = edge_2_right_node_position, edge_2_left_node_position
-
-        if edge_2_crossing_index == 0 or edge_2_crossing_index == len(edge_2_positions) - 1:
-            raise ValueError("Crossing is at the end of the edge. This is not supported.")
 
 
 
         # Step X: Assign cyclic node ordering
 
 
-
-        # Figure out which left edge is TL and which is BL
-        if edge_1_left_node_position[1] > edge_2_left_node_position[1]:
-            top_left_edge = edge_1_left_node
-            bottom_left_edge = edge_2_left_node
-            top_right_edge = edge_2_right_node
-            bottom_right_edge = edge_1_right_node
-        elif edge_1_left_node_position[1] < edge_2_left_node_position[1]:
-            top_left_edge = edge_2_left_node
-            bottom_left_edge = edge_1_left_node
-            top_right_edge = edge_1_right_node
-            bottom_right_edge = edge_2_right_node
+        # If the z position of the left node of edge 1 is greater than the z position of the left node of edge 2,
+        # then edge 1 goes from top left to bottom right, and edge 2 goes from bottom left to top right.
+        if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
+            top_left_edge = edge_1_left_vertex
+            bottom_left_edge = edge_2_left_vertex
+            top_right_edge = edge_2_right_vertex
+            bottom_right_edge = edge_1_right_vertex
+        elif edge_1_left_vertex_position[1] < edge_2_left_vertex_position[1]:
+            top_left_edge = edge_2_left_vertex
+            bottom_left_edge = edge_1_left_vertex
+            top_right_edge = edge_1_right_vertex
+            bottom_right_edge = edge_2_right_vertex
         else:
-            raise ValueError("Top left edge cannot be determined.")
-
+            raise RuntimeError("The left vertices of the edges are at the same height. This should not happen.")
 
 
         # Now figure out which one is in front
         # Get the 3D positions of the nodes
 
+        nodes_and_crossings = self.nodes + self.crossings
+        nodes_and_crossings_positions = np.vstack((self.rotated_node_positions, self.crossing_positions))
+        projected_nodes_and_crossings_positions = nodes_and_crossings_positions[[0, 2]]
 
 
-        top_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_left_edge)]
-        top_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(top_right_edge)]
-        bottom_left_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_left_edge)]
-        bottom_right_edge_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_edge)]
+        top_left_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(top_left_edge)]
+        top_right_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(top_right_edge)]
+        bottom_left_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(bottom_left_edge)]
+        bottom_right_edge_position_3d = nodes_and_crossings_positions[nodes_and_crossings.index(bottom_right_edge)]
 
+        crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
         y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_edge_position_3d,
                                                                   bottom_right_edge_position_3d,
