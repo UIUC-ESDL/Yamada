@@ -978,14 +978,17 @@ class SpatialGraph(InputValidation, LinearAlgebra):
 
         # Axis 1
 
-        ax1.set_xlim(-0.5, 1.5)
-        ax1.set_ylim(-0.5, 1.5)
-        ax1.set_zlim(-0.5, 1.5)
+        ax1.set_xlim(-1.5, 2)
+        ax1.set_ylim(-1.5, 2)
+        ax1.set_zlim(-1.5, 2)
 
         ax1.title.set_text('Spatial Graph')
-        ax1.xaxis.label.set_text('x')
-        ax1.yaxis.label.set_text('y')
-        ax1.zaxis.label.set_text('z')
+        # ax1.xaxis.label.set_text('x')
+        # ax1.yaxis.label.set_text('y')
+        # ax1.zaxis.label.set_text('z')
+
+        ax1.set_yticklabels([])
+        ax1.set_xticklabels([])
 
         # Axis 2
 
@@ -993,19 +996,22 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         ax2.xaxis.label.set_text('x')
         ax2.yaxis.label.set_text('z')
 
+        ax2.set_yticklabels([])
+        ax2.set_xticklabels([])
+
         # ax2.set_xlim(-0.5, 1.5)
         # ax2.set_ylim(-0.5, 1.5)
 
         # Axis 3
 
-        ax3.set_xlim(-0.5, 1.5)
-        ax3.set_ylim(-0.5, 1.5)
-        ax3.set_zlim(-0.5, 1.5)
+        ax3.set_xlim(-1.25, 2)
+        ax3.set_ylim(-1.25, 2)
+        ax3.set_zlim(-1.25, 2)
 
         ax3.title.set_text('Spatial Graph Rotated')
-        ax3.xaxis.label.set_text('x')
-        ax3.yaxis.label.set_text('y')
-        ax3.zaxis.label.set_text('z')
+        # ax3.xaxis.label.set_text('x')
+        # ax3.yaxis.label.set_text('y')
+        # ax3.zaxis.label.set_text('z')
 
         # Figure layout
         plt.tight_layout(pad=2, w_pad=7, h_pad=0)
