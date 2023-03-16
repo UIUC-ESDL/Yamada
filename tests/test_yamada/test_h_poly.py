@@ -180,7 +180,7 @@ def test_h_poly_g4():
     g4.add_edges_from([('a', 'b'), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('b', 'd'), ('c', 'd')])
 
     a = pari('A')
-    paper_h_poly = -a**4 - 3*a**3 - 7*a**2 - 8*a - 10 - 8*a**(-1) - 7*a**(-2) - 3*a**(-3) - a**(-4)
+    paper_h_poly = a**3 - 4*a**2 - 10*a + 12 - 10*a**(-1) + 4*a**(-2) - a**(-3)
 
     assert h_poly(g4) == paper_h_poly
 
@@ -204,7 +204,7 @@ def test_h_poly_g5():
     g5.add_edges_from([('a', 'c'), ('a', 'd'), ('a', 'b'), ('b', 'c'), ('b', 'd'), ('c', 'd'), ('c', 'd')])
 
     a = pari('A')
-    paper_h_poly = -1*a**4 - 3*a**3 - 7*a**2 - 8*a - 10 - 8*a**(-1) - 7*a**(-2) - 3*a**(-3) - a**(-4)
+    paper_h_poly = -a**4 - 3*a**3 - 7*a**2 - 8*a - 10 - 8*a**(-1) - 7*a**(-2) - 3*a**(-3) - a**(-4)
 
     assert h_poly(g5) == paper_h_poly
 

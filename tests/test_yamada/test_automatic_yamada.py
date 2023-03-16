@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[10]:
+# In[2]:
 
 
 import numpy as np
@@ -17,7 +17,7 @@ np.random.seed(0)
 # 
 # ![Infinity Symbol](./images/unknot/unknot.png)
 
-# In[11]:
+# In[3]:
 
 
 def test_unknot():
@@ -40,7 +40,7 @@ def test_unknot():
 # 
 # ![Infinity Symbol](./images/unknot/infinity_symbol_version_2.png)
 
-# In[12]:
+# In[4]:
 
 
 def test_unknot_single_twist():
@@ -64,7 +64,7 @@ def test_unknot_single_twist():
 # 
 # ![Unknot](./images/unknot/Unknot_double_twist.png)
 
-# In[13]:
+# In[5]:
 
 
 def test_unknot_double_twist():
@@ -84,9 +84,11 @@ def test_unknot_double_twist():
 
 # ## The Unknot with four crossings along one edge
 # 
+# The example tests to ensure that the calculator correctly handles the cyclic ordering of vertices and crossings so that it preserves the topology of the unknot.
+# 
 # ![Unknot with four crossings](./images/unknot/unknot_four_crossings.png)
 
-# In[ ]:
+# In[6]:
 
 
 def test_unknot_four_crossings():
@@ -110,7 +112,7 @@ def test_unknot_four_crossings():
 
 # 
 
-# In[14]:
+# In[7]:
 
 
 def test_double_crossing_single_edge():
@@ -120,7 +122,7 @@ def test_double_crossing_single_edge():
 
 # 
 
-# In[15]:
+# In[8]:
 
 
 def test_triple_crossing_single_edge():
@@ -130,7 +132,7 @@ def test_triple_crossing_single_edge():
 
 # 
 
-# In[16]:
+# In[9]:
 
 
 def test_quadrivalent_node():
