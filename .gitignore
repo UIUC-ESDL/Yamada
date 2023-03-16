@@ -7,3 +7,4 @@ dist/*
 SPI2Py.egg-info/*
 .vscode/
 /src/Yamada.egg-info/
+/src/Yamada.egg-info/*
