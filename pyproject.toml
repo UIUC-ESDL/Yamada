@@ -4,10 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Yamada"
-version = "0.0.2"
+version = "0.1.0"
 authors = [
   { name="Chad Peterson", email="cp44@illinois.edu" },
 ]
+
 description = "Calculate the Yamada polynomial of spatial topologies."
 readme = "README.md"
 requires-python = ">=3.7"
