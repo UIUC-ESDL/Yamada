@@ -7,7 +7,7 @@
 
 
 import numpy as np
-from yamada.projection import LinearAlgebra
+from yamada import LinearAlgebra
 
 
 # ## Test calculate_counter_clockwise_angle

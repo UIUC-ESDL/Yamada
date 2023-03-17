@@ -6,7 +6,7 @@
 
 import networkx as nx
 from cypari import pari
-from yamada.calculation import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
+from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
     Crossing, reverse_poly, normalize_yamada_polynomial
 
 def test_has_cut_edge_1():

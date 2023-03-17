@@ -3,12 +3,12 @@
 
 # ## Importing the necessary functions
 
-# In[53]:
+# In[1]:
 
 
 import networkx as nx
 from cypari import pari
-from yamada.calculation import h_poly
+from yamada import h_poly
 
 
 # ## H Polynomials
@@ -17,7 +17,7 @@ from yamada.calculation import h_poly
 
 # 
 
-# In[41]:
+# In[2]:
 
 
 def test_h_poly_1():
@@ -27,7 +27,7 @@ def test_h_poly_1():
 
 # 
 
-# In[42]:
+# In[3]:
 
 
 def test_h_poly_2():
@@ -37,7 +37,7 @@ def test_h_poly_2():
 
 # 
 
-# In[43]:
+# In[4]:
 
 
 def test_h_poly_3():
@@ -47,7 +47,7 @@ def test_h_poly_3():
 
 # 
 
-# In[44]:
+# In[5]:
 
 
 def test_h_poly_4():
@@ -58,7 +58,7 @@ def test_h_poly_4():
 
 # 
 
-# In[45]:
+# In[6]:
 
 
 def test_h_poly_5():
@@ -69,7 +69,7 @@ def test_h_poly_5():
 
 # 
 
-# In[46]:
+# In[7]:
 
 
 def test_h_poly_6():
@@ -80,7 +80,7 @@ def test_h_poly_6():
 
 # 
 
-# In[47]:
+# In[8]:
 
 
 def test_h_poly_7():
@@ -93,7 +93,7 @@ def test_h_poly_7():
 # 
 # ![Abstract Graph G1](./images/abstract_graphs/abstract_graph_G1.png)
 
-# In[48]:
+# In[9]:
 
 
 def test_h_poly_g1():
@@ -121,7 +121,7 @@ def test_h_poly_g1():
 
 # 
 
-# In[49]:
+# In[10]:
 
 
 def test_h_poly_g2():
@@ -143,7 +143,7 @@ def test_h_poly_g2():
 # 
 # ![Abstract Graph G3](./images/abstract_graphs/abstract_graph_G3.png)
 
-# In[50]:
+# In[11]:
 
 
 def test_h_poly_g3():
@@ -165,7 +165,7 @@ def test_h_poly_g3():
 # 
 # ![Abstract Graph G4](./images/abstract_graphs/abstract_graph_G4.png)
 
-# In[51]:
+# In[12]:
 
 
 def test_h_poly_g4():
@@ -191,7 +191,7 @@ def test_h_poly_g4():
 # 
 # ![Abstract Graph G5](./images/abstract_graphs/abstract_graph_G5.png)
 
-# In[52]:
+# In[13]:
 
 
 def test_h_poly_g5():
