@@ -55,7 +55,7 @@ R6 -> ?
 import networkx as nx
 import pickle
 from cypari import pari
-from .h_poly import h_poly
+from .H_polynomial import h_poly
 from .utilities import get_coefficients_and_exponents
 
 

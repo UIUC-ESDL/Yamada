@@ -22,3 +22,5 @@ def get_coefficients_and_exponents(poly):
         degree -= 1
 
     return coefficients, exponents
+
+

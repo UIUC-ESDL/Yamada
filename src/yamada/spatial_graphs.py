@@ -9,10 +9,7 @@ from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
 from sympy import symbols, solve, Eq
-from math import acos
-from math import sqrt
-from math import pi
-import numpy.typing as npt
+
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
@@ -349,7 +346,7 @@ class LinearAlgebra:
         """
 
         def length(v):
-            return sqrt(v[0] ** 2 + v[1] ** 2)
+            return np.sqrt(v[0] ** 2 + v[1] ** 2)
 
         def dot_product(v, w):
             return v[0] * w[0] + v[1] * w[1]
@@ -359,8 +356,8 @@ class LinearAlgebra:
 
         def inner_angle(v, w):
             cosx = dot_product(v, w) / (length(v) * length(w))
-            rad  = acos(cosx)  # in radians
-            return rad * 180 / pi  # returns degrees
+            rad  = np.arccos(cosx)  # in radians
+            return rad * 180 / np.pi  # returns degrees
 
         inner = inner_angle(vector_a, vector_b)
         det   = determinant(vector_a, vector_b)
