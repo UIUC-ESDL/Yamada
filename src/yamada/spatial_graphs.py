@@ -407,6 +407,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         self.crossing_positions = None
         self.crossing_edge_pairs = None
 
+        # Project the spatial graph onto a random the xz-plane
+        self.project()
+
     def _validate_node_positions(self, node_positions: np.ndarray) -> np.ndarray:
         """
         Validates the user's input and returns an array of node positions.

@@ -32,6 +32,7 @@ def split_edge(edge):
         edges.append((edge[i], edge[i+1]))
     return edges
 
+
 def split_edges(edges):
     """
     Splits a list of edges with more than two nodes into a series of edges which each have two nodes.
