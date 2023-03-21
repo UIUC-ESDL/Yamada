@@ -64,8 +64,8 @@ sg.project()
 
 sep = sg.get_sub_edges()
 
-expected_sub_edges = [('b', '0'), ('0', 'a'), ('b', 'c'), ('d', '0'), ('0', 'c'), ('d', 'a')]
-['b', '0', 'a']
+expected_sub_edges = [('b', 'c0'), ('c0', 'a'), ('b', 'c'), ('d', 'c0'), ('c0', 'c'), ('d', 'a')]
+# ['b', '0', 'a']
 
 assert sep == expected_sub_edges
 

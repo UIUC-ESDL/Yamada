@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# In[1]:
 
 
 import numpy as np
@@ -17,7 +17,7 @@ np.random.seed(0)
 # 
 # ![Infinity Symbol](./images/unknot/unknot.png)
 
-# In[3]:
+# In[2]:
 
 
 def test_unknot():
@@ -36,11 +36,13 @@ def test_unknot():
         assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
+# 
+
 # ## The Unknot with a single twist (infinity symbol)
 # 
 # ![Infinity Symbol](./images/unknot/infinity_symbol_version_2.png)
 
-# In[4]:
+# In[3]:
 
 
 def test_unknot_single_twist():
@@ -60,11 +62,19 @@ def test_unknot_single_twist():
         assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
 
 
+# 
+
+# In[3]:
+
+
+
+
+
 # ## The Unknot with a double twist
 # 
 # ![Unknot](./images/unknot/Unknot_double_twist.png)
 
-# In[5]:
+# In[4]:
 
 
 def test_unknot_double_twist():
@@ -88,7 +98,7 @@ def test_unknot_double_twist():
 # 
 # ![Unknot with four crossings](./images/unknot/unknot_four_crossings.png)
 
-# In[6]:
+# In[5]:
 
 
 def test_unknot_four_crossings():
@@ -112,7 +122,7 @@ def test_unknot_four_crossings():
 
 # 
 
-# In[7]:
+# In[6]:
 
 
 def test_double_crossing_single_edge():
@@ -122,7 +132,7 @@ def test_double_crossing_single_edge():
 
 # 
 
-# In[8]:
+# In[7]:
 
 
 def test_triple_crossing_single_edge():
@@ -132,7 +142,7 @@ def test_triple_crossing_single_edge():
 
 # 
 
-# In[9]:
+# In[8]:
 
 
 def test_quadrivalent_node():
