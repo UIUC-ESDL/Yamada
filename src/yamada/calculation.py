@@ -97,7 +97,7 @@ class BaseVertex:
         self.adjacent = degree * [None]
 
     def __getitem__(self, i):
-        return (self, i % self.degree)
+        return self, i % self.degree
 
     def __setitem__(self, i, other):
         o, j = other
@@ -127,8 +127,6 @@ class BaseVertex:
     def already_assigned(self, node):
         """
         Returns true if the index is already assigned
-
-        TODO Finish implementing this
         """
 
         already_assigned = []
@@ -143,6 +141,7 @@ class BaseVertex:
                     already_assigned.append(False)
 
         return any(already_assigned)
+
 
 class Vertex(BaseVertex):
     pass
@@ -177,7 +176,13 @@ class Edge(BaseVertex):
         return self.adjacent[(i + 1) % 2]
 
 
-class SpatialGraphDiagram:
+class Reidemeister:
+    pass
+
+
+
+
+class SpatialGraphDiagram(Reidemeister):
     """
 
     """
@@ -198,42 +203,57 @@ class SpatialGraphDiagram:
         """
         The faces are the complementary regions of the diagram. Each
         face is given as a list of corners of BaseVertices as one goes
-        around *clockwise*.  These corners are recorded as
+        around *clockwise*. These corners are recorded as
         EntryPoints, where EntryPoints(c, j) denotes the corner of the
         face abutting crossing c between strand j and j + 1.
 
         Alternatively, the sequence of EntryPoints can be regarded as
         the *heads* of the oriented edges of the face.
         """
+
         entry_points = []
+
         for V in self.data.values():
             entry_points += V.entry_points()
+
         corners = set(entry_points)
         faces = []
+
         while len(corners):
             face = [corners.pop()]
             while True:
-                next = face[-1].next_corner()
-                if next == face[0]:
+                next_ep = face[-1].next_corner()
+                if next_ep == face[0]:
                     faces.append(face)
                     break
                 else:
-                    corners.remove(next)
-                    face.append(next)
+                    corners.remove(next_ep)
+                    face.append(next_ep)
 
         return faces
 
     def euler(self):
+        """
+        Returns the Euler characteristic of the diagram.
+        """
         v = len(self.crossings) + len(self.vertices)
         e = len(self.edges)
         f = len(self.faces())
         return v - e + f
 
     def is_planar(self):
+        """
+        Returns True if the diagram is planar.
+        """
         return self.euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
 
     def _check(self):
+        """
+        Checks that the diagram is valid.
+        """
+
         assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
+
         for C in self.crossings:
             assert all(isinstance(v, Edge) for v, j in C.adjacent)
         for V in self.vertices:
@@ -243,8 +263,13 @@ class SpatialGraphDiagram:
         assert self.is_planar()
 
     def _inflate_edges(self):
+        """
+        Creates edges from the crossings and vertices.
+        """
+
         curr_index = 0
         edges = []
+
         for A in self.crossings + self.vertices:
             for i in range(A.degree):
                 B, j = A.adjacent[i]
@@ -255,13 +280,22 @@ class SpatialGraphDiagram:
                     self.data[E.label] = E
                     E[0] = (A, i)
                     E[1] = (B, j)
+
         self.edges = edges
 
     def copy(self):
+        """
+        Returns a serialized copy of the diagram.
+        """
         return pickle.loads(pickle.dumps(self))
 
     def projection_graph(self):
+        """
+        TODO Add documentation
+        """
+
         G = nx.MultiGraph()
+
         for e in self.edges:
             v = e.adjacent[0][0].label
             w = e.adjacent[1][0].label
@@ -269,11 +303,18 @@ class SpatialGraphDiagram:
         return G
 
     def underlying_graph(self):
+        """
+        TODO Add documentation
+        """
+
         G = nx.MultiGraph()
         vertex_inputs = set()
+
         for V in self.vertices:
             vertex_inputs.update((V, i) for i in range(V.degree))
+
         edges_used = 0
+
         while len(vertex_inputs):
             V, i = vertex_inputs.pop()
             W, j = V.adjacent[i]
@@ -284,12 +325,18 @@ class SpatialGraphDiagram:
             vertex_inputs.remove((W, j))
             v, w = V.label, W.label
             G.add_edge(v, w)
+
         if edges_used == len(self.edges):
             return G
 
     def underlying_planar_embedding(self):
+        """
+        Returns the underlying planar embedding of an abstract graph.
+        """
+
         G = nx.PlanarEmbedding()
         parts = self.vertices + self.crossings + self.edges
+
         for A in parts:
             for i in range(A.degree):
                 B, j = A.adjacent[i]
@@ -300,18 +347,34 @@ class SpatialGraphDiagram:
         return G
 
     def remove_crossing(self, C):
+        """
+        Removes a crossing from the diagram.
+        """
+
         self.crossings.remove(C)
         self.data.pop(C.label)
 
     def remove_edge(self, E):
+        """
+        Removes an edge from the diagram.
+        """
+
         self.edges.remove(E)
         self.data.pop(E.label)
 
     def add_vertex(self, V):
+        """
+        Adds a vertex to the diagram.
+        """
+
         self.vertices.append(V)
         self.data[V.label] = V
 
     def short_cut(self, crossing, i0):
+        """
+        Short-cuts a crossing by removing the edge between them.
+        """
+
         i1 = (i0 + 1) % 4
         E0, j0 = crossing.adjacent[i0]
         E1, j1 = crossing.adjacent[i1]
