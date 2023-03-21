@@ -51,9 +51,10 @@ class AbstractGraph:
         if len(nodes) != len(set(nodes)):
             raise ValueError('All nodes must be unique.')
 
-        for node in nodes:
-            if not node.isalnum():
-                raise ValueError('Nodes must be alphanumeric.')
+        # TODO Temporarily disabled for nodes like crossing "C1+" and "C1-".
+        # for node in nodes:
+        #     if not node.isalnum():
+        #         raise ValueError('Nodes must be alphanumeric.')
 
         return nodes
 
@@ -418,7 +419,13 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         """
 
         if type(node_positions) != np.ndarray:
-            raise TypeError('Node positions must be a numpy array.')
+
+            # TODO Check for if elements in list are not numbers, etc.
+            if type(node_positions) == list:
+                node_positions = np.array(node_positions)
+
+            else:
+                raise TypeError('Node positions must be a numpy array.')
 
         if node_positions.shape[0] != len(self.nodes):
             raise ValueError('Node positions must contain a position for each node.')
@@ -793,7 +800,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 pass
 
             elif type(crossing_position) is np.ndarray:
-                crossings.append(str(crossing_num))
+                crossings.append('c' + str(crossing_num))
                 crossing_num += 1
                 crossing_positions.append(crossing_position)
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
@@ -996,7 +1003,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # ax3.zaxis.label.set_text('z')
 
         # Figure layout
-        plt.tight_layout(pad=2, w_pad=7, h_pad=0)
+        # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
 
         # Plot 3D
         for edge in self.edges:
