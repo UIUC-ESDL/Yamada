@@ -88,52 +88,59 @@ def graph_hash(graph):
 H_poly_cache = collections.defaultdict(list)
 
 
-def h_poly(abstract_graph):
+def h_poly(g):
 
     """
+    Computes the H polynomial of the abstract graph g.
 
+    :param g: The abstract graph
+    :return: The H polynomial of the abstract graph g
     """
 
-    A = pari('A')
-    G = abstract_graph
+    # Define the indeterminate A
+    a = pari('A')
 
     # Validate the input format
-    if not isinstance(G, nx.MultiGraph):
-        G = nx.MultiGraph(G)
+    if not isinstance(g, nx.MultiGraph):
+        g = nx.MultiGraph(g)
 
     # H Polynomial property P1: H(empty graph) = 1
-    if G.number_of_nodes() == 0:
+    if g.number_of_nodes() == 0:
         return pari(1)
 
-
-    if nx.is_connected(G):
+    # If the graph is connected, then ...
+    if nx.is_connected(g):
 
         # Check if the graph has already been computed
-        its_hash = graph_hash(G)
+        its_hash = graph_hash(g)
         for H, poly in H_poly_cache[its_hash]:
-            if nx.is_isomorphic(G, H):
+            if nx.is_isomorphic(g, H):
                 return poly
-        G_for_cache = G.copy()
+        g_for_cache = g.copy()
 
         # H Polynomial property P4. If G has a cut edge, then H(G) =  0
-        if has_cut_edge(G):
+        if has_cut_edge(g):
             ans = pari(0)
 
         else:
-            G = remove_valence_two_vertices(G)
+            # TODO Why remove valence two vertices? Finish logic here...
+            g = remove_valence_two_vertices(g)
 
             loop_factor = pari(1)
 
-            loops = [e for e in G.edges() if e[0] == e[1]]
+            loops = [e for e in g.edges() if e[0] == e[1]]
 
             for u, v in loops:
-                G.remove_edge(u, v)
-                loop_factor = -loop_factor * (A + 1 + A ** -1)
-            if G.number_of_nodes() == 1:
+                g.remove_edge(u, v)
+                loop_factor = -loop_factor * (a + 1 + a ** -1)
+
+            if g.number_of_nodes() == 1:
                 ans = -loop_factor
-            elif G.number_of_nodes() == 2:
-                b = -(A ** -1 + 2 + A)
-                q = G.number_of_edges()
+
+            elif g.number_of_nodes() == 2:
+
+                b = -(a ** -1 + 2 + a)
+                q = g.number_of_edges()
 
                 h = ((b + 1) - (b + 1) ** q) / b
 
@@ -141,23 +148,23 @@ def h_poly(abstract_graph):
 
             # H Polynomial property P5. H(G) = H(G/e) + H(G-e)
             else:
-                e = an_edge(G)
-                G_mod_e = nx.contracted_edge(G, e, self_loops=True)
-                G_mod_e.remove_edge(e[0], e[0])
-                G.remove_edge(*e)
-                ans = (h_poly(G_mod_e) + h_poly(G)) * loop_factor
+                e = an_edge(g)
+                g_mod_e = nx.contracted_edge(g, e, self_loops=True)
+                g_mod_e.remove_edge(e[0], e[0])
+                g.remove_edge(*e)
+                ans = (h_poly(g_mod_e) + h_poly(g)) * loop_factor
 
-        H_poly_cache[its_hash].append((G_for_cache, ans))
+        H_poly_cache[its_hash].append((g_for_cache, ans))
         return ans
 
     # If the graph is not connected, then apply the H polynomial property P2
-    # H(G_1 disjoint union G_2) = H(G_1) * H(G_2)
+    # H(G_1 disjoint union G_2) = H(G_1) * H(G_2) where H(G_1) and H(G_2) are recursively computed.
     else:
 
         ans = pari(1)
 
-        for vertices in nx.connected_components(G):
-            S = G.subgraph(vertices).copy()
+        for vertices in nx.connected_components(g):
+            S = g.subgraph(vertices).copy()
             h = h_poly(S)
             if h == 0:
                 return pari(0)

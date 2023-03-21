@@ -177,7 +177,50 @@ class Edge(BaseVertex):
 
 
 class Reidemeister:
-    pass
+
+    """
+    Reidemeister moves zero through six
+
+    TODO Implement has_r0, has_r3, has_r4, has_r5
+    """
+
+    def __init__(self):
+        self.edges = None
+        self.crossings = None
+        self.vertices = None
+
+    def has_r1(self):
+        for C in self.crossings:
+            for i in range(4):
+                E, e = C.adjacent[i]
+                D, d = E.flow(e)
+                if D == C and (i + 1) % 4 == d:
+                    return True
+        return False
+
+    def has_r2(self):
+        for E in self.edges:
+            A, a = E.adjacent[0]
+            if isinstance(A, Crossing):
+                B, b = E.adjacent[1]
+                if isinstance(B, Crossing):
+                    if (a + b) % 2 == 0:
+                        return True
+        return False
+
+    def has_r6(self):
+        for V in self.vertices:
+            for i in range(V.degree):
+                E, e = V.adjacent[i]
+                A, a = E.flow(e)
+                if isinstance(A, Crossing):
+                    E, e = V.adjacent[(i + 1) % V.degree]
+                    B, b = E.flow(e)
+                    if A == B and (b + 1) % 4 == a:
+                        return True
+        return False
+
+
 
 
 
@@ -188,6 +231,10 @@ class SpatialGraphDiagram(Reidemeister):
     """
 
     def __init__(self, data, check=True):
+
+        # Initialize Reidemeister class
+        Reidemeister.__init__(self)
+
         # Need labels of vertices/crossings to be unique and hashable
         self.data = {d.label: d for d in data}
         assert len(data) == len(self.data)
@@ -388,36 +435,7 @@ class SpatialGraphDiagram(Reidemeister):
             E1.fuse()
             self.remove_edge(E1)
 
-    def has_R1(self):
-        for C in self.crossings:
-            for i in range(4):
-                E, e = C.adjacent[i]
-                D, d = E.flow(e)
-                if D == C and (i + 1) % 4 == d:
-                    return True
-        return False
 
-    def has_R6(self):
-        for V in self.vertices:
-            for i in range(V.degree):
-                E, e = V.adjacent[i]
-                A, a = E.flow(e)
-                if isinstance(A, Crossing):
-                    E, e = V.adjacent[(i + 1) % V.degree]
-                    B, b = E.flow(e)
-                    if A == B and (b + 1) % 4 == a:
-                        return True
-        return False
-
-    def has_R2(self):
-        for E in self.edges:
-            A, a = E.adjacent[0]
-            if isinstance(A, Crossing):
-                B, b = E.adjacent[1]
-                if isinstance(B, Crossing):
-                    if (a + b) % 2 == 0:
-                        return True
-        return False
 
     def yamada_polynomial(self, check_pieces=False):
         """
