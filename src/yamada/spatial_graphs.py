@@ -1,6 +1,5 @@
 """
 
-TODO Create AbstractGraph Subclass
 TODO Create SpatialGraphDiagram Subclass
 """
 
@@ -9,7 +8,6 @@ from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
 from sympy import symbols, solve, Eq
-
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
@@ -21,11 +19,11 @@ class AbstractGraph:
     """
 
     def __init__(self,
-                 nodes:          list[str],
-                 edges:          list[tuple[str, str]]):
+                 nodes: list[str],
+                 edges: list[tuple[str, str]]):
 
-        self.nodes          = self._validate_nodes(nodes)
-        self.edges          = self._validate_edges(edges)
+        self.nodes = self._validate_nodes(nodes)
+        self.edges = self._validate_edges(edges)
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -91,26 +89,60 @@ class AbstractGraph:
 
         return edges
 
+    def node_degree(self, node):
+        """
+        Returns the degree of a node.
 
+        The node degree is the number of edges that are incident to the node.
+        """
+        return len([edge for edge in self.edges if node in edge])
 
+    def get_adjacent_nodes(self, reference_node):
+        """
+        Get the adjacent nodes to a given node.
+        """
 
+        adjacent_nodes = []
 
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_nodes += [node for node in edge if node != reference_node]
 
+        return adjacent_nodes
 
+    @property
+    def edge_pairs(self):
+        return list(combinations(self.edges, 2))
 
+    @property
+    def adjacent_edge_pairs(self):
 
+        adjacent_edge_pairs = []
+
+        for edge_1, edge_2 in self.edge_pairs:
+
+            a, b = edge_1
+            c, d = edge_2
+
+            assertion_1 = a in [c, d]
+            assertion_2 = b in [c, d]
+
+            if assertion_1 or assertion_2:
+                adjacent_edge_pairs += [(edge_1, edge_2)]
+
+        return adjacent_edge_pairs
 
 
 class LinearAlgebra:
     """
     A class that contains static methods for necessary linear algebra calculations.
     """
-    def __init__(self):
-        self.rotated_node_positions    = None
-        self.projected_node_positions  = None
-        self.rotation_generator_object = self.rotation_generator()
-        self.rotation                  = self.random_rotation()
 
+    def __init__(self):
+        self.rotated_node_positions = None
+        self.projected_node_positions = None
+        self.rotation_generator_object = self.rotation_generator()
+        self.rotation = self.random_rotation()
 
     @staticmethod
     def rotation_generator():
@@ -142,7 +174,7 @@ class LinearAlgebra:
 
         # Shift the object to origin
         reference_position = positions[0]
-        origin_positions   = positions - reference_position
+        origin_positions = positions - reference_position
 
         alpha, beta, gamma = rotation
 
@@ -187,7 +219,7 @@ class LinearAlgebra:
         y = mx + b --> b = y - mx
         """
 
-        slope     = (p2[1] - p1[1]) / (p2[0] - p1[0])
+        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
         intercept = p1[1] - slope * p1[0]
 
         return slope, intercept
@@ -243,8 +275,8 @@ class LinearAlgebra:
         return crossing_position
 
     @staticmethod
-    def calculate_intermediate_y_position(a:     np.ndarray,
-                                          b:     np.ndarray,
+    def calculate_intermediate_y_position(a: np.ndarray,
+                                          b: np.ndarray,
                                           x_int: float,
                                           z_int: float) -> float:
         """
@@ -274,8 +306,8 @@ class LinearAlgebra:
         y = symbols('y')
 
         # Round to 5 decimal places to avoid sympy errors
-        eq1 = Eq(round(m / l * (x_int - x1) + y1,5), y)
-        eq2 = Eq(round(m / n * (z_int - z1) + y1,5), y)
+        eq1 = Eq(round(m / l * (x_int - x1) + y1, 5), y)
+        eq2 = Eq(round(m / n * (z_int - z1) + y1, 5), y)
 
         res = solve((eq1, eq2), y)
 
@@ -296,7 +328,6 @@ class LinearAlgebra:
         Get the projected node position
         """
         return self.projected_node_positions[self.nodes.index(node)]
-
 
     def get_projected_node_positions(self,
                                      nodes: list[str]) -> np.ndarray:
@@ -332,16 +363,15 @@ class LinearAlgebra:
 
         def inner_angle(v, w):
             cosx = dot_product(v, w) / (length(v) * length(w))
-            rad  = np.arccos(cosx)  # in radians
+            rad = np.arccos(cosx)  # in radians
             return rad * 180 / np.pi  # returns degrees
 
         inner = inner_angle(vector_a, vector_b)
-        det   = determinant(vector_a, vector_b)
+        det = determinant(vector_a, vector_b)
         if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
             return inner
         else:  # if the det > 0 then A is immediately clockwise of B
             return 360 - inner
-
 
 
 class SpatialGraph(AbstractGraph, LinearAlgebra):
@@ -354,19 +384,20 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
     """
 
     def __init__(self,
-                 nodes:          list[str],
+                 nodes: list[str],
                  node_positions: np.ndarray,
-                 edges:          list[tuple[str, str]]):
-
+                 edges: list[tuple[str, str]]):
 
         # Initialize AbstractGraph Class
         AbstractGraph.__init__(self, nodes, edges)
 
+        # Initialize Node positions
         self.node_positions = self._validate_node_positions(node_positions)
 
         # Initialize attributes necessary for geometric calculations
         LinearAlgebra.__init__(self)
 
+        # Initialize a first rotation
         self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
         self.project_node_positions()
 
@@ -406,35 +437,13 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return node_positions
 
-    @property
-    def edge_pairs(self):
-        return list(combinations(self.edges, 2))
-
-    @property
-    def adjacent_edge_pairs(self):
-
-        adjacent_edge_pairs = []
-
-        for edge_1, edge_2 in self.edge_pairs:
-
-            a, b = edge_1
-            c, d = edge_2
-
-            assertion_1 = a in [c, d]
-            assertion_2 = b in [c, d]
-
-            if assertion_1 or assertion_2:
-                adjacent_edge_pairs += [(edge_1, edge_2)]
-
-        return adjacent_edge_pairs
-
     def get_vertices_and_crossings_of_edge(self, reference_edge):
         """
         Returns the vertices and crossings of an edge, ordered from left to right.
         """
 
         # Get edge nodes and positions
-        edge_nodes          = [node for node in reference_edge]
+        edge_nodes = [node for node in reference_edge]
         edge_node_positions = self.get_projected_node_positions(edge_nodes)
 
         # Get crossing and positions (if applicable)
@@ -448,58 +457,40 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         if len(edge_crossings) > 0:
             # Merge the vertices and crossings
-            adjacent_nodes     = edge_nodes + edge_crossings
+            adjacent_nodes = edge_nodes + edge_crossings
             adjacent_positions = np.vstack((edge_node_positions, edge_crossing_positions))
 
         else:
-            adjacent_nodes     = edge_nodes
+            adjacent_nodes = edge_nodes
             adjacent_positions = edge_node_positions
 
         # Order vertices and crossings from left to right by x position (i.e., ascending position index 0)
-        ordered_nodes = [node for _, node in sorted(zip(adjacent_positions, adjacent_nodes), key=lambda pair: pair[0][0])]
+        ordered_nodes = [node for _, node in
+                         sorted(zip(adjacent_positions, adjacent_nodes), key=lambda pair: pair[0][0])]
 
         return ordered_nodes
-
-    def node_degree(self, node):
-        """
-        Returns the degree of a node.
-
-        The node degree is the number of edges that are incident to the node.
-        """
-        return len([edge for edge in self.edges if node in edge])
 
     def get_projected_node_position(self, node):
         """
         Get the node position
-        TODO Validate
         """
         return self.projected_node_positions[self.nodes.index(node)]
 
-    def get_adjacent_nodes(self, reference_node, include_crossings=False):
+    def get_adjacent_nodes_or_crossings(self, reference_node):
         """
         Get the adjacent nodes to a given node.
-        TODO Validate
         """
 
         adjacent_nodes = []
 
-        if not include_crossings:
-
-            for edge in self.edges:
-                if reference_node == edge[0] or reference_node == edge[1]:
-                    adjacent_nodes += [node for node in edge if node != reference_node]
-
-        else:
-
-            for edge in self.get_sub_edges():
-
-                if reference_node == edge[0] or reference_node == edge[1]:
-                    adjacent_nodes += [node for node in edge if node != reference_node]
+        for edge in self.get_sub_edges():
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_nodes += [node for node in edge if node != reference_node]
 
         return adjacent_nodes
 
-
-    def get_adjacent_nodes_projected_positions(self, reference_node):
+    def get_adjacent_nodes_projected_positions(self,
+                                               reference_node: str):
         """
         Get the adjacent nodes to a given node.
         """
@@ -510,8 +501,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         return self.projected_node_positions[node_indices]
 
     def cyclic_node_ordering_vertex(self,
-                                    reference_node,
-                                    node_ordering_dict=None):
+                                    reference_node:     str,
+                                    node_ordering_dict: dict = None) -> dict:
         """
         Get the cyclical edge order for a given node.
 
@@ -527,7 +518,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         reference_node_position = self.get_projected_node_position(reference_node)
 
         # Initialize lists to store the adjacent node and edge information
-        adjacent_nodes          = self.get_adjacent_nodes(reference_node, include_crossings=True)
+        adjacent_nodes = self.get_adjacent_nodes_or_crossings(reference_node)
         adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
 
         # Shift nodes to the origin
@@ -581,8 +572,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 sub_edges.append(edge)
 
             else:
-                sub_edges += [(nodes_and_crossings[i], nodes_and_crossings[i+1]) for i in range(len(nodes_and_crossings)-1)]
-
+                sub_edges += [(nodes_and_crossings[i], nodes_and_crossings[i + 1]) for i in
+                              range(len(nodes_and_crossings) - 1)]
 
         return sub_edges
 
@@ -602,12 +593,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         if node_ordering_dict is None:
             node_ordering_dict = {}
 
-
         # Determine which edge goes from top left to bottom right and which edge goes from bottom left to top right.
 
-
         # Get the edges that are connected to the crossing
-        edge_1, edge_2             = self.crossing_edge_pairs[self.crossings.index(crossing)]
+        edge_1, edge_2 = self.crossing_edge_pairs[self.crossings.index(crossing)]
         edge_1_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_1)
         edge_2_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_2)
 
@@ -615,59 +604,57 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossing_index_edge_1 = edge_1_nodes_and_crossings.index(crossing)
         crossing_index_edge_2 = edge_2_nodes_and_crossings.index(crossing)
 
-        edge_1_left_node      = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
-        edge_1_right_node     = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
-        edge_2_left_node      = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
-        edge_2_right_node     = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
+        edge_1_left_node = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
+        edge_1_right_node = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
+        edge_2_left_node = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
+        edge_2_right_node = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
 
         # Get the vertices that the beginning and end of each edge
         # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
         # The 3D positions of the vertices are required to determine which edge is in front of the other.
-        edge_1_left_vertex  = edge_1_nodes_and_crossings[0]
+        edge_1_left_vertex = edge_1_nodes_and_crossings[0]
         edge_1_right_vertex = edge_1_nodes_and_crossings[-1]
-        edge_2_left_vertex  = edge_2_nodes_and_crossings[0]
+        edge_2_left_vertex = edge_2_nodes_and_crossings[0]
         edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
 
         # If the left vertex of edge 1 is higher than the left vertex of edge 2:
         # Edge 1 goes from top left to bottom right.
         # Edge 2 goes from bottom left to top right.
-        edge_1_left_vertex_position  = self.get_projected_node_position(edge_1_left_vertex)
-        edge_2_left_vertex_position  = self.get_projected_node_position(edge_2_left_vertex)
+        edge_1_left_vertex_position = self.get_projected_node_position(edge_1_left_vertex)
+        edge_2_left_vertex_position = self.get_projected_node_position(edge_2_left_vertex)
 
         if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
 
-            top_left_vertex     = edge_1_left_vertex
-            bottom_left_vertex  = edge_2_left_vertex
-            top_right_vertex    = edge_2_right_vertex
+            top_left_vertex = edge_1_left_vertex
+            bottom_left_vertex = edge_2_left_vertex
+            top_right_vertex = edge_2_right_vertex
             bottom_right_vertex = edge_1_right_vertex
 
-            top_left_node       = edge_1_left_node
-            bottom_left_node    = edge_2_left_node
-            top_right_node      = edge_2_right_node
-            bottom_right_node   = edge_1_right_node
+            top_left_node = edge_1_left_node
+            bottom_left_node = edge_2_left_node
+            top_right_node = edge_2_right_node
+            bottom_right_node = edge_1_right_node
 
         elif edge_1_left_vertex_position[1] < edge_2_left_vertex_position[1]:
 
-            top_left_vertex     = edge_2_left_vertex
-            bottom_left_vertex  = edge_1_left_vertex
-            top_right_vertex    = edge_1_right_vertex
+            top_left_vertex = edge_2_left_vertex
+            bottom_left_vertex = edge_1_left_vertex
+            top_right_vertex = edge_1_right_vertex
             bottom_right_vertex = edge_2_right_vertex
 
-            top_left_node       = edge_2_left_node
-            bottom_left_node    = edge_1_left_node
-            top_right_node      = edge_1_right_node
-            bottom_right_node   = edge_2_right_node
+            top_left_node = edge_2_left_node
+            bottom_left_node = edge_1_left_node
+            top_right_node = edge_1_right_node
+            bottom_right_node = edge_2_right_node
 
         else:
             raise RuntimeError("The left vertices of the edges are at the same height. This should not happen.")
 
-
         # Now determine which edge is in front of the other.
 
-
-        top_left_vertex_position_3d     = self.rotated_node_positions[self.nodes.index(top_left_vertex)]
-        top_right_vertex_position_3d    = self.rotated_node_positions[self.nodes.index(top_right_vertex)]
-        bottom_left_vertex_position_3d  = self.rotated_node_positions[self.nodes.index(bottom_left_vertex)]
+        top_left_vertex_position_3d = self.rotated_node_positions[self.nodes.index(top_left_vertex)]
+        top_right_vertex_position_3d = self.rotated_node_positions[self.nodes.index(top_right_vertex)]
+        bottom_left_vertex_position_3d = self.rotated_node_positions[self.nodes.index(bottom_left_vertex)]
         bottom_right_vertex_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_vertex)]
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
@@ -684,27 +671,25 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         if y_crossing_tl_br == y_crossing_tr_bl:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
-                             'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
-
+                               'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
         # Finally, assign cyclic edge ordering based on the relative positions of the edges.
-
 
         crossing_order_dict = {}
 
         # If the top right edge is under then it should be index zero; then follow CCW rotation
         if y_crossing_tl_br > y_crossing_tr_bl:
-            crossing_order_dict[top_right_node]    = 0
-            crossing_order_dict[top_left_node]     = 1
-            crossing_order_dict[bottom_left_node]  = 2
+            crossing_order_dict[top_right_node] = 0
+            crossing_order_dict[top_left_node] = 1
+            crossing_order_dict[bottom_left_node] = 2
             crossing_order_dict[bottom_right_node] = 3
 
         # If the top left edge is under then it should be index zero; then follow CCW rotation
         elif y_crossing_tl_br < y_crossing_tr_bl:
-            crossing_order_dict[top_left_node]     = 0
-            crossing_order_dict[bottom_left_node]  = 1
+            crossing_order_dict[top_left_node] = 0
+            crossing_order_dict[bottom_left_node] = 1
             crossing_order_dict[bottom_right_node] = 2
-            crossing_order_dict[top_right_node]    = 3
+            crossing_order_dict[top_right_node] = 3
 
         else:
             raise NotImplementedError('There should be no else case.')
@@ -724,7 +709,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         for crossing in self.crossings:
             crossing_ordering_dict = self.cyclic_node_ordering_crossing(crossing, crossing_ordering_dict)
         return crossing_ordering_dict
-
 
     def get_crossing_edge_order(self,
                                 edge_1,
@@ -765,7 +749,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # todo Only check if crossing is in bounds!
         if y_crossing_1 == y_crossing_2:
             raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
-                             'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
+                               'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
 
         elif y_crossing_1 > y_crossing_2:
             overlap_order.append(edge_2)
@@ -820,7 +804,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return crossings, crossing_positions, crossing_edge_pairs
 
-
     def project(self):
         """
         Project the spatial graph onto a random 2D plane.
@@ -839,8 +822,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Initialize while loop exit conditions
         valid_projection = False
-        iter             = 0
-        max_iter         = 10
+        iter = 0
+        max_iter = 10
 
         while not valid_projection and iter < max_iter:
 
@@ -850,7 +833,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
 
-
                 for edge in self.edges:
                     x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
                     x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
@@ -858,11 +840,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     if x1 == x2 or z1 == z2:
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
-
                 # Second, check adjacent edge pairs for validity.
                 # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
                     a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -883,7 +863,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-
                 # Third, Check nonadjacent edge pairs for validity.
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
                 # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
@@ -901,7 +880,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 self.project_node_positions()
                 iter += 1
 
-
         if iter == max_iter:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
 
@@ -910,7 +888,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         Create the vertices of the spatial graph.
         """
 
-        vertices = [Vertex(self.node_degree(node), 'node_'+node) for node in self.nodes]
+        vertices = [Vertex(self.node_degree(node), 'node_' + node) for node in self.nodes]
 
         return vertices
 
@@ -920,7 +898,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         """
 
         if self.crossing_positions is not None:
-            crossings = [Crossing('crossing_'+str(i)) for i in range(len(self.crossing_positions))]
+            crossings = [Crossing('crossing_' + str(i)) for i in range(len(self.crossing_positions))]
         else:
             crossings = []
 
@@ -963,14 +941,11 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             else:
                 raise ValueError('The vertices are already assigned.')
 
-
         inputs = vertices + crossings
 
         sgd = SpatialGraphDiagram(inputs)
 
         return sgd
-
-
 
     def plot(self):
         """
@@ -1064,7 +1039,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Put a legend to the right of the current axis
         ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, 0.5))
 
-
         # Plot crossing positions
         if self.crossing_positions is not None:
             for crossing_position in self.crossing_positions:
@@ -1072,5 +1046,3 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                             marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
-
-
