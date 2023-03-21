@@ -1,6 +1,6 @@
 import numpy as np
 from yamada.projection import SpatialGraph
-from yamada.calculation import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial
+from yamada.spatial_graph_diagrams import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial
 import networkx as nx
 from cypari import pari
 

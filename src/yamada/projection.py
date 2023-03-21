@@ -14,7 +14,7 @@ from math import sqrt
 from math import pi
 import numpy.typing as npt
 
-from .calculation import (Vertex, Crossing, SpatialGraphDiagram)
+from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
 
 class InputValidation:
