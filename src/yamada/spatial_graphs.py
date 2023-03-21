@@ -14,7 +14,7 @@ from sympy import symbols, solve, Eq
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
 
-class InputValidation:
+class AbstractGraph:
     """
     TODO Check that all nodes adjoin at least 2 edges (no braids)
     TODO Check if dangling nodes impact calculator
@@ -22,11 +22,9 @@ class InputValidation:
 
     def __init__(self,
                  nodes:          list[str],
-                 node_positions: np.ndarray,
                  edges:          list[tuple[str, str]]):
 
         self.nodes          = self._validate_nodes(nodes)
-        self.node_positions = self._validate_node_positions(node_positions)
         self.edges          = self._validate_edges(edges)
 
     @staticmethod
@@ -93,36 +91,14 @@ class InputValidation:
 
         return edges
 
-    def _validate_node_positions(self, node_positions: np.ndarray) -> np.ndarray:
-        """
-        Validates the user's input and returns an array of node positions.
 
-        Checks:
-        1. The input is a np.ndarray
-        2. The array size matches the number of nodes
-        3. Each row contains 3 real numbers
-        4. Each row is unique
-        """
 
-        if type(node_positions) != np.ndarray:
-            raise TypeError('Node positions must be a numpy array.')
 
-        if node_positions.shape[0] != len(self.nodes):
-            raise ValueError('Node positions must contain a position for each node.')
 
-        if node_positions.shape[1] != 3:
-            raise ValueError('Node positions must contain 3D coordinates.')
 
-        valid_types = [float, int, np.float32, np.int32, np.float64, np.int64]
-        for row in node_positions:
-            for element in row:
-                if type(element) not in valid_types:
-                    raise TypeError('Node positions must contain real numbers.')
 
-        if node_positions.shape[0] != np.unique(node_positions, axis=0).shape[0]:
-            raise ValueError('All nodes must have a position.')
 
-        return node_positions
+
 
 
 class LinearAlgebra:
@@ -368,7 +344,7 @@ class LinearAlgebra:
 
 
 
-class SpatialGraph(InputValidation, LinearAlgebra):
+class SpatialGraph(AbstractGraph, LinearAlgebra):
     """
     A class to represent a spatial graph.
 
@@ -382,8 +358,11 @@ class SpatialGraph(InputValidation, LinearAlgebra):
                  node_positions: np.ndarray,
                  edges:          list[tuple[str, str]]):
 
-        # Initialize validated inputs
-        InputValidation.__init__(self, nodes, node_positions, edges)
+
+        # Initialize AbstractGraph Class
+        AbstractGraph.__init__(self, nodes, edges)
+
+        self.node_positions = self._validate_node_positions(node_positions)
 
         # Initialize attributes necessary for geometric calculations
         LinearAlgebra.__init__(self)
@@ -395,6 +374,37 @@ class SpatialGraph(InputValidation, LinearAlgebra):
         self.crossings = None
         self.crossing_positions = None
         self.crossing_edge_pairs = None
+
+    def _validate_node_positions(self, node_positions: np.ndarray) -> np.ndarray:
+        """
+        Validates the user's input and returns an array of node positions.
+
+        Checks:
+        1. The input is a np.ndarray
+        2. The array size matches the number of nodes
+        3. Each row contains 3 real numbers
+        4. Each row is unique
+        """
+
+        if type(node_positions) != np.ndarray:
+            raise TypeError('Node positions must be a numpy array.')
+
+        if node_positions.shape[0] != len(self.nodes):
+            raise ValueError('Node positions must contain a position for each node.')
+
+        if node_positions.shape[1] != 3:
+            raise ValueError('Node positions must contain 3D coordinates.')
+
+        valid_types = [float, int, np.float32, np.int32, np.float64, np.int64]
+        for row in node_positions:
+            for element in row:
+                if type(element) not in valid_types:
+                    raise TypeError('Node positions must contain real numbers.')
+
+        if node_positions.shape[0] != np.unique(node_positions, axis=0).shape[0]:
+            raise ValueError('All nodes must have a position.')
+
+        return node_positions
 
     @property
     def edge_pairs(self):
