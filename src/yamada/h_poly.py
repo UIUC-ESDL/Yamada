@@ -48,7 +48,7 @@ def an_edge(graph):
 def remove_valence_two_vertices(graph):
 
     """
-
+    TODO Why this?
     """
 
     G = graph.copy()
@@ -104,11 +104,22 @@ def h_poly(g):
     if not isinstance(g, nx.MultiGraph):
         g = nx.MultiGraph(g)
 
-    # H Polynomial property P1: H(empty graph) = 1
+
+    # RECURSION BASE CONDITION
+    # Abstract graph is empty: H Polynomial property P1: H(empty graph) = 1
+
+
     if g.number_of_nodes() == 0:
         return pari(1)
 
-    # If the graph is connected, then ...
+
+    # RECURSION LOGIC
+    # Case 1: If all nodes of the graph are connected then recursively calculate the H polynomial of the graph.
+    # Case 2: Else, the abstract graph contains subgraphs that are not connected. Recursively calculate the H polynomial
+    # of each subgraph (see "if statement" above).
+
+
+    # Recursion logic case 1: The abstract graph is connected.
     if nx.is_connected(g):
 
         # Check if the graph has already been computed
@@ -118,15 +129,19 @@ def h_poly(g):
                 return poly
         g_for_cache = g.copy()
 
-        # H Polynomial property P4. If G has a cut edge, then H(G) =  0
+        # H Polynomial property P4
+        # If G has a cut edge, then H(G) =  0
         if has_cut_edge(g):
             ans = pari(0)
 
         else:
             # TODO Why remove valence two vertices? Finish logic here...
+            # Collapse valence two vertices (b/c do not affect calc...)
             g = remove_valence_two_vertices(g)
 
             loop_factor = pari(1)
+
+            # P1 & P3
 
             loops = [e for e in g.edges() if e[0] == e[1]]
 
@@ -134,9 +149,11 @@ def h_poly(g):
                 g.remove_edge(u, v)
                 loop_factor = -loop_factor * (a + 1 + a ** -1)
 
+            # correcting for the difference between ...
             if g.number_of_nodes() == 1:
                 ans = -loop_factor
 
+            # TBD (check out the paper for formula, avoids P5 recursion?)
             elif g.number_of_nodes() == 2:
 
                 b = -(a ** -1 + 2 + a)
@@ -146,7 +163,8 @@ def h_poly(g):
 
                 ans = loop_factor * h
 
-            # H Polynomial property P5. H(G) = H(G/e) + H(G-e)
+            # H Polynomial property P5.
+            # H(G) = H(G/e) + H(G-e)
             else:
                 e = an_edge(g)
                 g_mod_e = nx.contracted_edge(g, e, self_loops=True)
@@ -157,12 +175,14 @@ def h_poly(g):
         H_poly_cache[its_hash].append((g_for_cache, ans))
         return ans
 
-    # If the graph is not connected, then apply the H polynomial property P2
-    # H(G_1 disjoint union G_2) = H(G_1) * H(G_2) where H(G_1) and H(G_2) are recursively computed.
+    # Recursion logic case 2: The abstract graph contains subgraphs that are not connected.
     else:
 
+        # Must initialize ans as 1 for recursive multiplication.
         ans = pari(1)
 
+        # H polynomial property P2
+        # H(G_1 disjoint union G_2) = H(G_1) * H(G_2) where H(G_1) and H(G_2) are recursively computed.
         for vertices in nx.connected_components(g):
             S = g.subgraph(vertices).copy()
             h = h_poly(S)
@@ -170,4 +190,5 @@ def h_poly(g):
                 return pari(0)
 
             ans = ans * h
+
         return ans
