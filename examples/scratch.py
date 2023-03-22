@@ -97,11 +97,17 @@ np.random.seed(0)
 The graph G3 from Drobrynin and Vesnin.
 TODO Figure out why solution does not match the paper's solution.
 """
+#
+# g3 = nx.MultiGraph()
+# g3.add_nodes_from(['a', 'b', 'c'])
+# g3.add_edges_from([('a', 'b'), ('a', 'b'), ('a', 'c'), ('b', 'c'), ('b', 'c')])
+#
+# a = pari('A')
+# paper_h_poly = a**3 + 3*a**2 + 7*a + 8 + 7*a**(-1) + 3*a**(-2) + a**(-3)
 
-g3 = nx.MultiGraph()
-g3.add_nodes_from(['a', 'b', 'c'])
-g3.add_edges_from([('a', 'b'), ('a', 'b'), ('a', 'c'), ('b', 'c'), ('b', 'c')])
 
-a = pari('A')
-paper_h_poly = a**3 + 3*a**2 + 7*a + 8 + 7*a**(-1) + 3*a**(-2) + a**(-3)
-
+sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+                  node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+                  edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+sg.project()
+sg.plot()

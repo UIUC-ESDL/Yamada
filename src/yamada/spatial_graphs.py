@@ -970,9 +970,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Axis 1
 
-        ax1.set_xlim(-1.5, 2)
-        ax1.set_ylim(-1.5, 2)
-        ax1.set_zlim(-1.5, 2)
+        # ax1.set_xlim(-1.5, 2)
+        # ax1.set_ylim(-1.5, 2)
+        # ax1.set_zlim(-1.5, 2)
 
         ax1.title.set_text('Spatial Graph')
         # ax1.xaxis.label.set_text('x')
@@ -996,9 +996,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Axis 3
 
-        ax3.set_xlim(-1.25, 2)
-        ax3.set_ylim(-1.25, 2)
-        ax3.set_zlim(-1.25, 2)
+        # ax3.set_xlim(-1.25, 2)
+        # ax3.set_ylim(-1.25, 2)
+        # ax3.set_zlim(-1.25, 2)
 
         ax3.title.set_text('Spatial Graph Rotated')
         # ax3.xaxis.label.set_text('x')
@@ -1047,7 +1047,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 
         # Put a legend to the right of the current axis
-        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, 0.5))
+        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, 0.5))
 
         # Plot crossing positions
         if self.crossing_positions is not None:
