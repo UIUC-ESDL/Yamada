@@ -1,4 +1,10 @@
-# TODO Implement
+"""EXAMPLE
+
+Enumerate all spatial graphs for a given system architecture.
+
+This example is not implemented yet since the source code is still under development.
+
+"""
 
 # import networkx as nx
 # import multiprocessing

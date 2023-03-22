@@ -1,3 +1,9 @@
+"""SCRATCH FILE
+
+This file is used to test code snippets and ideas. It is not intended to be run as a script by other users.
+
+"""
+
 import numpy as np
 from yamada.spatial_graphs import SpatialGraph
 from yamada.spatial_graph_diagrams import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial

@@ -16,13 +16,13 @@ directory = os.path.dirname(__file__) + '/'
 # User Input: Set the path to the json file you want to evaluate
 
 # Example 1
-filepath = directory + "G6/C1/G6C1I0.json"
+# filepath = directory + "G6/C1/G6C1I0.json"
 
 # Example 2
 # filepath = directory + "G10/C4/G10C4I7.json"
 
 # Example 3
-# filepath = directory + "G14/C3/G14C3I11.json"
+filepath = directory + "G14/C3/G14C3I11.json"
 
 # %% Extract the spatial graph from the json file
 
