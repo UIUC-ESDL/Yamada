@@ -1,5 +1,5 @@
 """
-This script converts all notebooks in the test directory to scripts.
+This script converts all notebooks in the test directories to scripts.
 
 PyTest does not recognize notebooks. However, notebooks are useful for explaining the logic and visuals of scientific
 computing test cases.
