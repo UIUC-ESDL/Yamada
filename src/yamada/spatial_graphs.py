@@ -279,7 +279,7 @@ class LinearAlgebra:
     def minimum_distance_segment_segment(a: np.ndarray,
                                          b: np.ndarray,
                                          c: np.ndarray,
-                                         d: np.ndarray) -> tuple(float, np.ndarray):
+                                         d: np.ndarray) -> tuple[float, np.ndarray]:
         """
         Returns the minimum Euclidean distance between two line segments and its position.
 
@@ -400,7 +400,7 @@ class LinearAlgebra:
 
         dist = np.linalg.norm(d1 * t - d2 * u - d12)
 
-        min_dist_position = np.array([a + d1 * t, c + d2 * u])
+        min_dist_position = np.array([a + d1 * t]).reshape(-1)
 
         return dist, min_dist_position
 
@@ -438,8 +438,8 @@ class LinearAlgebra:
         y = symbols('y')
 
         # Round to 5 decimal places to avoid sympy errors
-        eq1 = Eq(round(m / l * (x_int - x1) + y1, 5), y)
-        eq2 = Eq(round(m / n * (z_int - z1) + y1, 5), y)
+        eq1 = Eq(round(m / l * (x_int - x1) + y1, 10), y)
+        eq2 = Eq(round(m / n * (z_int - z1) + y1, 10), y)
 
         res = solve((eq1, eq2), y)
 
@@ -925,7 +925,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             c = self.projected_node_positions[self.nodes.index(line_2[0])]
             d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-            crossing_position = self.get_line_segment_intersection(a, b, c, d)
+            min_dist, crossing_position = self.minimum_distance_segment_segment(a, b, c, d)
 
             if crossing_position is np.inf:
                 raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
@@ -933,12 +933,15 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             elif crossing_position is None:
                 pass
 
-            elif type(crossing_position) is np.ndarray:
+            elif type(crossing_position) is np.ndarray and min_dist <= 0:
                 crossings.append('c' + str(crossing_num))
                 crossing_num += 1
                 crossing_positions.append(crossing_position)
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
                 crossing_edge_pairs.append(crossing_edge_pair)
+
+            elif type(crossing_position) is np.ndarray and min_dist > 0:
+                pass
 
             else:
                 raise NotImplementedError('There should be no else case.')
@@ -970,6 +973,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
             try:
 
+                print('Loop')
+
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
@@ -981,6 +986,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     if x1 == x2 or z1 == z2:
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
+                print('Passed first check')
+
                 # Second, check adjacent edge pairs for validity.
                 # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
@@ -990,19 +997,21 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    crossing_position = self.get_line_segment_intersection(a, b, c, d)
+                    min_dist, crossing_position = self.minimum_distance_segment_segment(a, b, c, d)
 
                     if crossing_position is not None and crossing_position is not np.inf:
-                        x, y = crossing_position
-                        assertion_1 = np.isclose(x, a[0]) and np.isclose(y, a[1])
-                        assertion_2 = np.isclose(x, b[0]) and np.isclose(y, b[1])
-                        assertion_3 = np.isclose(x, c[0]) and np.isclose(y, c[1])
-                        assertion_4 = np.isclose(x, d[0]) and np.isclose(y, d[1])
+                        assertion_1 = all(np.isclose(crossing_position, a))
+                        assertion_2 = all(np.isclose(crossing_position, b))
+                        assertion_3 = all(np.isclose(crossing_position, c))
+                        assertion_4 = all(np.isclose(crossing_position, d))
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
+
+                    else:
+                        pass
 
                 # Third, Check nonadjacent edge pairs for validity.
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
@@ -1010,10 +1019,14 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 # between endpoints.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
+                print('Passed second check')
+
                 self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
                 # If we made it this far without raising an exception, then we have a valid projection
                 valid_projection = True
+
+                print('Passed third check')
 
             except ValueError:
                 self.rotation = self.random_rotation()
