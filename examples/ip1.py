@@ -594,3 +594,9 @@ edges = [('7939', '2640'),
 sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_positions)
 
 sg.plot()
+
+sgd = sg.create_spatial_graph_diagram()
+
+yp = sgd.normalized_yamada_polynomial()
+
+print("Yamada polynomial: {}".format(yp))

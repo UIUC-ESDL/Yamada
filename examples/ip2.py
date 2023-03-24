@@ -145,7 +145,9 @@ sg.project()
 
 sgd = sg.create_spatial_graph_diagram()
 #
-# yp = sgd.normalized_yamada_polynomial()
+yp = sgd.normalized_yamada_polynomial()
+
+print("Yamada Polynomial:", yp)
 
 # a = pari('A')
 
