@@ -3,8 +3,9 @@ from yamada import SpatialGraph
 import matplotlib.pyplot as plt
 
 # np.random.seed(0)
-np.random.seed(2)
+np.random.seed(0)
 # There should be a crossing... for 2
+# why does 6 break it?
 
 component_a = 'c_a'
 component_b = 'c_b'
@@ -59,6 +60,19 @@ waypoint_positions = np.array([[0.5, 0, 0],  # ab
                                [1, 0.5, 1],  # fg
                                [0.5, 1, 1]])  # gh
 
+# waypoint_positions = np.array([[0.5, 0.1, 0],  # ab
+#                                [0.4, 0.7, 0.3],  # ad
+#                                [0.1, 0, 0.5],  # ae
+#                                [1, 0.5, 0],  # bc
+#                                [1, 0.1, 0.5],  # bf
+#                                [0.5, 1, 0],  # cd
+#                                [0.4, 0.6, 0.5],  # cg
+#                                [0.2, 1, 0.5],  # dh
+#                                [0.5, 0.1, 1],  # ef
+#                                [0.1, 0.7, 1],  # eh
+#                                [1, 0.5, 1],  # fg
+#                                [0.5, 0.85, 1]])  # gh
+
 
 # node_positions = component_positions
 node_positions = np.concatenate((component_positions, waypoint_positions), axis=0)
@@ -97,7 +111,10 @@ edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
 sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 sg.plot()
 
+sgd = sg.create_spatial_graph_diagram()
+yp = sgd.normalized_yamada_polynomial()
 
+print("Yamada Polynomial:", yp)
 
 # sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
 #                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
@@ -109,3 +126,8 @@ sg.plot()
 #
 # print('ans: ', sep)
 # print('exp: ', expected_sub_edges)
+
+# Random seed 0
+# For get crossings
+# Crossing 1  waypoint cd to component 2 (in front) X component e to waypoint eh (behind)
+# Crossing 2 waypoint bc to component c (in front) X waypoint ef to component f (behind)

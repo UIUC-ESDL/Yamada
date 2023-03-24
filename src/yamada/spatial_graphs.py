@@ -597,6 +597,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return sub_edges
 
+
+    def get_left_and_right_adjacent_nodes_or_crossings(self, reference_node):
+        pass
+
     def cyclic_node_ordering_crossing(self,
                                       crossing,
                                       node_ordering_dict=None):
@@ -624,18 +628,71 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossing_index_edge_1 = edge_1_nodes_and_crossings.index(crossing)
         crossing_index_edge_2 = edge_2_nodes_and_crossings.index(crossing)
 
-        edge_1_left_node = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
-        edge_1_right_node = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
-        edge_2_left_node = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
-        edge_2_right_node = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
+        edge_1_adjacent_node_0 = edge_1_nodes_and_crossings[crossing_index_edge_1 - 1]
+        edge_1_adjacent_node_1 = edge_1_nodes_and_crossings[crossing_index_edge_1 + 1]
+        edge_2_adjacent_node_0 = edge_2_nodes_and_crossings[crossing_index_edge_2 - 1]
+        edge_2_adjacent_node_1 = edge_2_nodes_and_crossings[crossing_index_edge_2 + 1]
+
+
+        # Determine if the adjacent nodes are left or right
+
+
+        edge_1_adjacent_node_0_position = self.projected_node_positions[self.nodes.index(edge_1_adjacent_node_0)]
+        edge_1_adjacent_node_1_position = self.projected_node_positions[self.nodes.index(edge_1_adjacent_node_1)]
+
+        if edge_1_adjacent_node_0_position[0] < edge_1_adjacent_node_1_position[0]:
+            edge_1_left_node  = edge_1_adjacent_node_0
+            edge_1_right_node = edge_1_adjacent_node_1
+        else:
+            edge_1_left_node  = edge_1_adjacent_node_1
+            edge_1_right_node = edge_1_adjacent_node_0
+
+        edge_2_adjacent_node_0_position = self.projected_node_positions[self.nodes.index(edge_2_adjacent_node_0)]
+        edge_2_adjacent_node_1_position = self.projected_node_positions[self.nodes.index(edge_2_adjacent_node_1)]
+
+        if edge_2_adjacent_node_0_position[0] < edge_2_adjacent_node_1_position[0]:
+            edge_2_left_node  = edge_2_adjacent_node_0
+            edge_2_right_node = edge_2_adjacent_node_1
+        else:
+            edge_2_left_node  = edge_2_adjacent_node_1
+            edge_2_right_node = edge_2_adjacent_node_0
+
+
+        # TODO Can I remove the vertices now?
 
         # Get the vertices that the beginning and end of each edge
         # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
         # The 3D positions of the vertices are required to determine which edge is in front of the other.
-        edge_1_left_vertex = edge_1_nodes_and_crossings[0]
-        edge_1_right_vertex = edge_1_nodes_and_crossings[-1]
-        edge_2_left_vertex = edge_2_nodes_and_crossings[0]
-        edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
+
+        # Determine which vertex is the left and right vertex of each edge.
+
+        edge_1_vertex_1 = edge_1_nodes_and_crossings[0]
+        edge_1_vertex_2 = edge_1_nodes_and_crossings[-1]
+
+        edge_1_vertex_1_position = self.projected_node_positions[self.nodes.index(edge_1_vertex_1)]
+        edge_1_vertex_2_position = self.projected_node_positions[self.nodes.index(edge_1_vertex_2)]
+
+        if edge_1_vertex_1_position[0] < edge_1_vertex_2_position[0]:
+            edge_1_left_vertex = edge_1_vertex_1
+            edge_1_right_vertex = edge_1_vertex_2
+        else:
+            edge_1_left_vertex = edge_1_vertex_2
+            edge_1_right_vertex = edge_1_vertex_1
+
+        edge_2_vertex_1 = edge_2_nodes_and_crossings[0]
+        edge_2_vertex_2 = edge_2_nodes_and_crossings[-1]
+
+        edge_2_vertex_1_position = self.projected_node_positions[self.nodes.index(edge_2_vertex_1)]
+        edge_2_vertex_2_position = self.projected_node_positions[self.nodes.index(edge_2_vertex_2)]
+
+        if edge_2_vertex_1_position[0] < edge_2_vertex_2_position[0]:
+            edge_2_left_vertex = edge_2_vertex_1
+            edge_2_right_vertex = edge_2_vertex_2
+        else:
+            edge_2_left_vertex = edge_2_vertex_2
+            edge_2_right_vertex = edge_2_vertex_1
+
+
 
         # If the left vertex of edge 1 is higher than the left vertex of edge 2:
         # Edge 1 goes from top left to bottom right.
