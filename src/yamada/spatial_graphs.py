@@ -7,7 +7,6 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
-from sympy import symbols, solve, Eq
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
@@ -333,38 +332,21 @@ class LinearAlgebra:
                                           z_int: float) -> float:
         """
         Calculates the intermediate y position given two points and the intermediate x and z position.
-
-        Assumes that lines are not vertical or horizontal per the projection method input checks.
-
-        Example:
-            a = (0,0,0)
-            b = (1,1,1)
-            x_int = 0.5
-            z_int = 0.5
-            Therefore y_int = 0.5
         """
 
         x1, y1, z1 = a
         x2, y2, z2 = b
 
-        l = x2 - x1
-        m = y2 - y1
-        n = z2 - z1
+        delta_x = x2 - x1
+        delta_y = y2 - y1
+        delta_z = z2 - z1
 
-        # (x-x1)/l = (y-y1)/m = (z-z1)/n
-        # EQ1: y = (m/l)(x-x1) + y1
-        # EQ2: y = (m/n)(z-z1) + y1
+        ratio_x = (x_int - x1) / delta_x
+        ratio_z = (z_int - z1) / delta_z
 
-        y = symbols('y')
+        assert np.isclose(ratio_x, ratio_z)
 
-        # Round to 5 decimal places to avoid sympy errors
-        eq1 = Eq(round(m / l * (x_int - x1) + y1, 10), y)
-        eq2 = Eq(round(m / n * (z_int - z1) + y1, 10), y)
-
-        res = solve((eq1, eq2), y)
-
-        # Convert from sympy float to normal float
-        y_int = float(res[y])
+        y_int = y1 + ratio_x * delta_y
 
         return y_int
 
