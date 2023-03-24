@@ -538,6 +538,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         reference_node_position = self.projected_node_positions[self.nodes.index(reference_node)]
 
         # Initialize lists to store the adjacent node and edge information
+        # Crossings are not relevant for this calculation since they exist along edges
         adjacent_nodes = self.get_adjacent_nodes_or_crossings(reference_node)
         adjacent_node_positions = self.get_adjacent_nodes_projected_positions(reference_node)
 
@@ -598,8 +599,16 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         return sub_edges
 
 
-    def get_left_and_right_adjacent_nodes_or_crossings(self, reference_node):
-        pass
+    def get_node_or_crossing_projected_position(self, reference_node):
+
+        if reference_node in self.nodes:
+            return self.projected_node_positions[self.nodes.index(reference_node)]
+
+        elif reference_node in self.crossings:
+            return self.crossing_positions[self.crossings.index(reference_node)]
+
+        else:
+            raise ValueError("Node or crossing not found.")
 
     def cyclic_node_ordering_crossing(self,
                                       crossing,
@@ -636,9 +645,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Determine if the adjacent nodes are left or right
 
+        # todo c too
 
-        edge_1_adjacent_node_0_position = self.projected_node_positions[self.nodes.index(edge_1_adjacent_node_0)]
-        edge_1_adjacent_node_1_position = self.projected_node_positions[self.nodes.index(edge_1_adjacent_node_1)]
+        edge_1_adjacent_node_0_position = self.get_node_or_crossing_projected_position(edge_1_adjacent_node_0)
+        edge_1_adjacent_node_1_position = self.get_node_or_crossing_projected_position(edge_1_adjacent_node_1)
 
         if edge_1_adjacent_node_0_position[0] < edge_1_adjacent_node_1_position[0]:
             edge_1_left_node  = edge_1_adjacent_node_0
@@ -647,8 +657,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             edge_1_left_node  = edge_1_adjacent_node_1
             edge_1_right_node = edge_1_adjacent_node_0
 
-        edge_2_adjacent_node_0_position = self.projected_node_positions[self.nodes.index(edge_2_adjacent_node_0)]
-        edge_2_adjacent_node_1_position = self.projected_node_positions[self.nodes.index(edge_2_adjacent_node_1)]
+        edge_2_adjacent_node_0_position = self.get_node_or_crossing_projected_position(edge_2_adjacent_node_0)
+        edge_2_adjacent_node_1_position = self.get_node_or_crossing_projected_position(edge_2_adjacent_node_1)
 
         if edge_2_adjacent_node_0_position[0] < edge_2_adjacent_node_1_position[0]:
             edge_2_left_node  = edge_2_adjacent_node_0
