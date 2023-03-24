@@ -2,8 +2,8 @@ import numpy as np
 from yamada import SpatialGraph
 import matplotlib.pyplot as plt
 
-np.random.seed(0)
-# np.random.seed(2)
+# np.random.seed(0)
+np.random.seed(2)
 # There should be a crossing... for 2
 
 component_a = 'c_a'
@@ -99,24 +99,13 @@ sg.plot()
 
 
 
-# figure = plt.figure()
-# ax = figure.add_subplot(111, projection='3d')
-# ax.scatter(component_positions[:, 0], component_positions[:, 1], component_positions[:, 2], c='r', marker='o', s=100)
-# ax.scatter(waypoint_positions[:, 0], waypoint_positions[:, 1], waypoint_positions[:, 2], c='b', marker='o', s=100)
-# ax.set_xlabel('X')
-# ax.set_ylabel('Y')
-# ax.set_zlabel('Z')
-# plt.show()
-
 # sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
 #                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
 #                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-#
-# sg.plot()
 #
 # sep = sg.get_sub_edges()
 #
 # expected_sub_edges = [('b', 'crossing_0'), ('crossing_0', 'a'), ('b', 'c'), ('d', 'crossing_0'), ('crossing_0', 'c'), ('d', 'a')]
 #
-# print('answer:   ', sep)
-# print('expected: ', expected_sub_edges)
+# print('ans: ', sep)
+# print('exp: ', expected_sub_edges)

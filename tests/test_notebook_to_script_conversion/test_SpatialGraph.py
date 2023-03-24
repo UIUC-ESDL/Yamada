@@ -3,7 +3,7 @@
 
 # 
 
-# In[6]:
+# In[1]:
 
 
 import numpy as np
@@ -17,7 +17,7 @@ np.random.seed(0)
 # 
 # ![Abstract Graph G5](./images/abstract_graph_G5.png)
 
-# In[7]:
+# In[2]:
 
 
 def test_cyclic_node_ordering_vertex():
@@ -42,7 +42,7 @@ def test_cyclic_node_ordering_vertex():
 
 # ## Verify the cyclic ordering of nodes for a crossing
 
-# In[7]:
+# In[3]:
 
 
 
@@ -54,25 +54,25 @@ def test_cyclic_node_ordering_vertex():
 # 
 # 
 
-# In[8]:
+# In[4]:
 
 
 def test_get_sub_edges():
 
+    np.random.seed(0)
+
     sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-    sg.project()
 
     sep = sg.get_sub_edges()
 
-    expected_sub_edges = [('b', 'c0'), ('c0', 'a'), ('b', 'c'), ('d', 'c0'), ('c0', 'c'), ('d', 'a')]
-
+    expected_sub_edges = [('b', 'crossing_0'), ('crossing_0', 'a'), ('b', 'c'), ('d', 'crossing_0'), ('crossing_0', 'c'), ('d', 'a')]
 
     assert sep == expected_sub_edges
 
 
-# In[8]:
+# In[4]:
 
 
 

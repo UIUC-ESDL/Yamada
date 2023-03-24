@@ -165,7 +165,7 @@ class LinearAlgebra:
 
     @staticmethod
     def rotate(positions: np.ndarray,
-               rotation: np.ndarray) -> np.ndarray:
+               rotation:  np.ndarray) -> np.ndarray:
         """
         Rotates a set of points about the first 3D point in the array.
 
@@ -239,23 +239,13 @@ class LinearAlgebra:
         Step 4: Using (10) compute t. If t is not in the range [0,1], modify t using (12).
         Step 5: With current values of t and u, compute the actual MinD using (7).
 
-        (7):
-        (10):
-        (11):
-        (12):
-
-        TODO Vectorize
-        TODO Enable NJIT
-        TODO Compare runtime against Scipy's cdist for moderately sized arrays
-        TODO Review publication
-        TODO Add unit tests and remove the "must be not horizontal or vertical?
-
         :param a: (1,3) numpy array
         :param b: (1,3) numpy array
         :param c: (1,3) numpy array
         :param d: (1,3) numpy array
 
         :return: Minimum distance between line segments, float
+        :return: Position of minimum distance, (1,3) numpy array
         """
 
         def clamp_bound(num):
@@ -337,16 +327,14 @@ class LinearAlgebra:
         return min_dist, min_dist_position
 
     @staticmethod
-    def calculate_intermediate_y_position(a: np.ndarray,
-                                          b: np.ndarray,
+    def calculate_intermediate_y_position(a:     np.ndarray,
+                                          b:     np.ndarray,
                                           x_int: float,
                                           z_int: float) -> float:
         """
         Calculates the intermediate y position given two points and the intermediate x and z position.
 
         Assumes that lines are not vertical or horizontal per the projection method input checks.
-
-        TODO Replace with the segment segment function!
 
         Example:
             a = (0,0,0)
@@ -385,7 +373,6 @@ class LinearAlgebra:
         return self.rotated_node_positions[:, [0, 2]]
 
 
-
     @staticmethod
     def calculate_counter_clockwise_angle(vector_a: np.ndarray,
                                           vector_b: np.ndarray) -> float:
@@ -408,11 +395,12 @@ class LinearAlgebra:
 
         def inner_angle(v, w):
             cosx = dot_product(v, w) / (length(v) * length(w))
-            rad = np.arccos(cosx)  # in radians
+            rad = np.arccos(cosx)     # in radians
             return rad * 180 / np.pi  # returns degrees
 
         inner = inner_angle(vector_a, vector_b)
         det = determinant(vector_a, vector_b)
+
         if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
             return inner
         else:  # if the det > 0 then A is immediately clockwise of B
@@ -444,7 +432,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Initialize a first rotation
         self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
-
 
         # Initialize attributes that are calculated later
         self.crossings = None
@@ -523,12 +510,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                          sorted(zip(adjacent_positions, adjacent_nodes), key=lambda pair: pair[0][0])]
 
         return ordered_nodes
-
-    # def get_projected_node_position(self, node):
-    #     """
-    #     Get the node position
-    #     """
-    #     return self.projected_node_positions[self.nodes.index(node)]
 
     def get_adjacent_nodes_or_crossings(self, reference_node):
         """
@@ -853,9 +834,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
                 crossing_edge_pairs.append(crossing_edge_pair)
 
-            else:
-                pass
-
 
         return crossings, crossing_positions, crossing_edge_pairs
 
@@ -884,8 +862,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
             try:
 
-                print('Loop')
-
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
@@ -896,8 +872,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
                     if x1 == x2 or z1 == z2:
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
-
-                print('Passed first check')
 
                 # Second, check adjacent edge pairs for validity.
                 # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
@@ -921,8 +895,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                    else:
-                        pass
 
                 # Third, Check nonadjacent edge pairs for validity.
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
@@ -930,14 +902,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 # between endpoints.
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
-                print('Passed second check')
-
                 self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
                 # If we made it this far without raising an exception, then we have a valid projection
                 valid_projection = True
-
-                print('Passed third check')
 
             except ValueError:
                 self.rotation = self.random_rotation()
