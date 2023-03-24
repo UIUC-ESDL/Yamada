@@ -2,8 +2,8 @@ import numpy as np
 from yamada import SpatialGraph
 import matplotlib.pyplot as plt
 
-# np.random.seed(0)
-np.random.seed(2)
+np.random.seed(0)
+# np.random.seed(2)
 # There should be a crossing... for 2
 
 component_a = 'c_a'
@@ -107,3 +107,16 @@ sg.plot()
 # ax.set_ylabel('Y')
 # ax.set_zlabel('Z')
 # plt.show()
+
+# sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+#                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+#                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+#
+# sg.plot()
+#
+# sep = sg.get_sub_edges()
+#
+# expected_sub_edges = [('b', 'crossing_0'), ('crossing_0', 'a'), ('b', 'c'), ('d', 'crossing_0'), ('crossing_0', 'c'), ('d', 'a')]
+#
+# print('answer:   ', sep)
+# print('expected: ', expected_sub_edges)

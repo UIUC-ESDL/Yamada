@@ -141,7 +141,6 @@ class LinearAlgebra:
 
     def __init__(self):
         self.rotated_node_positions = None
-        self.projected_node_positions = None
         self.rotation_generator_object = self.rotation_generator()
         self.rotation = self.random_rotation()
 
@@ -381,30 +380,11 @@ class LinearAlgebra:
 
         return y_int
 
-    def project_node_positions(self):
-        """
-        Project the node positions onto the x-z plane
-        """
-        self.projected_node_positions = self.rotated_node_positions[:, [0, 2]]
+    @property
+    def projected_node_positions(self):
+        return self.rotated_node_positions[:, [0, 2]]
 
-    def get_projected_node_position(self,
-                                    node: str) -> np.ndarray:
-        """
-        Get the projected node position
-        """
-        return self.projected_node_positions[self.nodes.index(node)]
 
-    def get_projected_node_positions(self,
-                                     nodes: list[str]) -> np.ndarray:
-        """
-        Get the projected node positions
-        """
-        projected_node_positions = []
-
-        for node in nodes:
-            projected_node_positions.append(self.get_projected_node_position(node))
-
-        return np.array(projected_node_positions)
 
     @staticmethod
     def calculate_counter_clockwise_angle(vector_a: np.ndarray,
@@ -464,7 +444,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Initialize a first rotation
         self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
-        self.project_node_positions()
+
 
         # Initialize attributes that are calculated later
         self.crossings = None
@@ -518,7 +498,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Get edge nodes and positions
         edge_nodes = [node for node in reference_edge]
-        edge_node_positions = self.get_projected_node_positions(edge_nodes)
+        edge_node_positions = [position for position, node in zip(self.projected_node_positions, self.nodes) if node in edge_nodes]
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
@@ -544,11 +524,11 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return ordered_nodes
 
-    def get_projected_node_position(self, node):
-        """
-        Get the node position
-        """
-        return self.projected_node_positions[self.nodes.index(node)]
+    # def get_projected_node_position(self, node):
+    #     """
+    #     Get the node position
+    #     """
+    #     return self.projected_node_positions[self.nodes.index(node)]
 
     def get_adjacent_nodes_or_crossings(self, reference_node):
         """
@@ -589,7 +569,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             node_ordering_dict = {}
 
         # Get the projected node positions
-        reference_node_position = self.get_projected_node_position(reference_node)
+        reference_node_position = self.projected_node_positions[self.nodes.index(reference_node)]
 
         # Initialize lists to store the adjacent node and edge information
         adjacent_nodes = self.get_adjacent_nodes_or_crossings(reference_node)
@@ -694,8 +674,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # If the left vertex of edge 1 is higher than the left vertex of edge 2:
         # Edge 1 goes from top left to bottom right.
         # Edge 2 goes from bottom left to top right.
-        edge_1_left_vertex_position = self.get_projected_node_position(edge_1_left_vertex)
-        edge_2_left_vertex_position = self.get_projected_node_position(edge_2_left_vertex)
+        edge_1_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_1_left_vertex)]
+        edge_2_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_2_left_vertex)]
 
         if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
 
@@ -866,18 +846,16 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             elif crossing_position is None:
                 pass
 
-            elif type(crossing_position) is np.ndarray and min_dist <= 0:
-                crossings.append('c' + str(crossing_num))
+            elif type(crossing_position) is np.ndarray and np.isclose(min_dist, 0):
+                crossings.append('crossing_' + str(crossing_num))
                 crossing_num += 1
                 crossing_positions.append(crossing_position)
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
                 crossing_edge_pairs.append(crossing_edge_pair)
 
-            elif type(crossing_position) is np.ndarray and min_dist > 0:
+            else:
                 pass
 
-            else:
-                raise NotImplementedError('There should be no else case.')
 
         return crossings, crossing_positions, crossing_edge_pairs
 
@@ -964,7 +942,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             except ValueError:
                 self.rotation = self.random_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
-                self.project_node_positions()
+
                 iter += 1
 
         if iter == max_iter:
