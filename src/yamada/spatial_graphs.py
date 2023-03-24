@@ -1,6 +1,6 @@
-"""
+"""Spatial Graphs
 
-TODO Create SpatialGraphDiagram Subclass
+This module contains classes and functions for working with spatial graphs.
 """
 
 import numpy as np
@@ -13,8 +13,7 @@ from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
 class AbstractGraph:
     """
-    TODO Check that all nodes adjoin at least 2 edges (no braids)
-    TODO Check if dangling nodes impact calculator
+    TODO Figure out what happens if the graph has dangling edges
     """
 
     def __init__(self,
@@ -89,7 +88,8 @@ class AbstractGraph:
 
         return edges
 
-    def node_degree(self, node):
+    def node_degree(self,
+                    node: str) -> int:
         """
         Returns the degree of a node.
 
@@ -97,7 +97,8 @@ class AbstractGraph:
         """
         return len([edge for edge in self.edges if node in edge])
 
-    def get_adjacent_nodes(self, reference_node):
+    def get_adjacent_nodes(self,
+                           reference_node: str) -> list[str]:
         """
         Get the adjacent nodes to a given node.
         """
@@ -423,7 +424,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Project the spatial graph onto a random the xz-plane
         self.project()
 
-    def _validate_node_positions(self, node_positions: np.ndarray) -> np.ndarray:
+    def _validate_node_positions(self,
+                                 node_positions: np.ndarray) -> np.ndarray:
         """
         Validates the user's input and returns an array of node positions.
 
@@ -460,7 +462,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return node_positions
 
-    def get_vertices_and_crossings_of_edge(self, reference_edge):
+    def get_vertices_and_crossings_of_edge(self,
+                                           reference_edge):
         """
         Returns the vertices and crossings of an edge, ordered from left to right.
         """
