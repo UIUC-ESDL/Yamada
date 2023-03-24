@@ -2,7 +2,9 @@ import numpy as np
 from yamada import SpatialGraph
 import matplotlib.pyplot as plt
 
-np.random.seed(1)
+# np.random.seed(0)
+np.random.seed(2)
+# There should be a crossing... for 2
 
 component_a = 'c_a'
 component_b = 'c_b'

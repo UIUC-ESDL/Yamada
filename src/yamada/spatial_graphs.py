@@ -206,80 +206,10 @@ class LinearAlgebra:
         return rotated_node_positions
 
     @staticmethod
-    def get_line_equation(p1: np.ndarray,
-                          p2: np.ndarray) -> tuple[float, float]:
-        """
-        Get the line equation in the form y = mx + b
-
-        This function assumes lines are not vertical or horizontal since the projection method generates
-        random projections until one contains no vertical or horizontal lines.
-
-        p1 = (x1, y1)
-        p2 = (x2, y2)
-        m = (y2 - y1) / (x2 - x1)
-        y = mx + b --> b = y - mx
-        """
-
-        slope = (p2[1] - p1[1]) / (p2[0] - p1[0])
-        intercept = p1[1] - slope * p1[0]
-
-        return slope, intercept
-
-    def get_line_segment_intersection(self,
-                                      a: np.ndarray,
+    def get_line_segment_intersection(a: np.ndarray,
                                       b: np.ndarray,
                                       c: np.ndarray,
-                                      d: np.ndarray) -> np.ndarray:
-        """
-        Get the intersection point of two line segments, if it exists. Otherwise, return None.
-
-        Each line is defined by two points (a, b) and (c, d).
-        Each point is represented by a tuple (x, y) or (x, y).
-
-        Important logic:
-        1. If slope and intercept are the same then the lines are overlapping and there are infinite overlapping points
-        2. If the slopes are the same but the intercepts are different, then the lines are parallel but not overlapping
-        3. If the slopes are different, then the lines will intersect (although it may occur out of the segment bounds)
-
-        :param a: Point A of line 1
-        :param b: Point B of line 1
-        :param c: Point A of line 2
-        :param d: Point B of line 2
-        """
-
-        m1, b1 = self.get_line_equation(a, b)
-        m2, b2 = self.get_line_equation(c, d)
-
-        if m1 == m2 and b1 == b2:
-            crossing_position = np.inf
-
-        elif m1 == m2 and b1 != b2:
-            crossing_position = None
-
-        else:
-            x = (b2 - b1) / (m1 - m2)
-            y = m1 * x + b1
-
-            x_outside_ab = (x < a[0] and x < b[0]) or (x > a[0] and x > b[0])
-            y_outside_ab = (y < a[1] and y < b[1]) or (y > a[1] and y > b[1])
-            x_outside_cd = (x < c[0] and x < d[0]) or (x > c[0] and x > d[0])
-            y_outside_cd = (y < c[1] and y < d[1]) or (y > c[1] and y > d[1])
-
-            crossing_point_outside_ab = x_outside_ab or y_outside_ab
-            crossing_point_outside_cd = x_outside_cd or y_outside_cd
-
-            if crossing_point_outside_ab or crossing_point_outside_cd:
-                crossing_position = None
-            else:
-                crossing_position = np.array([x, y])
-
-        return crossing_position
-
-    @staticmethod
-    def minimum_distance_segment_segment(a: np.ndarray,
-                                         b: np.ndarray,
-                                         c: np.ndarray,
-                                         d: np.ndarray) -> tuple[float, np.ndarray]:
+                                      d: np.ndarray) -> tuple[float, np.ndarray]:
         """
         Returns the minimum Euclidean distance between two line segments and its position.
 
@@ -340,15 +270,15 @@ class LinearAlgebra:
             else:
                 return num
 
-        d1 = b - a
-        d2 = d - c
+        d1  = b - a
+        d2  = d - c
         d12 = c - a
 
-        D1 = np.dot(d1, d1.T)
-        D2 = np.dot(d2, d2.T)
-        S1 = np.dot(d1, d12.T)
-        S2 = np.dot(d2, d12.T)
-        R = np.dot(d1, d2.T)
+        D1  = np.dot(d1, d1.T)
+        D2  = np.dot(d2, d2.T)
+        S1  = np.dot(d1, d12.T)
+        S2  = np.dot(d2, d12.T)
+        R   = np.dot(d1, d2.T)
         den = np.dot(D1, D2) - np.square(R)
 
         # Check if one or both line segments are points
@@ -398,11 +328,14 @@ class LinearAlgebra:
 
                 u = uf
 
-        dist = np.linalg.norm(d1 * t - d2 * u - d12)
+        min_dist = np.linalg.norm(d1 * t - d2 * u - d12)
 
-        min_dist_position = np.array([a + d1 * t]).reshape(-1)
+        if not np.isclose(min_dist, 0):
+            min_dist_position = None
+        else:
+            min_dist_position = np.array([a + d1 * t]).reshape(-1)
 
-        return dist, min_dist_position
+        return min_dist, min_dist_position
 
     @staticmethod
     def calculate_intermediate_y_position(a: np.ndarray,
@@ -925,7 +858,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             c = self.projected_node_positions[self.nodes.index(line_2[0])]
             d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
-            min_dist, crossing_position = self.minimum_distance_segment_segment(a, b, c, d)
+            min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
             if crossing_position is np.inf:
                 raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
@@ -997,7 +930,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    min_dist, crossing_position = self.minimum_distance_segment_segment(a, b, c, d)
+                    min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
                     if crossing_position is not None and crossing_position is not np.inf:
                         assertion_1 = all(np.isclose(crossing_position, a))
@@ -1119,9 +1052,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # ax1.set_zlim(-1.5, 2)
 
         ax1.title.set_text('Spatial Graph')
-        # ax1.xaxis.label.set_text('x')
-        # ax1.yaxis.label.set_text('y')
-        # ax1.zaxis.label.set_text('z')
+        ax1.xaxis.label.set_text('x')
+        ax1.yaxis.label.set_text('y')
+        ax1.zaxis.label.set_text('z')
 
         ax1.set_yticklabels([])
         ax1.set_xticklabels([])
@@ -1145,9 +1078,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # ax3.set_zlim(-1.25, 2)
 
         ax3.title.set_text('Spatial Graph Rotated')
-        # ax3.xaxis.label.set_text('x')
-        # ax3.yaxis.label.set_text('y')
-        # ax3.zaxis.label.set_text('z')
+        ax3.xaxis.label.set_text('x')
+        ax3.yaxis.label.set_text('y')
+        ax3.zaxis.label.set_text('z')
 
         # Figure layout
         # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
@@ -1178,6 +1111,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Put a legend to the right of the current axis
         # ax3.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
+        # ax3.legend(self.edges)
 
         # Plot 2D
         for edge in self.edges:
@@ -1191,7 +1125,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 
         # Put a legend to the right of the current axis
-        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, 0.5))
+        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, -0.25))
+
 
         # Plot crossing positions
         if self.crossing_positions is not None:
