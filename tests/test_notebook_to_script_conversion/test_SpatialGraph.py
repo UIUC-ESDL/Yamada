@@ -42,6 +42,8 @@ def test_cyclic_node_ordering_vertex():
 
 # ## Verify the cyclic ordering of nodes for a crossing
 # 
+# Note: I've gotten tripped up with the optical illusion of which faces are in front and which are in back. The annotations show the correct orientation.
+# 
 # ![Crossing Ordering](./images/crossing_ordering.png)
 
 # In[3]:
@@ -51,14 +53,14 @@ def test_cyclic_ordering_crossing():
 
     np.random.seed(0)
 
-    component_a = 'c_a'
-    component_b = 'c_b'
-    component_c = 'c_c'
-    component_d = 'c_d'
-    component_e = 'c_e'
-    component_f = 'c_f'
-    component_g = 'c_g'
-    component_h = 'c_h'
+    component_a = 'comp_a'
+    component_b = 'comp_b'
+    component_c = 'comp_c'
+    component_d = 'comp_d'
+    component_e = 'comp_e'
+    component_f = 'comp_f'
+    component_g = 'comp_g'
+    component_h = 'comp_h'
 
     waypoint_ab = 'w_ab'
     waypoint_ad = 'w_ad'
@@ -118,10 +120,11 @@ def test_cyclic_ordering_crossing():
 
     sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
+
     ordering_dict = sg.cyclic_node_ordering_crossings()
 
-    expected_dict = {'crossing_0': {'c_f': 0, 'c_c': 1, 'w_ef': 2, 'w_bc': 3},
-                     'crossing_1': {'w_eh': 0, 'c_d': 1, 'c_e': 2, 'w_cd': 3}}
+    expected_dict = {'crossing_0': {'comp_c': 0, 'w_ef': 1, 'w_bc': 2, 'comp_f': 3},
+                     'crossing_1': {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}}
 
     assert ordering_dict == expected_dict
 

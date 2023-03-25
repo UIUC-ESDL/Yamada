@@ -169,6 +169,9 @@ class LinearAlgebra:
         """
         Rotates a set of points about the first 3D point in the array.
 
+        :param positions: A numpy array of 3D points.
+        :param rotation: A numpy array of 3 Euler angles in radians.
+
         :return: new_positions:
         """
 
@@ -192,6 +195,7 @@ class LinearAlgebra:
                         [sin(gamma), cos(gamma), 0.],
                         [0., 0., 1.]])
 
+        # TODO Replace with explicitly formulated matrix
         r = r_z @ r_y @ r_x
 
         # Transpose positions from [[x1,y1,z1],[x2... ] to [[x1,x2,x3],[y1,... ]
@@ -345,7 +349,7 @@ class LinearAlgebra:
         ratio_x = (x_int - x1) / delta_x
         ratio_z = (z_int - z1) / delta_z
 
-        assert np.isclose(ratio_x, ratio_z)
+        # assert np.isclose(ratio_x, ratio_z)
 
         y_int = y1 + ratio_x * delta_y
 
@@ -645,8 +649,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Determine if the adjacent nodes are left or right
 
-        # todo c too
-
         edge_1_adjacent_node_0_position = self.get_node_or_crossing_projected_position(edge_1_adjacent_node_0)
         edge_1_adjacent_node_1_position = self.get_node_or_crossing_projected_position(edge_1_adjacent_node_1)
 
@@ -746,6 +748,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
+        # TODO Y crossing is showing wrong order
+        # TODO Is +y into screen?
+
         y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_vertex_position_3d,
                                                                   bottom_right_vertex_position_3d,
                                                                   crossing_position[0],
@@ -764,19 +769,41 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         crossing_order_dict = {}
 
-        # If the top right edge is under then it should be index zero; then follow CCW rotation
-        if y_crossing_tl_br > y_crossing_tr_bl:
-            crossing_order_dict[top_right_node] = 0
-            crossing_order_dict[top_left_node] = 1
-            crossing_order_dict[bottom_left_node] = 2
-            crossing_order_dict[bottom_right_node] = 3
+        # If the top right edge is under then it
 
-        # If the top left edge is under then it should be index zero; then follow CCW rotation
-        elif y_crossing_tl_br < y_crossing_tr_bl:
+        # If the y crossing of the TL/BR edge is greater than the y crossing of the TR/BL edge
+        # then the TL/BR edge is under the TR/BL edge because +y coordinates go into the screen
+        # TL should be index zero; then follow CCW rotation
+        if y_crossing_tl_br > y_crossing_tr_bl:
+            # crossing_order_dict[top_right_node] = 0
+            # crossing_order_dict[top_left_node] = 1
+            # crossing_order_dict[bottom_left_node] = 2
+            # crossing_order_dict[bottom_right_node] = 3
+
             crossing_order_dict[top_left_node] = 0
             crossing_order_dict[bottom_left_node] = 1
             crossing_order_dict[bottom_right_node] = 2
             crossing_order_dict[top_right_node] = 3
+
+        # IMPORTANT CONVENTION: -y is coming out of the screen and +y is going into the screen.
+        # Therefor the lesser y value is actually on top (normally, higher would make sense)
+
+
+        # If the top left edge is under then it should be index zero; then follow CCW rotation
+
+        # If the y crossing of the TL/BR edge is less than the y crossing of the TR/BL edge
+        # then the TL/BR edge is over the TR/BL edge because +y coordinates go into the screen
+        # TR should be index zero; then follow CCW rotation
+        elif y_crossing_tl_br < y_crossing_tr_bl:
+            # crossing_order_dict[top_left_node] = 0
+            # crossing_order_dict[bottom_left_node] = 1
+            # crossing_order_dict[bottom_right_node] = 2
+            # crossing_order_dict[top_right_node] = 3
+
+            crossing_order_dict[top_right_node] = 0
+            crossing_order_dict[top_left_node] = 1
+            crossing_order_dict[bottom_left_node] = 2
+            crossing_order_dict[bottom_right_node] = 3
 
         else:
             raise NotImplementedError('There should be no else case.')
@@ -1038,74 +1065,75 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         """
 
         fig = plt.figure()
+        ax2 = plt.subplot()
 
-        ax1 = plt.subplot(221, projection='3d')
-        ax2 = plt.subplot(222)
-        ax3 = plt.subplot(223, projection='3d')
-
-        # Axis 1
-
-        # ax1.set_xlim(-1.5, 2)
-        # ax1.set_ylim(-1.5, 2)
-        # ax1.set_zlim(-1.5, 2)
-
-        ax1.title.set_text('Spatial Graph')
-        ax1.xaxis.label.set_text('x')
-        ax1.yaxis.label.set_text('y')
-        ax1.zaxis.label.set_text('z')
-
-        ax1.set_yticklabels([])
-        ax1.set_xticklabels([])
-
-        # Axis 2
-
-        ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
-        ax2.xaxis.label.set_text('x')
-        ax2.yaxis.label.set_text('z')
-
-        ax2.set_yticklabels([])
-        ax2.set_xticklabels([])
-
-        # ax2.set_xlim(-0.5, 1.5)
-        # ax2.set_ylim(-0.5, 1.5)
-
-        # Axis 3
-
-        # ax3.set_xlim(-1.25, 2)
-        # ax3.set_ylim(-1.25, 2)
-        # ax3.set_zlim(-1.25, 2)
-
-        ax3.title.set_text('Spatial Graph Rotated')
-        ax3.xaxis.label.set_text('x')
-        ax3.yaxis.label.set_text('y')
-        ax3.zaxis.label.set_text('z')
-
-        # Figure layout
-        # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
-
-        # Plot 3D
-        for edge in self.edges:
-            point_1 = self.node_positions[self.nodes.index(edge[0])]
-            point_2 = self.node_positions[self.nodes.index(edge[1])]
-            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-
-        # Shrink current axis by 40%
-        box = ax1.get_position()
-        ax1.set_position([box.x0, box.y0, box.width * 0.75, box.height])
-
-        # Put a legend to the right of the current axis
-        # ax1.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
-
-        # Plot 3D
-        for edge in self.edges:
-            point_1 = self.rotated_node_positions[self.nodes.index(edge[0])]
-            point_2 = self.rotated_node_positions[self.nodes.index(edge[1])]
-            ax3.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-        # ax3.legend(self.edges)
-
-        # Shrink current axis by 40%
-        box = ax3.get_position()
-        ax3.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+        # ax1 = plt.subplot(221, projection='3d')
+        # ax2 = plt.subplot(222)
+        # ax3 = plt.subplot(223, projection='3d')
+        #
+        # # Axis 1
+        #
+        # # ax1.set_xlim(-1.5, 2)
+        # # ax1.set_ylim(-1.5, 2)
+        # # ax1.set_zlim(-1.5, 2)
+        #
+        # ax1.title.set_text('Spatial Graph')
+        # ax1.xaxis.label.set_text('x')
+        # ax1.yaxis.label.set_text('y')
+        # ax1.zaxis.label.set_text('z')
+        #
+        # ax1.set_yticklabels([])
+        # ax1.set_xticklabels([])
+        #
+        # # Axis 2
+        #
+        # ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
+        # ax2.xaxis.label.set_text('x')
+        # ax2.yaxis.label.set_text('z')
+        #
+        # ax2.set_yticklabels([])
+        # ax2.set_xticklabels([])
+        #
+        # # ax2.set_xlim(-0.5, 1.5)
+        # # ax2.set_ylim(-0.5, 1.5)
+        #
+        # # Axis 3
+        #
+        # # ax3.set_xlim(-1.25, 2)
+        # # ax3.set_ylim(-1.25, 2)
+        # # ax3.set_zlim(-1.25, 2)
+        #
+        # ax3.title.set_text('Spatial Graph Rotated')
+        # ax3.xaxis.label.set_text('x')
+        # ax3.yaxis.label.set_text('y')
+        # ax3.zaxis.label.set_text('z')
+        #
+        # # Figure layout
+        # # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
+        #
+        # # Plot 3D
+        # for edge in self.edges:
+        #     point_1 = self.node_positions[self.nodes.index(edge[0])]
+        #     point_2 = self.node_positions[self.nodes.index(edge[1])]
+        #     ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        #
+        # # Shrink current axis by 40%
+        # box = ax1.get_position()
+        # ax1.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+        #
+        # # Put a legend to the right of the current axis
+        # # ax1.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
+        #
+        # # Plot 3D
+        # for edge in self.edges:
+        #     point_1 = self.rotated_node_positions[self.nodes.index(edge[0])]
+        #     point_2 = self.rotated_node_positions[self.nodes.index(edge[1])]
+        #     ax3.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        # # ax3.legend(self.edges)
+        #
+        # # Shrink current axis by 40%
+        # box = ax3.get_position()
+        # ax3.set_position([box.x0, box.y0, box.width * 0.75, box.height])
 
         # Put a legend to the right of the current axis
         # ax3.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
@@ -1120,10 +1148,12 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Shrink current axis by 40%
         box = ax2.get_position()
-        ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
+        # ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
 
         # Put a legend to the right of the current axis
-        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, -0.25))
+        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, -0.25))
+        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(0.75, 0.5), fontsize=9)
+        # ax2.legend(self.edges)
 
 
         # Plot crossing positions

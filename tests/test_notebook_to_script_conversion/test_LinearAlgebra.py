@@ -54,4 +54,37 @@ def test_calculate_counter_clockwise_angle():
     assert np.isclose(angle_300, 300)
 
 
-# ## Test ...
+# ## Test Rotation
+
+# Rotate 90 degrees
+
+# In[ ]:
+
+
+def test_rotation_at_origin():
+
+    la = LinearAlgebra()
+
+    rotation = np.array([0,0,np.pi/2])
+
+    # Define a unit cube
+
+    component_positions = np.array([[0, 0, 0],  # a
+                                    [1, 0, 0],  # b
+                                    [1, 1, 0],  # c
+                                    [0, 1, 0],  # d
+                                    [0, 0, 1],  # e
+                                    [1, 0, 1],  # f
+                                    [1, 1, 1],  # g
+                                    [0, 1, 1]])  # h
+
+    # Rotate the cube
+
+    rotated_component_positions = la.rotate(component_positions, rotation)
+
+
+# In[ ]:
+
+
+
+
