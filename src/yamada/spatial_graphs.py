@@ -474,7 +474,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Get edge nodes and positions
         edge_nodes = [node for node in reference_edge]
-        edge_node_positions = [position for position, node in zip(self.projected_node_positions, self.nodes) if node in edge_nodes]
+        # edge_node_positions = [position for position, node in zip(self.projected_node_positions, self.nodes) if node in edge_nodes]
+        edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
@@ -636,10 +637,17 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Determine which edge goes from top left to bottom right and which edge goes from bottom left to top right.
 
+        # get_vertices_and_crossings_of_edge
+
+
         # Get the edges that are connected to the crossing
+        # TODO Verify edges are ordered from left to right
         edge_1, edge_2 = self.crossing_edge_pairs[self.crossings.index(crossing)]
         edge_1_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_1)
         edge_2_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_2)
+
+
+        # TODO Get actually adjacent nodes
 
         # Get the nodes that are adjacent to the crossing (whether a vertex or another crossing)
         crossing_index_edge_1 = edge_1_nodes_and_crossings.index(crossing)
@@ -673,8 +681,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             edge_2_left_node  = edge_2_adjacent_node_1
             edge_2_right_node = edge_2_adjacent_node_0
 
-
-        # TODO Can I remove the vertices now?
 
         # Get the vertices that the beginning and end of each edge
         # While the crossing might be adjoined be other crossings, crossings only occur in 2D.
@@ -725,7 +731,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                                                                    crossing_position[0],
                                                                    crossing_position[1])
 
-
+        if y_crossing_edge_1 == y_crossing_edge_2:
+            raise Exception('These crossings should not intersect in 3D')
 
 
 
@@ -740,8 +747,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # adjacent_nodes = self.get_adjacent_nodes_or_crossings(crossing)
         # adjacent_node_positions = self.get_node_or_crossing_projected_positions(crossing)
 
-        # TODO replace vertices to include nodes
-        # adjacent_vertices = [edge_1_vertex_1, edge_1_vertex_2, edge_2_vertex_1, edge_2_vertex_2]
 
         edge_1_left_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_1_left_vertex)
         edge_1_right_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_1_right_vertex)
@@ -751,12 +756,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         adjacent_vertex_positions_projected = [edge_1_left_vertex_position_projected, edge_1_right_vertex_position_projected, edge_2_left_vertex_position_projected, edge_2_right_vertex_position_projected]
 
-        # TODO .
-        #  node position does not match order position necessarily
         adjacent_nodes = [edge_1_left_node, edge_1_right_node, edge_2_left_node, edge_2_right_node]
-        # It's ok to use vertex position but nodes
-        # adjacent_vertex_positions = [edge_1_left_vertex_position, edge_1_right_vertex_position, edge_2_left_vertex_position, edge_2_right_vertex_position]
-
+        adjacent_vertices = [edge_1_left_vertex, edge_1_right_vertex, edge_2_left_vertex, edge_2_right_vertex]
 
         # Shift nodes to the origin
         shifted_adjacent_vertex_positions = adjacent_vertex_positions_projected - reference_node_position
@@ -778,137 +779,36 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         else:
             raise Exception("Crossing is on the same horizontal line as the edges")
 
-        # instead of top, just use edge1/2 and index
 
 
         for shifted_adjacent_node_position in shifted_adjacent_vertex_positions:
             rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
-
-
+        # Sort the nodes by their angle
         ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
+
+        # Sort the vertices by their angle (used for reference)
+        ordered_vertices = [node for _, node in sorted(zip(rotations, adjacent_vertices))]
+
+        # TODO include crossings in edge check
 
         # If first node is behind
         first_node = ordered_nodes[0]
-        if first_node in under_edge:
+        first_vertex = ordered_vertices[0]
+
+        if first_vertex in under_edge:
             crossing_indices = [0, 1, 2, 3]
-        elif first_node in over_edge:
+        elif first_vertex in over_edge:
             crossing_indices = [1, 2, 3, 0]
-
-
+        else:
+            raise Exception("First node is not on either edge")
 
 
         ccw_crossing_ordering = {}
         for node, index in zip(ordered_nodes, crossing_indices):
             ccw_crossing_ordering[node] = index
 
-        # TODO assign adjacent node/crossing in ordered nodes, it's not getting crossings as nodes... its skipping to vertex
 
-        #
-        #
-        # # If the left vertex of edge 1 is higher than the left vertex of edge 2:
-        # # Edge 1 goes from top left to bottom right.
-        # # Edge 2 goes from bottom left to top right.
-        # edge_1_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_1_left_vertex)]
-        # edge_2_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_2_left_vertex)]
-        #
-        # if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
-        #
-        #     top_left_vertex     = edge_1_left_vertex
-        #     bottom_left_vertex  = edge_2_left_vertex
-        #     top_right_vertex    = edge_2_right_vertex
-        #     bottom_right_vertex = edge_1_right_vertex
-        #
-        #     top_left_node     = edge_1_left_node
-        #     bottom_left_node  = edge_2_left_node
-        #     top_right_node    = edge_2_right_node
-        #     bottom_right_node = edge_1_right_node
-        #
-        #
-        # # TODO FIX THIS LOGIC
-        # elif edge_1_left_vertex_position[1] < edge_2_left_vertex_position[1]:
-        #
-        #     top_left_vertex     = edge_2_left_vertex
-        #     bottom_left_vertex  = edge_1_left_vertex
-        #     top_right_vertex    = edge_1_right_vertex
-        #     bottom_right_vertex = edge_2_right_vertex
-        #
-        #     top_left_node     = edge_2_left_node
-        #     bottom_left_node  = edge_1_left_node
-        #     top_right_node    = edge_1_right_node
-        #     bottom_right_node = edge_2_right_node
-        #
-        # else:
-        #     raise RuntimeError("The left vertices of the edges are at the same height. This should not happen.")
-        #
-        # # Now determine which edge is in front of the other.
-        #
-        # top_left_vertex_position_3d = self.rotated_node_positions[self.nodes.index(top_left_vertex)]
-        # top_right_vertex_position_3d = self.rotated_node_positions[self.nodes.index(top_right_vertex)]
-        # bottom_left_vertex_position_3d = self.rotated_node_positions[self.nodes.index(bottom_left_vertex)]
-        # bottom_right_vertex_position_3d = self.rotated_node_positions[self.nodes.index(bottom_right_vertex)]
-        #
-        # crossing_position = self.crossing_positions[self.crossings.index(crossing)]
-        #
-        # # TODO Y crossing is showing wrong order
-        # # TODO Is +y into screen?
-        #
-        # y_crossing_tl_br = self.calculate_intermediate_y_position(top_left_vertex_position_3d,
-        #                                                           bottom_right_vertex_position_3d,
-        #                                                           crossing_position[0],
-        #                                                           crossing_position[1])
-        #
-        # y_crossing_tr_bl = self.calculate_intermediate_y_position(top_right_vertex_position_3d,
-        #                                                           bottom_left_vertex_position_3d,
-        #                                                           crossing_position[0],
-        #                                                           crossing_position[1])
-        #
-        # if y_crossing_tl_br == y_crossing_tr_bl:
-        #     raise RuntimeError('The edges are planar and therefore the interconnects they represent physically '
-        #                        'intersect. This is not a valid spatial graph. Edges: {}, {}.'.format(edge_1, edge_2))
-        #
-        # # Finally, assign cyclic edge ordering based on the relative positions of the edges.
-        #
-        # crossing_order_dict = {}
-        #
-        # # If the top right edge is under then it
-        #
-        # # If the y crossing of the TL/BR edge is greater than the y crossing of the TR/BL edge
-        # # then the TL/BR edge is under the TR/BL edge because +y coordinates go into the screen
-        # # TL should be index zero; then follow CCW rotation
-        # if y_crossing_tl_br > y_crossing_tr_bl:
-        #     # crossing_order_dict[top_right_node] = 0
-        #     # crossing_order_dict[top_left_node] = 1
-        #     # crossing_order_dict[bottom_left_node] = 2
-        #     # crossing_order_dict[bottom_right_node] = 3
-        #
-        #     crossing_order_dict[top_left_node] = 0
-        #     crossing_order_dict[bottom_left_node] = 1
-        #     crossing_order_dict[bottom_right_node] = 2
-        #     crossing_order_dict[top_right_node] = 3
-        #
-        # # IMPORTANT CONVENTION: -y is coming out of the screen and +y is going into the screen.
-        # # Therefor the lesser y value is actually on top (normally, higher would make sense)
-        #
-        #
-        # # If the top left edge is under then it should be index zero; then follow CCW rotation
-        #
-        # # If the y crossing of the TL/BR edge is less than the y crossing of the TR/BL edge
-        # # then the TL/BR edge is over the TR/BL edge because +y coordinates go into the screen
-        # # TR should be index zero; then follow CCW rotation
-        # elif y_crossing_tl_br < y_crossing_tr_bl:
-        #     # crossing_order_dict[top_left_node] = 0
-        #     # crossing_order_dict[bottom_left_node] = 1
-        #     # crossing_order_dict[bottom_right_node] = 2
-        #     # crossing_order_dict[top_right_node] = 3
-        #
-        #     crossing_order_dict[top_right_node] = 0
-        #     crossing_order_dict[top_left_node] = 1
-        #     crossing_order_dict[bottom_left_node] = 2
-        #     crossing_order_dict[bottom_right_node] = 3
-        #
-        # else:
-        #     raise NotImplementedError('There should be no else case.')
 
         node_ordering_dict[crossing] = ccw_crossing_ordering
 

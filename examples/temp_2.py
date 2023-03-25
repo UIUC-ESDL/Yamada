@@ -2,8 +2,10 @@ import numpy as np
 from yamada import SpatialGraph
 
 # np.random.seed(2)
-np.random.seed(2)
-# 1, 2 is broken, maybe edges with 3 crossings?
+# np.random.seed(5)
+# 1, is broken, maybe edges with 3 crossings?
+
+# save seed 5. It was broken but then fixed
 
 
 component_a = 'comp_a'
@@ -113,18 +115,16 @@ sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
 sg.plot()
 
-# sgd = sg.create_spatial_graph_diagram()
-# yp = sgd.normalized_yamada_polynomial()
-# print("Yamada Polynomial:", yp)
+sgd = sg.create_spatial_graph_diagram()
+yp = sgd.normalized_yamada_polynomial()
+print("Yamada Polynomial:", yp)
 
 ordering_dict = sg.cyclic_node_ordering_crossings()
 #
-#
-# expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3,   'w_dh': 0},
-#                  'crossing_1': {'comp_b': 1, 'comp_c': 2, 'w_bf': 3,   'w_cg': 0},
-#                  'crossing_2': {'w_cg': 0,   'comp_b': 1, 'comp_g': 2, 'w_bf': 3},
-#                  'crossing_3': {'w_gh': 0,   'w_bf': 1,   'comp_g': 2, 'comp_f': 3}}
-#
+
+expected_dict = {'crossing_0': {'w_bc': 0, 'crossing_1': 1, 'comp_b': 2, 'comp_h': 3},
+                 'crossing_1': {'crossing_2': 0, 'w_dh': 1, 'comp_b': 2, 'crossing_0': 3},
+                 'crossing_2': {'w_bf': 0, 'w_gh': 1, 'crossing_1': 2, 'comp_h': 3}}
 #
 print("ordering_dict:", ordering_dict)
 # # print("expected_dict:", expected_dict)
