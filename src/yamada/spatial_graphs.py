@@ -739,11 +739,27 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Crossings are not relevant for this calculation since they exist along edges
         # adjacent_nodes = self.get_adjacent_nodes_or_crossings(crossing)
         # adjacent_node_positions = self.get_node_or_crossing_projected_positions(crossing)
-        adjacent_vertices = [edge_1_vertex_1, edge_1_vertex_2, edge_2_vertex_1, edge_2_vertex_2]
-        adjacent_vertex_positions = [edge_1_vertex_1_position, edge_1_vertex_2_position, edge_2_vertex_1_position, edge_2_vertex_2_position]
+
+        # TODO replace vertices to include nodes
+        # adjacent_vertices = [edge_1_vertex_1, edge_1_vertex_2, edge_2_vertex_1, edge_2_vertex_2]
+
+        edge_1_left_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_1_left_vertex)
+        edge_1_right_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_1_right_vertex)
+        edge_2_left_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_2_left_vertex)
+        edge_2_right_vertex_position_projected = self.get_node_or_crossing_projected_position(edge_2_right_vertex)
+
+
+        adjacent_vertex_positions_projected = [edge_1_left_vertex_position_projected, edge_1_right_vertex_position_projected, edge_2_left_vertex_position_projected, edge_2_right_vertex_position_projected]
+
+        # TODO .
+        #  node position does not match order position necessarily
+        adjacent_nodes = [edge_1_left_node, edge_1_right_node, edge_2_left_node, edge_2_right_node]
+        # It's ok to use vertex position but nodes
+        # adjacent_vertex_positions = [edge_1_left_vertex_position, edge_1_right_vertex_position, edge_2_left_vertex_position, edge_2_right_vertex_position]
+
 
         # Shift nodes to the origin
-        shifted_adjacent_vertex_positions = adjacent_vertex_positions - reference_node_position
+        shifted_adjacent_vertex_positions = adjacent_vertex_positions_projected - reference_node_position
 
         # Horizontal line (reference for angles)
         reference_vector = np.array([1, 0])
@@ -770,7 +786,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
 
 
-        ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_vertices))]
+        ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
 
         # If first node is behind
         first_node = ordered_nodes[0]
@@ -786,10 +802,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         for node, index in zip(ordered_nodes, crossing_indices):
             ccw_crossing_ordering[node] = index
 
-        print('next')
+        # TODO assign adjacent node/crossing in ordered nodes, it's not getting crossings as nodes... its skipping to vertex
 
-
-        # # TODO REPLACE THIS LOGIC WITH CYCLIC ORDERING?
+        #
         #
         # # If the left vertex of edge 1 is higher than the left vertex of edge 2:
         # # Edge 1 goes from top left to bottom right.
@@ -797,7 +812,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # edge_1_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_1_left_vertex)]
         # edge_2_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_2_left_vertex)]
         #
-        # # TODO FIX THIS LOGIC
         # if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
         #
         #     top_left_vertex     = edge_1_left_vertex
@@ -1098,7 +1112,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         """
 
         if self.crossing_positions is not None:
-            crossings = [Crossing('crossing_' + str(i)) for i in range(len(self.crossing_positions))]
+            crossings = [Crossing('crossing_object_' + str(i)) for i in range(len(self.crossing_positions))]
         else:
             crossings = []
 

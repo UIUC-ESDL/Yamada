@@ -113,22 +113,22 @@ sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
 sg.plot()
 
-sgd = sg.create_spatial_graph_diagram()
-yp = sgd.normalized_yamada_polynomial()
-print("Yamada Polynomial:", yp)
+# sgd = sg.create_spatial_graph_diagram()
+# yp = sgd.normalized_yamada_polynomial()
+# print("Yamada Polynomial:", yp)
 
 ordering_dict = sg.cyclic_node_ordering_crossings()
-
-
-expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3,   'w_dh': 0},
-                 'crossing_1': {'comp_b': 1, 'comp_c': 2, 'w_bf': 3,   'w_cg': 0},
-                 'crossing_2': {'w_cg': 0,   'comp_b': 1, 'comp_g': 2, 'w_bf': 3},
-                 'crossing_3': {'w_gh': 0,   'w_bf': 1,   'comp_g': 2, 'comp_f': 3}}
-
-
-print("ordering_dict:", ordering_dict)
-# print("expected_dict:", expected_dict)
 #
+#
+# expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3,   'w_dh': 0},
+#                  'crossing_1': {'comp_b': 1, 'comp_c': 2, 'w_bf': 3,   'w_cg': 0},
+#                  'crossing_2': {'w_cg': 0,   'comp_b': 1, 'comp_g': 2, 'w_bf': 3},
+#                  'crossing_3': {'w_gh': 0,   'w_bf': 1,   'comp_g': 2, 'comp_f': 3}}
+#
+#
+print("ordering_dict:", ordering_dict)
+# # print("expected_dict:", expected_dict)
+# #
 # assert ordering_dict == expected_dict
 
 
