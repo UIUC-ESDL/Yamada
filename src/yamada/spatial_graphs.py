@@ -705,6 +705,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             edge_2_right_vertex = edge_2_vertex_1
 
 
+        # TODO REPLACE THIS LOGIC WITH CYCLIC ORDERING?
 
         # If the left vertex of edge 1 is higher than the left vertex of edge 2:
         # Edge 1 goes from top left to bottom right.
@@ -712,28 +713,31 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         edge_1_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_1_left_vertex)]
         edge_2_left_vertex_position = self.projected_node_positions[self.nodes.index(edge_2_left_vertex)]
 
+        # TODO FIX THIS LOGIC
         if edge_1_left_vertex_position[1] > edge_2_left_vertex_position[1]:
 
-            top_left_vertex = edge_1_left_vertex
-            bottom_left_vertex = edge_2_left_vertex
-            top_right_vertex = edge_2_right_vertex
+            top_left_vertex     = edge_1_left_vertex
+            bottom_left_vertex  = edge_2_left_vertex
+            top_right_vertex    = edge_2_right_vertex
             bottom_right_vertex = edge_1_right_vertex
 
-            top_left_node = edge_1_left_node
-            bottom_left_node = edge_2_left_node
-            top_right_node = edge_2_right_node
+            top_left_node     = edge_1_left_node
+            bottom_left_node  = edge_2_left_node
+            top_right_node    = edge_2_right_node
             bottom_right_node = edge_1_right_node
 
+
+        # TODO FIX THIS LOGIC
         elif edge_1_left_vertex_position[1] < edge_2_left_vertex_position[1]:
 
-            top_left_vertex = edge_2_left_vertex
-            bottom_left_vertex = edge_1_left_vertex
-            top_right_vertex = edge_1_right_vertex
+            top_left_vertex     = edge_2_left_vertex
+            bottom_left_vertex  = edge_1_left_vertex
+            top_right_vertex    = edge_1_right_vertex
             bottom_right_vertex = edge_2_right_vertex
 
-            top_left_node = edge_2_left_node
-            bottom_left_node = edge_1_left_node
-            top_right_node = edge_1_right_node
+            top_left_node     = edge_2_left_node
+            bottom_left_node  = edge_1_left_node
+            top_right_node    = edge_1_right_node
             bottom_right_node = edge_2_right_node
 
         else:
