@@ -715,15 +715,15 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
-        y_crossing_tl_br = self.calculate_intermediate_y_position(edge_1_left_vertex_position,
-                                                                  edge_1_right_vertex_position,
-                                                                  crossing_position[0],
-                                                                  crossing_position[1])
+        y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_vertex_position,
+                                                                   edge_1_right_vertex_position,
+                                                                   crossing_position[0],
+                                                                   crossing_position[1])
 
-        y_crossing_tr_bl = self.calculate_intermediate_y_position(edge_2_left_vertex_position,
-                                                                  edge_2_right_vertex_position,
-                                                                  crossing_position[0],
-                                                                  crossing_position[1])
+        y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_vertex_position,
+                                                                   edge_2_right_vertex_position,
+                                                                   crossing_position[0],
+                                                                   crossing_position[1])
 
 
 
@@ -750,16 +750,19 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         rotations = []
 
-        if y_crossing_tr_bl < y_crossing_tl_br:
+        # convention...
+        if y_crossing_edge_2 < y_crossing_edge_1:
             # First edge is under
-            crossing_indices = [0, 1, 2, 3]
-        elif y_crossing_tr_bl > y_crossing_tl_br:
+            under_edge = edge_1
+            over_edge = edge_2
+        elif y_crossing_edge_2 > y_crossing_edge_1:
             # First edge is over
-            crossing_indices = [1, 2, 3, 0]
+            under_edge = edge_2
+            over_edge = edge_1
         else:
             raise Exception("Crossing is on the same horizontal line as the edges")
 
-
+        # instead of top, just use edge1/2 and index
 
 
         for shifted_adjacent_node_position in shifted_adjacent_vertex_positions:
@@ -770,11 +773,20 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_vertices))]
 
         # If first node is behind
+        first_node = ordered_nodes[0]
+        if first_node in under_edge:
+            crossing_indices = [0, 1, 2, 3]
+        elif first_node in over_edge:
+            crossing_indices = [1, 2, 3, 0]
+
+
+
 
         ccw_crossing_ordering = {}
         for node, index in zip(ordered_nodes, crossing_indices):
             ccw_crossing_ordering[node] = index
 
+        print('next')
 
 
         # # TODO REPLACE THIS LOGIC WITH CYCLIC ORDERING?

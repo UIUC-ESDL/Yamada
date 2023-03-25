@@ -113,9 +113,9 @@ sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
 sg.plot()
 
-# sgd = sg.create_spatial_graph_diagram()
-# yp = sgd.normalized_yamada_polynomial()
-# print("Yamada Polynomial:", yp)
+sgd = sg.create_spatial_graph_diagram()
+yp = sgd.normalized_yamada_polynomial()
+print("Yamada Polynomial:", yp)
 
 ordering_dict = sg.cyclic_node_ordering_crossings()
 
