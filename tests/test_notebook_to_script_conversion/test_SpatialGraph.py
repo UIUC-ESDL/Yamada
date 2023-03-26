@@ -34,7 +34,7 @@ def test_cyclic_node_ordering_vertex():
 
     sg.project()
 
-    order = sg.cyclic_node_ordering_vertex('c')
+    order = sg.cyclic_ordering_vertex('c')
     expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
 
     assert order == expected_order

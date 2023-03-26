@@ -119,14 +119,14 @@ sgd = sg.create_spatial_graph_diagram()
 yp = sgd.normalized_yamada_polynomial()
 print("Yamada Polynomial:", yp)
 
-ordering_dict = sg.cyclic_node_ordering_crossings()
+# ordering_dict = sg.cyclic_node_ordering_crossings()
+# #
 #
-
-expected_dict = {'crossing_0': {'w_bc': 0, 'crossing_1': 1, 'comp_b': 2, 'comp_h': 3},
-                 'crossing_1': {'crossing_2': 0, 'w_dh': 1, 'comp_b': 2, 'crossing_0': 3},
-                 'crossing_2': {'w_bf': 0, 'w_gh': 1, 'crossing_1': 2, 'comp_h': 3}}
-#
-print("ordering_dict:", ordering_dict)
+# expected_dict = {'crossing_0': {'w_bc': 0, 'crossing_1': 1, 'comp_b': 2, 'comp_h': 3},
+#                  'crossing_1': {'crossing_2': 0, 'w_dh': 1, 'comp_b': 2, 'crossing_0': 3},
+#                  'crossing_2': {'w_bf': 0, 'w_gh': 1, 'crossing_1': 2, 'comp_h': 3}}
+# #
+# print("ordering_dict:", ordering_dict)
 # # print("expected_dict:", expected_dict)
 # #
 # assert ordering_dict == expected_dict
