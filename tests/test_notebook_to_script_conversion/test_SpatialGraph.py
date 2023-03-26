@@ -3,7 +3,7 @@
 
 # 
 
-# In[1]:
+# In[6]:
 
 
 import numpy as np
@@ -17,7 +17,7 @@ np.random.seed(0)
 # 
 # ![Abstract Graph G5](./images/abstract_graph_G5.png)
 
-# In[2]:
+# In[7]:
 
 
 def test_cyclic_node_ordering_vertex():
@@ -34,7 +34,7 @@ def test_cyclic_node_ordering_vertex():
 
     sg.project()
 
-    order = sg.cyclic_ordering_vertex('c')
+    order = sg.cyclic_order_vertex('c')
     expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
 
     assert order == expected_order
@@ -48,7 +48,7 @@ def test_cyclic_node_ordering_vertex():
 # 
 # ![Crossing Ordering](./images/crossing_ordering.png)
 
-# In[3]:
+# In[8]:
 
 
 def test_cyclic_ordering_crossing():
@@ -123,7 +123,7 @@ def test_cyclic_ordering_crossing():
     sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
 
-    ordering_dict = sg.cyclic_node_ordering_crossings()
+    ordering_dict = sg.cyclic_order_crossings()
 
     expected_dict = {'crossing_0': {'comp_c': 2, 'w_ef': 3, 'w_bc': 0, 'comp_f': 1},
                      'crossing_1': {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}}
@@ -135,7 +135,7 @@ def test_cyclic_ordering_crossing():
 # 
 # ![Crossing Ordering](./images/crossing_ordering_2.png)
 
-# In[3]:
+# In[9]:
 
 
 def test_cyclic_ordering_crossing_2():
@@ -210,7 +210,7 @@ def test_cyclic_ordering_crossing_2():
     sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
 
-    ordering_dict = sg.cyclic_node_ordering_crossings()
+    ordering_dict = sg.cyclic_order_crossings()
 
     expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3,   'w_dh': 0},
                      'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3,   'w_cg': 0},
@@ -220,13 +220,17 @@ def test_cyclic_ordering_crossing_2():
     assert ordering_dict == expected_dict
 
 
+# ## Example 3
+
+# ![Crossing Ordering](./images/crossing_ordering_3.png)
+
 # ## Divide edges into sub-edges
 # 
 # ![Infinity Symbol](./images/infinity_symbol.png)
 # 
 # 
 
-# In[4]:
+# In[11]:
 
 
 def test_get_sub_edges():
@@ -244,7 +248,7 @@ def test_get_sub_edges():
     assert sep == expected_sub_edges
 
 
-# In[4]:
+# In[11]:
 
 
 

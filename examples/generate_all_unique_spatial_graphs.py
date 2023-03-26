@@ -3,7 +3,7 @@ from yamada import SpatialGraph
 
 from time import time_ns
 
-np.random.seed(0)
+np.random.seed(2)
 
 
 component_a = 'comp_a'
@@ -93,7 +93,7 @@ runtime = []
 
 
 
-for i in range(5):
+for i in range(1):
 
     np.random.seed(i+70)
 
