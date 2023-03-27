@@ -57,7 +57,7 @@ import pickle
 from cypari import pari
 from .H_polynomial import h_poly
 from .utilities import get_coefficients_and_exponents
-from numba import njit
+
 
 
 
