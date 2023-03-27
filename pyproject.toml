@@ -26,7 +26,6 @@ dependencies = [
     "cypari~=2.4.1",
     "jupyter",
     "nbconvert",
-    "pytest",
 ]
 
 [project.optional-dependencies]

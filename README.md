@@ -1,21 +1,46 @@
-# Yamada: The Python Library for Calculating Yamada Polynomials
+# Yamada: The Python Library for Calculating the Yamada Polynomial of Spatial Graphs
+
+[![ASME IDETC Paper](https://img.shields.io/badge/DOI-10.1038%2Fs41592--019--0686--2-blue)](
+https://doi.org/10.1115/DETC2021-66900)
+
+[![Python package](https://github.com/Chad-Peterson/Yamada/actions/workflows/tests.yml/badge.svg)](https://github.com/Chad-Peterson/Yamada/actions/workflows/tests.yml)
+
+[![Windows](https://svgshare.com/i/ZhY.svg)](https://svgshare.com/i/ZhY.svg)
+[![macOS](https://svgshare.com/i/ZjP.svg)](https://svgshare.com/i/ZjP.svg)
+[![Linux](https://svgshare.com/i/Zhy.svg)](https://svgshare.com/i/Zhy.svg)
+
+
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
+
 
 ![Yamada Logo](./images/yamada_logo.png)
 
-TODO: Add a description of the project.
+## Spatial Topologies and Yamada Polynomials
 
-## Publications
+Systems such as automotive cooling layouts, hybrid-electric power trains, and aero-engines are made up of interconnected
+components that are spatially arranged to meet system requirements. Holistically optimizing these types of systems is an
+extremely challenging problem due to the combinatorial nature of the design space. The research community is exploring
+different design representations and algorithms to address this problem.
+
+This library provides a Python implementation of the spatial graphs, spatial graph diagrams, and Yamada polynomial.
+These spatial-topological constructs are powerful tools for representing and analyzing complex engineering systems.
+By representing engineering systems as spatial topologies we abstract away complex geometry while
+retaining some low-fidelity, directionally correct information. Yamada polynomials are a calculated quantity that
+is essentially a fingerprint of a spatial topology. This fingerprint can be used to identify unique spatial topologies.
+
+We are currently collecting and analyzing empirical data to determine the effectiveness of spatial topologies and
+Yamada polynomials as a design representation for different classes of problems.
+
+## Important Notice
+
+Since this library is still early in development features are often added and removed.
+Please feel free to reach out to Chad <cp44@illinois.edu> with any questions or concerns.
 
 ## Installation
-Yamada is available on PyPI. To install Yamada, run the following command in your terminal:
+Yamada requires Python 3.9+ and is supported on Windows, Mac, and Linux. 
+It can be installed from PyPI with the following command in your terminal:
 
 >pip install yamada
 
-Since this library is still early in development it has not been tested for compatibility across
-a large range of environments. If you encounter any issues, please submit an issue on the GitHub.
-With that said, it should work on any system that supports Python 3.10.0 or higher.
 
-## Known Issues
-1. Some of the input checks and validations are written conservatively. I've noticed the library will occasionally throw 
-an error when calculating the Yamada polynomial of a very large spatial topology. The issue
-seems to resolve itself when rerunning the program.
+
