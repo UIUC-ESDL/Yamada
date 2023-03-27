@@ -4,6 +4,7 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
 
+
   # Test on all supported Python versions.
   Python:
 
@@ -23,7 +24,7 @@ jobs:
             python-version: ${{ matrix.python }}
 
       - name: Install package.
-        run:  pip install .
+        run:  pip install .[test]
 
       - name: Run tests.
         run:  pytest
