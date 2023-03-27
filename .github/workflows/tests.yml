@@ -4,6 +4,34 @@ on: [push, pull_request, workflow_dispatch]
 
 jobs:
 
+  # Test on all three platforms.
+  platform:
+
+    strategy:
+      matrix:
+        os: [ windows-latest, ubuntu-latest, macos-latest ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out code.
+        uses: actions/checkout@v3
+
+      - name: Set up Python.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install project.
+        run: pip install .[test]
+
+        # Some unit tests are written in Jupyter notebooks. However, PyTest does not parse notebooks.
+        # Therefore, we convert the notebooks to scripts and run the tests on the scripts.
+      - name: Ensure all tests reflect the latest Jupyter notebooks.
+        run: cd tests && python convert_notebooks_to_scripts.py
+
+      - name: Run tests.
+        run:  cd .. && pytest
 
   # Test on all supported Python versions.
   Python:
