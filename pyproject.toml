@@ -7,7 +7,7 @@ name = "Yamada"
 version = "0.2.1"
 authors = [
   { name="Chad Peterson", email="cp44@illinois.edu" },
-    {name="Nathan Dunfield", email="nmd@illinois.edu"},
+  { name="Nathan Dunfield", email="nmd@illinois.edu"},
 ]
 
 description = "Calculate the Yamada polynomial of spatial topologies."
@@ -20,24 +20,28 @@ classifiers = [
 ]
 
 dependencies = [
-"networkx~=2.8.5", 
-"matplotlib",
-"numpy",
-"cypari~=2.4.1",
-"jupyter",
-"nbconvert",
+    "networkx~=2.8.5",
+    "matplotlib",
+    "numpy",
+    "cypari~=2.4.1",
+    "jupyter",
+    "nbconvert",
+    "pytest",
 ]
 
 [project.optional-dependencies]
 test = [
     "pytest",
 ]
-doc = ["sphinx"]
+doc = [
+    "sphinx",
+]
 
 
 [tool.pytest.ini_options]
 pythonpath = [
-  ".","tests/",
+    ".",
+    "tests/",
 ]
 
 [project.urls]
