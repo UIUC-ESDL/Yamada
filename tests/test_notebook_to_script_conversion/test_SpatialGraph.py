@@ -22,6 +22,8 @@ np.random.seed(0)
 
 def test_cyclic_node_ordering_vertex():
 
+    np.random.seed(0)
+
     nodes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
     node_positions = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, 0.5, 0], [0.25,0.75, 0], [0.75, 0.75, 0], [0, 1, 0], [1, 1, 0]])
