@@ -23,7 +23,7 @@ jobs:
             python-version: ${{ matrix.python }}
 
       - name: Install package.
-        run:  pip install .[test]
+        run:  pip install .
 
       - name: Run tests.
         run:  pytest
