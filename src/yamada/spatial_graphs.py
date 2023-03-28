@@ -845,7 +845,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return crossings, crossing_positions, crossing_edge_pairs
 
-    def project(self):
+    def project(self, max_iter=10):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -861,12 +861,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         """
 
-        # Initialize while loop exit conditions
-        valid_projection = False
-        iter = 0
-        max_iter = 10
+        rotations = []
+        num_crossings = []
 
-        while not valid_projection and iter < max_iter:
+        for iter in range(max_iter):
 
             try:
 
@@ -912,17 +910,28 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
                 self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
-                # If we made it this far without raising an exception, then we have a valid projection
-                valid_projection = True
+                rotations.append(self.rotation)
+                num_crossings.append(len(self.crossings))
 
             except ValueError:
                 self.rotation = self.random_rotation()
                 self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
 
-                iter += 1
+            # If there is no error in the projection rotate anyways
+            self.rotation = self.random_rotation()
+            self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
 
-        if iter == max_iter:
+
+
+        if len(rotations) == 0:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+        else:
+            min_crossings = min(num_crossings)
+            min_crossings_index = num_crossings.index(min_crossings)
+            self.rotation = rotations[min_crossings_index]
+            self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
+            self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
+
 
     def create_vertices(self):
         """
@@ -994,10 +1003,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         """
 
         fig = plt.figure()
-        ax2 = plt.subplot()
+        # ax2 = plt.subplot()
 
-        # ax1 = plt.subplot(221, projection='3d')
-        # ax2 = plt.subplot(222)
+        ax1 = plt.subplot(221, projection='3d')
+        ax2 = plt.subplot(222)
         # ax3 = plt.subplot(223, projection='3d')
         #
         # # Axis 1
@@ -1040,11 +1049,11 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # # Figure layout
         # # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
         #
-        # # Plot 3D
-        # for edge in self.edges:
-        #     point_1 = self.node_positions[self.nodes.index(edge[0])]
-        #     point_2 = self.node_positions[self.nodes.index(edge[1])]
-        #     ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        # Plot 3D
+        for edge in self.edges:
+            point_1 = self.node_positions[self.nodes.index(edge[0])]
+            point_2 = self.node_positions[self.nodes.index(edge[1])]
+            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
         #
         # # Shrink current axis by 40%
         # box = ax1.get_position()
@@ -1081,7 +1090,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Put a legend to the right of the current axis
         # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, -0.25))
-        ax2.legend(self.edges, loc='center left', bbox_to_anchor=(0.75, 0.5), fontsize=9)
+        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(0.75, 0.5), fontsize=9)
         # ax2.legend(self.edges)
 
 
