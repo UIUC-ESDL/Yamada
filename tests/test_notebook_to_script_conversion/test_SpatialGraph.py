@@ -10,8 +10,6 @@ import numpy as np
 from yamada import SpatialGraph
 from yamada import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial
 
-np.random.seed(0)
-
 
 # ## Verifying the cyclic ordering of nodes for a vertex
 # 
@@ -21,8 +19,6 @@ np.random.seed(0)
 
 
 def test_cyclic_node_ordering_vertex():
-
-    np.random.seed(0)
 
     nodes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
@@ -34,6 +30,10 @@ def test_cyclic_node_ordering_vertex():
                       node_positions=node_positions,
                       edges=edges)
 
+    # Use a predefined rotation (from a random seed) that previously produced an error
+    rotation = np.array([3.44829694, 4.49366732, 3.78727399])
+    sg.rotation = rotation
+    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
     sg.project()
 
     order = sg.cyclic_order_vertex('c')
@@ -54,8 +54,6 @@ def test_cyclic_node_ordering_vertex():
 
 
 def test_cyclic_ordering_crossing():
-
-    np.random.seed(0)
 
     component_a = 'comp_a'
     component_b = 'comp_b'
@@ -124,6 +122,12 @@ def test_cyclic_ordering_crossing():
 
     sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
+    # Define the random rotation that previously caused issues
+    rotation = np.array([3.44829694, 4.49366732, 3.78727399])
+    sg.rotation = rotation
+    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
+    sg.project()
+
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -141,8 +145,6 @@ def test_cyclic_ordering_crossing():
 
 
 def test_cyclic_ordering_crossing_2():
-
-    np.random.seed(2)
 
     component_a = 'comp_a'
     component_b = 'comp_b'
@@ -211,6 +213,12 @@ def test_cyclic_ordering_crossing_2():
 
     sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
+    # Set rotation
+    rotation = np.array([2.73943676, 0.16289932, 3.4536312 ])
+    sg.rotation = rotation
+    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
+    sg.project()
+
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -237,11 +245,16 @@ def test_cyclic_ordering_crossing_2():
 
 def test_get_sub_edges():
 
-    np.random.seed(0)
-
     sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+
+    # Set rotation
+
+    rotation = np.array([3.44829694, 4.49366732, 3.78727399])
+    sg.rotation = rotation
+    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
+    sg.project()
 
     sep = sg.get_sub_edges()
 
@@ -253,5 +266,21 @@ def test_get_sub_edges():
 # In[11]:
 
 
+# def test_edge_order():
+#
+        # TODO Implement this
 
+#         np.random.seed(0)
+#
+#         sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+#                         node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+#                         edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+#
+#         edge_0 = sg.edges[0]
+#
+#         vertices_and_crossings = sg.get_vertices_and_crossings_of_edge(edge_0)
+#
+#         edge_order = [vertices_and_crossings[i][0] < vertices_and_crossings[i+1][0] for i in range(len(vertices_and_crossings)-1)]
+#
+#         assert all(edge_order)
 
