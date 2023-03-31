@@ -40,6 +40,19 @@ component_positions = np.array([[0, 0, 0],  # a
                                 [1, 1, 1],  # g
                                 [0, 1, 1]])  # h
 
+# waypoint_positions = np.array([[0.5, 0, 0],  # ab
+#                                [0, 0.5, 0],  # ad
+#                                [0, 0, 0.5],  # ae
+#                                [1, 0.5, 0],  # bc
+#                                [1, 0, 0.5],  # bf
+#                                [0.5, 1, 0],  # cd
+#                                [1, 1, 0.5],  # cg
+#                                [0, 1, 0.5],  # dh
+#                                [0.5, 0, 1],  # ef
+#                                [0, 0.5, 1],  # eh
+#                                [1, 0.5, 1],  # fg
+#                                [0.5, 1, 1]])  # gh
+
 # waypoint_positions = np.random.rand(12, 3)
 waypoint_positions = np.array([[0.5, 0, 0],  # ab
                                [0, 0.5, 0],  # ad
@@ -93,7 +106,7 @@ runtime = []
 
 
 
-for i in range(1):
+for i in range(5):
 
     np.random.seed(i+70)
 

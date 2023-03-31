@@ -845,7 +845,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return crossings, crossing_positions, crossing_edge_pairs
 
-    def project(self, max_iter=10):
+    def project(self, max_iter=100):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -864,7 +864,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         rotations = []
         num_crossings = []
 
-        for iter in range(max_iter):
+        for _ in range(max_iter):
 
             try:
 

@@ -110,11 +110,11 @@ edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
 
 sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 sg.plot()
-
-sgd = sg.create_spatial_graph_diagram()
-yp = sgd.normalized_yamada_polynomial()
-
-print("Yamada Polynomial:", yp)
+#
+# sgd = sg.create_spatial_graph_diagram()
+# yp = sgd.normalized_yamada_polynomial()
+#
+# print("Yamada Polynomial:", yp)
 
 # sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
 #                       node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
@@ -152,3 +152,10 @@ print("Yamada Polynomial:", yp)
 # a = pari('A')
 
 # assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+
+
+# sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+#                   node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
+#                   edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
+#
+# sg.plot()

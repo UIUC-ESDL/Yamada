@@ -211,10 +211,10 @@ def test_cyclic_ordering_crossing_2():
          (component_g, waypoint_gh), (waypoint_gh, component_h)]
 
 
-    sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
+    sg = SpatialGraph(nodes=nodes, node_positions=node_positions, edges=edges)
 
     # Set rotation
-    rotation = np.array([2.73943676, 0.16289932, 3.4536312 ])
+    rotation = np.array([2.73943676, 0.16289932, 3.4536312])
     sg.rotation = rotation
     sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
     sg.project()
