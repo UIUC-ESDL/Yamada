@@ -484,9 +484,9 @@ class SpatialGraphDiagram(Reidemeister):
         if check_pieces:
             S_0._check()
 
-        Y_plus = S_plus.yamada_polynomial()
+        Y_plus  = S_plus.yamada_polynomial()
         Y_minus = S_minus.yamada_polynomial()
-        Y_0 = S_0.yamada_polynomial()
+        Y_0     = S_0.yamada_polynomial()
 
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 

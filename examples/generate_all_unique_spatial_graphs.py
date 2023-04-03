@@ -106,7 +106,7 @@ runtime = []
 
 
 
-for i in range(5):
+for i in range(1):
 
     np.random.seed(i+70)
 

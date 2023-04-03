@@ -32,9 +32,7 @@ def test_cyclic_node_ordering_vertex():
 
     # Use a predefined rotation (from a random seed) that previously produced an error
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.rotation = rotation
-    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
-    sg.project()
+    sg.project(predefined_rotation=rotation)
 
     order = sg.cyclic_order_vertex('c')
     expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
@@ -124,9 +122,8 @@ def test_cyclic_ordering_crossing():
 
     # Define the random rotation that previously caused issues
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.rotation = rotation
-    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
-    sg.project()
+    sg.project(predefined_rotation=rotation)
+
 
 
     ordering_dict = sg.cyclic_order_crossings()
@@ -211,14 +208,11 @@ def test_cyclic_ordering_crossing_2():
          (component_g, waypoint_gh), (waypoint_gh, component_h)]
 
 
-    sg = SpatialGraph(nodes=nodes, node_positions=node_positions, edges=edges)
+    sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
 
     # Set rotation
-    rotation = np.array([2.73943676, 0.16289932, 3.4536312])
-    sg.rotation = rotation
-    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
-    sg.project()
-
+    rotation = np.array([2.73943676, 0.16289932, 3.4536312 ])
+    sg.project(predefined_rotation=rotation)
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -252,9 +246,7 @@ def test_get_sub_edges():
     # Set rotation
 
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.rotation = rotation
-    sg.rotated_node_positions = sg.rotate(sg.node_positions, sg.rotation)
-    sg.project()
+    sg.project(predefined_rotation=rotation)
 
     sep = sg.get_sub_edges()
 

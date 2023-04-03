@@ -42,5 +42,15 @@ It can be installed from PyPI with the following command in your terminal:
 
 >pip install yamada
 
+## Cite Us
+
+@software{Yamada2023github,
+  author = {Chad Peterson, Nathan Dunfield},
+  title = {Yamada: The Python Library for Calculating the Yamada Polynomial of Spatial Graphs},
+  url = {https://github.com/Chad-Peterson/Yamada},
+  version = {0.2.1},
+  year = {2023},
+}
+
 
 
