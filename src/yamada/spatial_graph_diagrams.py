@@ -243,8 +243,17 @@ class SpatialGraphDiagram(Reidemeister):
         self.crossings = [d for d in data if isinstance(d, Crossing)]
         self.vertices = [d for d in data if isinstance(d, Vertex)]
         self.edges = [d for d in data if isinstance(d, Edge)]
+
+        # TODO reimplement self._merge_edges()
+        # TODO replace loop with all any vertex  adjacent = 2
+        for i in range(30):
+            self._merge_vertices()
+
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
+
+
+
         if check:
             self._check()
 
@@ -331,6 +340,62 @@ class SpatialGraphDiagram(Reidemeister):
                     E[1] = (B, j)
 
         self.edges = edges
+
+    # def _merge_edges(self):
+    #     """
+    #     Merges edges that are connected end to end.
+    #
+    #     TODO Implement and verify
+    #
+    #     if type(self.edges[i].adjacent[0][0]) and type(self.edges[i].adjacent[1][0]) isinstance Edge and other, then merge
+    #     """
+    #
+    #     for edge in self.edges:
+    #         if isinstance(edge.adjacent[0][0], Edge) and isinstance(edge.adjacent[1][0], Edge):
+    #             edge.adjacent[0][0].adjacent[0][0] = edge.adjacent[1][0].adjacent[0][0]
+    #             edge.adjacent[1][0].adjacent[0][0] = edge.adjacent[0][0].adjacent[0][0]
+    #             self.edges.remove(edge)
+    #             self.data.pop(edge.label)
+
+    def _merge_vertices(self):
+        """
+        Relabels vertices to edges where necessary
+
+        TODO Implement and verify
+        """
+
+        for vertex in self.vertices:
+            if vertex.degree == 2:
+
+                # print("vertex", vertex.label)
+                # print("vertex.adjacent[0][0]", vertex.adjacent[0][0])
+                # print("vertex.adjacent[1][0]", vertex.adjacent[1][0])
+                # print("Next")
+
+                # Adjacent
+                adjacent_vertex_1 = vertex.adjacent[0][0]
+                adjacent_vertex_2 = vertex.adjacent[1][0]
+
+                for obj, index in adjacent_vertex_1.adjacent:
+                    if obj == vertex:
+                        index_of_vertex_for_adjacent_vertex_1 = index
+                        index_in_adjacent_vertex_1 = adjacent_vertex_1.adjacent.index((obj, index))
+
+                for obj, index in adjacent_vertex_2.adjacent:
+                    if obj == vertex:
+                        index_of_vertex_for_adjacent_vertex_2 = index
+                        index_in_adjacent_vertex_2 = adjacent_vertex_2.adjacent.index((obj, index))
+
+                # Reassign the adjacent vertices/crossings
+
+                adjacent_vertex_1.adjacent[index_in_adjacent_vertex_1] = (adjacent_vertex_2, index_of_vertex_for_adjacent_vertex_1)
+                adjacent_vertex_2.adjacent[index_in_adjacent_vertex_2] = (adjacent_vertex_1, index_of_vertex_for_adjacent_vertex_2)
+
+                # Now delete the removed vertex
+                self.vertices.remove(vertex)
+                self.data.pop(vertex.label)
+
+                # print('Next')
 
     def copy(self):
         """
