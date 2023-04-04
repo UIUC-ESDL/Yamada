@@ -364,38 +364,13 @@ class SpatialGraphDiagram(Reidemeister):
         TODO Implement and verify
         """
 
-        for vertex in self.vertices:
-            if vertex.degree == 2:
-
-                # print("vertex", vertex.label)
-                # print("vertex.adjacent[0][0]", vertex.adjacent[0][0])
-                # print("vertex.adjacent[1][0]", vertex.adjacent[1][0])
-                # print("Next")
-
-                # Adjacent
-                adjacent_vertex_1 = vertex.adjacent[0][0]
-                adjacent_vertex_2 = vertex.adjacent[1][0]
-
-                for obj, index in adjacent_vertex_1.adjacent:
-                    if obj == vertex:
-                        index_of_vertex_for_adjacent_vertex_1 = index
-                        index_in_adjacent_vertex_1 = adjacent_vertex_1.adjacent.index((obj, index))
-
-                for obj, index in adjacent_vertex_2.adjacent:
-                    if obj == vertex:
-                        index_of_vertex_for_adjacent_vertex_2 = index
-                        index_in_adjacent_vertex_2 = adjacent_vertex_2.adjacent.index((obj, index))
-
-                # Reassign the adjacent vertices/crossings
-
-                adjacent_vertex_1.adjacent[index_in_adjacent_vertex_1] = (adjacent_vertex_2, index_of_vertex_for_adjacent_vertex_1)
-                adjacent_vertex_2.adjacent[index_in_adjacent_vertex_2] = (adjacent_vertex_1, index_of_vertex_for_adjacent_vertex_2)
-
-                # Now delete the removed vertex
-                self.vertices.remove(vertex)
-                self.data.pop(vertex.label)
-
-                # print('Next')
+        degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]
+        for vertex in degree_two:
+            A, i = vertex.adjacent[0]
+            B, j = vertex.adjacent[1]
+            A[i] = B[j]
+            self.vertices.remove(vertex)
+            self.data.pop(vertex.label)
 
     def copy(self):
         """

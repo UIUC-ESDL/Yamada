@@ -7,7 +7,7 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
-from numba import njit
+# from numba import njit
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
