@@ -108,9 +108,9 @@ runtime = []
 
 for i in range(1):
 
-    np.random.seed(i+70)
+    np.random.seed(i)
 
-    sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
+    sg = SpatialGraph(nodes=nodes, node_positions=node_positions, edges=edges)
 
     sg.plot()
 

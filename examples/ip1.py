@@ -1113,13 +1113,14 @@ node_positions = np.array([[80.0, 80.0, 30.0],
  [21.05263157894737, 78.94736842105263, 68.42105263157896],
  [20.0, 80.0, 70.0]])
 
+np.random.seed(0)
 
 sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_positions)
 
 sg.plot()
 
-# sgd = sg.create_spatial_graph_diagram()
-#
-# yp = sgd.normalized_yamada_polynomial()
-#
-# print("Yamada polynomial: {}".format(yp))
+sgd = sg.create_spatial_graph_diagram()
+
+yp = sgd.normalized_yamada_polynomial()
+
+print("Yamada polynomial: {}".format(yp))

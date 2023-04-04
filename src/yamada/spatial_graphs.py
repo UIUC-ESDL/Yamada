@@ -7,6 +7,7 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
+from numba import njit
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
@@ -22,6 +23,9 @@ class AbstractGraph:
 
         self.nodes = self._validate_nodes(nodes)
         self.edges = self._validate_edges(edges)
+
+        self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
+        self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -113,8 +117,7 @@ class AbstractGraph:
     def edge_pairs(self):
         return list(combinations(self.edges, 2))
 
-    @property
-    def adjacent_edge_pairs(self):
+    def _get_adjacent_edge_pairs(self):
 
         adjacent_edge_pairs = []
 
@@ -162,6 +165,7 @@ class LinearAlgebra:
         return next(self.rotation_generator_object)
 
     @staticmethod
+    # @njit(cache=True)
     def rotate(positions: np.ndarray,
                rotation:  np.ndarray) -> np.ndarray:
         """
@@ -206,7 +210,9 @@ class LinearAlgebra:
 
         return rotated_node_positions
 
+
     @staticmethod
+    # @njit(cache=True)
     def get_line_segment_intersection(a: np.ndarray,
                                       b: np.ndarray,
                                       c: np.ndarray,
@@ -270,7 +276,7 @@ class LinearAlgebra:
         S1  = np.dot(d1, d12.T)
         S2  = np.dot(d2, d12.T)
         R   = np.dot(d1, d2.T)
-        den = np.dot(D1, D2) - np.square(R)
+        den = D1 * D2 - R**2
 
         # Check if one or both line segments are points
         if D1 == 0. or D2 == 0.:
@@ -321,15 +327,14 @@ class LinearAlgebra:
 
         min_dist = np.linalg.norm(d1 * t - d2 * u - d12)
 
-        if not np.isclose(min_dist, 0):
-            min_dist_position = None
-        else:
-            min_dist_position = np.array([a + d1 * t]).reshape(-1)
+        # min_dist_position = np.array([a + d1 * t]).reshape(-1)
+        min_dist_position = a + d1 * t
 
         return min_dist, min_dist_position
 
 
     @staticmethod
+    # @njit(cache=True)
     def calculate_intermediate_y_position(a:     np.ndarray,
                                           b:     np.ndarray,
                                           x_int: float,
@@ -346,9 +351,8 @@ class LinearAlgebra:
         delta_z = z2 - z1
 
         ratio_x = (x_int - x1) / delta_x
-        ratio_z = (z_int - z1) / delta_z
-
-        assert np.isclose(ratio_x, ratio_z, rtol=1e-3)
+        # ratio_z = (z_int - z1) / delta_z
+        # assert np.isclose(ratio_x, ratio_z, rtol=1e-3)
 
         y_int = y1 + ratio_x * delta_y
 
@@ -360,6 +364,7 @@ class LinearAlgebra:
 
 
     @staticmethod
+    # @njit(cache=True)
     def calculate_counter_clockwise_angle(vector_a: np.ndarray,
                                           vector_b: np.ndarray) -> float:
         """
@@ -464,6 +469,23 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             raise ValueError('All nodes must have a position.')
 
         return node_positions
+
+    def get_edge_pairs_with_possible_crossings(self):
+        """
+        Returns a list of edge pairs that may cross.
+
+        TODO Finish
+
+        Logic:
+        1. Get all non-adjacent edge pairs. Adjacent edge pairs can only overlap at their endpoints.
+        2. Partition the space into
+        3. combos = list(combinations(self.edges, 2))
+        """
+
+        all_edges = combinations(self.edges, 2)
+
+        # Remove adjacent edges
+
 
     def get_vertices_and_crossings_of_edge(self, reference_edge: tuple[str, str]):
         """
@@ -810,17 +832,21 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return overlap_order
 
+
+    # @njit
     def get_crossings(self):
 
         crossing_num = 0
-        crossings = []
+        crossings    = []
         crossing_edge_pairs = []
         crossing_positions = []
 
-        nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
-                                  edge_pair not in self.adjacent_edge_pairs]
+        # TODO Modify nonadjacent edge pairs that are within some axis aligned bounding box
 
-        for line_1, line_2 in nonadjacent_edge_pairs:
+
+
+
+        for line_1, line_2 in self.nonadjacent_edge_pairs:
 
             a = self.projected_node_positions[self.nodes.index(line_1[0])]
             b = self.projected_node_positions[self.nodes.index(line_1[1])]
@@ -828,6 +854,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             d = self.projected_node_positions[self.nodes.index(line_2[1])]
 
             min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
+
+            if not np.isclose(min_dist, 0):
+                crossing_position = None
 
             if crossing_position is np.inf:
                 raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
@@ -842,10 +871,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 crossing_edge_pair = self.get_crossing_edge_order(line_1, line_2, crossing_position)
                 crossing_edge_pairs.append(crossing_edge_pair)
 
-
         return crossings, crossing_positions, crossing_edge_pairs
 
-    def project(self, max_iter=3, predefined_rotation=None):
+    def project(self, max_iter=20, predefined_rotation=None):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -896,6 +924,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
                     min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
+
+                    if not np.isclose(min_dist, 0):
+                        crossing_position = None
 
                     if crossing_position is not None and crossing_position is not np.inf:
                         assertion_1 = all(np.isclose(crossing_position, a))
@@ -964,6 +995,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
     def create_spatial_graph_diagram(self):
         """
         Create a diagram of the spatial graph.
+
+        TODO Only create Vertices for more than 2-valent nodes
         """
 
         nodes_and_crossings = self.nodes + self.crossings
