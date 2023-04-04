@@ -368,9 +368,10 @@ class SpatialGraphDiagram(Reidemeister):
         for vertex in degree_two:
             A, i = vertex.adjacent[0]
             B, j = vertex.adjacent[1]
-            A[i] = B[j]
-            self.vertices.remove(vertex)
-            self.data.pop(vertex.label)
+            if A != vertex and B != vertex:
+                A[i] = B[j]
+                self.vertices.remove(vertex)
+                self.data.pop(vertex.label)
 
     def copy(self):
         """
