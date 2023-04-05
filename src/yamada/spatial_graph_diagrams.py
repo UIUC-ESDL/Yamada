@@ -244,10 +244,7 @@ class SpatialGraphDiagram(Reidemeister):
         self.vertices = [d for d in data if isinstance(d, Vertex)]
         self.edges = [d for d in data if isinstance(d, Edge)]
 
-        # TODO reimplement self._merge_edges()
-        # TODO replace loop with all any vertex  adjacent = 2
-        for i in range(30):
-            self._merge_vertices()
+        self._merge_vertices()
 
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
@@ -341,27 +338,10 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.edges = edges
 
-    # def _merge_edges(self):
-    #     """
-    #     Merges edges that are connected end to end.
-    #
-    #     TODO Implement and verify
-    #
-    #     if type(self.edges[i].adjacent[0][0]) and type(self.edges[i].adjacent[1][0]) isinstance Edge and other, then merge
-    #     """
-    #
-    #     for edge in self.edges:
-    #         if isinstance(edge.adjacent[0][0], Edge) and isinstance(edge.adjacent[1][0], Edge):
-    #             edge.adjacent[0][0].adjacent[0][0] = edge.adjacent[1][0].adjacent[0][0]
-    #             edge.adjacent[1][0].adjacent[0][0] = edge.adjacent[0][0].adjacent[0][0]
-    #             self.edges.remove(edge)
-    #             self.data.pop(edge.label)
-
     def _merge_vertices(self):
         """
-        Relabels vertices to edges where necessary
-
-        TODO Implement and verify
+        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
+        calculations but do not add any information.
         """
 
         degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]

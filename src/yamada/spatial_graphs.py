@@ -7,7 +7,8 @@ import numpy as np
 from numpy import sin, cos
 import matplotlib.pyplot as plt
 from itertools import combinations
-# from numba import njit
+from numba import njit
+import math
 
 from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
 
@@ -212,7 +213,7 @@ class LinearAlgebra:
 
 
     @staticmethod
-    # @njit(cache=True)
+    @njit(cache=True)
     def get_line_segment_intersection(a: np.ndarray,
                                       b: np.ndarray,
                                       c: np.ndarray,
@@ -348,7 +349,7 @@ class LinearAlgebra:
 
         delta_x = x2 - x1
         delta_y = y2 - y1
-        delta_z = z2 - z1
+        # delta_z = z2 - z1
 
         ratio_x = (x_int - x1) / delta_x
         # ratio_z = (z_int - z1) / delta_z
@@ -855,7 +856,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
             min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
-            if not np.isclose(min_dist, 0):
+            if min_dist > 0.0001:
                 crossing_position = None
 
             if crossing_position is np.inf:
@@ -864,7 +865,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             elif crossing_position is None:
                 pass
 
-            elif type(crossing_position) is np.ndarray and np.isclose(min_dist, 0):
+            elif type(crossing_position) is np.ndarray and min_dist < 0.0001:
                 crossings.append('crossing_' + str(crossing_num))
                 crossing_num += 1
                 crossing_positions.append(crossing_position)
@@ -873,7 +874,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return crossings, crossing_positions, crossing_edge_pairs
 
-    def project(self, max_iter=20, predefined_rotation=None):
+    def project(self, max_iter=50, predefined_rotation=None):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -925,14 +926,14 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
                     min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
 
-                    if not np.isclose(min_dist, 0):
+                    if min_dist > 0.0001:
                         crossing_position = None
 
                     if crossing_position is not None and crossing_position is not np.inf:
-                        assertion_1 = all(np.isclose(crossing_position, a))
-                        assertion_2 = all(np.isclose(crossing_position, b))
-                        assertion_3 = all(np.isclose(crossing_position, c))
-                        assertion_4 = all(np.isclose(crossing_position, d))
+                        assertion_1 = all((crossing_position - a) < 0.0001)
+                        assertion_2 = all((crossing_position - b) < 0.0001)
+                        assertion_3 = all((crossing_position - c) < 0.0001)
+                        assertion_4 = all((crossing_position - d) < 0.0001)
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
