@@ -471,23 +471,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return node_positions
 
-    def get_edge_pairs_with_possible_crossings(self):
-        """
-        Returns a list of edge pairs that may cross.
-
-        TODO Finish
-
-        Logic:
-        1. Get all non-adjacent edge pairs. Adjacent edge pairs can only overlap at their endpoints.
-        2. Partition the space into
-        3. combos = list(combinations(self.edges, 2))
-        """
-
-        all_edges = combinations(self.edges, 2)
-
-        # Remove adjacent edges
-
-
     def get_vertices_and_crossings_of_edge(self, reference_edge: tuple[str, str]):
         """
         Returns the vertices and crossings of an edge, ordered from left to right.
@@ -996,8 +979,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
     def create_spatial_graph_diagram(self):
         """
         Create a diagram of the spatial graph.
-
-        TODO Only create Vertices for more than 2-valent nodes
         """
 
         nodes_and_crossings = self.nodes + self.crossings
