@@ -1,3 +1,5 @@
+import json
+
 
 def get_coefficients_and_exponents(poly):
 
@@ -24,3 +26,22 @@ def get_coefficients_and_exponents(poly):
     return coefficients, exponents
 
 
+def read_json_file(filename):
+    """
+    Reads a json file and returns a dictionary
+    """
+
+    with open(filename) as f:
+        data = json.load(f)
+    return data
+
+
+def read_json_files(filenames):
+    """
+    Reads a list of json files and returns a dictionary
+    """
+
+    data = {}
+    for filename in filenames:
+        data.update(read_json_file(filename))
+    return data
