@@ -213,7 +213,7 @@ class LinearAlgebra:
 
 
     @staticmethod
-    @njit(cache=True)
+    # @njit(cache=True)
     def get_line_segment_intersection(a: np.ndarray,
                                       b: np.ndarray,
                                       c: np.ndarray,
@@ -1042,8 +1042,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # ax1.yaxis.label.set_text('y')
         # ax1.zaxis.label.set_text('z')
         #
-        # ax1.set_yticklabels([])
-        # ax1.set_xticklabels([])
+        ax1.set_zticklabels([])
+        ax1.set_yticklabels([])
+        ax1.set_xticklabels([])
+        ax1.grid(False)
         #
         # # Axis 2
         #
@@ -1051,8 +1053,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # ax2.xaxis.label.set_text('x')
         # ax2.yaxis.label.set_text('z')
         #
-        # ax2.set_yticklabels([])
-        # ax2.set_xticklabels([])
+        ax2.set_yticklabels([])
+        ax2.set_xticklabels([])
         #
         # # ax2.set_xlim(-0.5, 1.5)
         # # ax2.set_ylim(-0.5, 1.5)

@@ -4,6 +4,7 @@ numpy
 cypari~=2.4.1
 jupyter
 nbconvert
+numba
 
 [doc]
 sphinx

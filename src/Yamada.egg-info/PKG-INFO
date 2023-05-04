@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: Yamada
-Version: 0.2.1
+Version: 0.2.2
 Summary: Calculate the Yamada polynomial of spatial topologies.
 Author-email: Chad Peterson <cp44@illinois.edu>, Nathan Dunfield <nmd@illinois.edu>
 Project-URL: Homepage, https://github.com/Chad-Peterson/Yamada

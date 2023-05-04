@@ -40,15 +40,6 @@ Compared to Dobrynin and Vesnin:
 Note: The way this script is written w/ pickling you must import this script into another script
 rather than directly calculate Yamada polynomials in this script (you'll get error messages)
 
-TODO Make Reidemeister Class
-R0 -> if two adjacent crossings on the same edge have different orientation then simplify
-R1 -> Switch crossing order
-R2 -> if two edges share two crossings then check if you can simplify them
-R3 -> You can slide an edge
-R4 -> if one edge is fully under or over a set then move...
-R5 -> You can untwist a bunch
-R6 -> ?
-
 
 """
 
@@ -184,6 +175,13 @@ class Reidemeister:
     Reidemeister moves zero through six
 
     TODO Implement has_r0, has_r3, has_r4, has_r5
+    R0 -> if two adjacent crossings on the same edge have different orientation then simplify
+    R1 -> Switch crossing order
+    R2 -> if two edges share two crossings then check if you can simplify them
+    R3 -> You can slide an edge
+    R4 -> if one edge is fully under or over a set then move...
+    R5 -> You can untwist a bunch
+    R6 -> ?
     """
 
     def __init__(self):
@@ -200,6 +198,11 @@ class Reidemeister:
                     return True
         return False
 
+    def r1(self):
+        pass
+
+
+
     def has_r2(self):
         for E in self.edges:
             A, a = E.adjacent[0]
@@ -207,8 +210,25 @@ class Reidemeister:
                 B, b = E.adjacent[1]
                 if isinstance(B, Crossing):
                     if (a + b) % 2 == 0:
-                        return True
+                        return True, E, A, B
         return False
+
+    def r2(self):
+
+        # for vertex in degree_two:
+        #     A, i = vertex.adjacent[0]
+        #     B, j = vertex.adjacent[1]
+        #     if A != vertex and B != vertex:
+        #         A[i] = B[j]
+        #         self.vertices.remove(vertex)
+        #         self.data.pop(vertex.label)
+        has_r2, edge, crossing_a, crossing_b = self.has_r2()
+
+
+
+
+        # self.crossings.remove(C)
+        # self.data.pop(C.label)
 
     def has_r6(self):
         for V in self.vertices:
@@ -248,7 +268,6 @@ class SpatialGraphDiagram(Reidemeister):
 
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
-
 
 
         if check:
@@ -338,6 +357,25 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.edges = edges
 
+    def _merge_edges(self):
+        """
+        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
+        calculations but do not add any information.
+
+        TODO Implement
+        """
+
+        edges = [edge for edge in self.edges]
+        for edge in edges:
+
+            A, i = edge.adjacent[0]
+            B, j = edge.adjacent[1]
+
+            if A != edge and B != edge:
+                A[i] = B[j]
+                self.edges.remove(edge)
+                self.data.pop(edge.label)
+
     def _merge_vertices(self):
         """
         Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
@@ -345,7 +383,12 @@ class SpatialGraphDiagram(Reidemeister):
         """
 
         degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]
+
         for vertex in degree_two:
+
+            if len(self.vertices) <= 2:
+                break
+
             A, i = vertex.adjacent[0]
             B, j = vertex.adjacent[1]
             if A != vertex and B != vertex:
@@ -423,6 +466,21 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.crossings.remove(C)
         self.data.pop(C.label)
+
+    def remove_crossing_fuse_edges(self, crossing):
+        """
+        Removes a crossing from the diagram.
+        """
+        A, i = crossing.adjacent[0]
+        B, j = crossing.adjacent[1]
+        C, k = crossing.adjacent[2]
+        D, l = crossing.adjacent[3]
+
+        A[i] = C[k]
+        B[j] = D[l]
+
+        self.crossings.remove(crossing)
+        self.data.pop(crossing.label)
 
     def remove_edge(self, E):
         """

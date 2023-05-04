@@ -8,7 +8,6 @@ src/Yamada.egg-info/requires.txt
 src/Yamada.egg-info/top_level.txt
 src/yamada/H_polynomial.py
 src/yamada/__init__.py
-src/yamada/norm_poly.py
 src/yamada/spatial_graph_diagrams.py
 src/yamada/spatial_graph_enumeration.py
 src/yamada/spatial_graphs.py
