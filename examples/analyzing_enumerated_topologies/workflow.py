@@ -19,13 +19,13 @@ directory = os.path.dirname(__file__) + '/'
 # User Input: Set the path to the json file you want to evaluate
 
 # Example 1
-filepath = directory + "G6/C1/G6C1I0.json"
+# filepath = directory + "G6/C1/G6C1I0.json"
 
 # Example 2
 # filepath = directory + "G10/C4/G10C4I7.json"
 
 # Example 3
-# filepath = directory + "G14/C3/G14C3I11.json"
+filepath = directory + "G14/C3/G14C3I11.json"
 
 # %% Extract the spatial graph from the json file
 
@@ -98,14 +98,9 @@ plt.show()
 
 
 
-g, pos = generate_isomorphism(g, pos, n=6, rotate=True)
+g, pos = generate_isomorphism(g, pos, n=9, rotate=False)
 
 
-
-
-# nx.set_edge_attributes(g, 5, "weight")
-
-# pos = nx.spring_layout(g, seed=1, iterations=50, dim=3, pos=pos)
 
 node_xyz = np.array([pos[v] for v in sorted(g)])
 edge_xyz = np.array([(pos[u], pos[v]) for u, v in g.edges()])
@@ -126,3 +121,7 @@ sg = SpatialGraph(nodes=sorted(list(g.nodes)), edges=list(g.edges), node_positio
 sgd = sg.create_spatial_graph_diagram()
 yp = sgd.normalized_yamada_polynomial()
 print("Yamada polynomial:  {}".format(yp))
+
+
+
+
