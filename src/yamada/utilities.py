@@ -124,8 +124,9 @@ def generate_isomorphism(g, pos, n=3, rotate=False):
         pos = rotate_points(np.array(list(pos.values())))
         pos = {k: v for k, v in zip(list(g.nodes), pos)}
 
-
-    pos = nx.spring_layout(g, seed=1, iterations=50, dim=3, pos=pos)
+    # k = 1000 * 1/len(g.nodes)
+    # nx.set_edge_attributes(g, 5, "weight")
+    pos = nx.spring_layout(g, iterations=50, dim=3, pos=pos)
 
 
 
