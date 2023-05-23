@@ -124,3 +124,5 @@ def k_nearest_neighbors(graph, positions, k=3):
 my_neighbors = k_nearest_neighbors(g, pos)
 
 print(my_neighbors)
+
+print('1')

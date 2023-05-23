@@ -68,6 +68,11 @@ def extract_graph_from_json_file(filename):
 
     return nodes, node_positions, edges
 
+# def extract_graph_from_dict(data, index):
+
+
+
+
 
 
 # def generate_random_layout(layout):
@@ -161,12 +166,12 @@ def read_edge_code(stream, size):
     return ans
 
 
-def shadows_via_plantri_by_edge_codes(num_tri_verts, num_crossings):
+def shadows_via_plantri_by_edge_codes(plantri_directory, num_tri_verts, num_crossings):
     assert num_tri_verts % 2 == 0
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
-    cmd = ['./plantri',
+    cmd = [plantri_directory+'plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
            '-c1',  # graph should be 1-connected
@@ -228,18 +233,18 @@ class Shadow:
 #    assert len(signs
 
 # TODO Compile Plantri for Windows
-def spatial_graph_diagrams_fixed_crossings(G, crossings):
+def spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
     """
     Let's start with the theta graph
 
     >>> T = nx.MultiGraph(3*[(0, 1)])
-    >>> len(list(spatial_graph_diagrams_fixed_crossings(T, 3)))
+    >>> len(list(spatial_graph_diagrams_fixed_crossings(plantri_directory, T, 3)))
     2
     """
     assert all(d == 3 for v, d in G.degree)
     assert all(a != b for a, b in G.edges())
 
-    raw_shadows = shadows_via_plantri_by_edge_codes(G.number_of_nodes(), crossings)
+    raw_shadows = shadows_via_plantri_by_edge_codes(plantri_directory, G.number_of_nodes(), crossings)
 
     for raw_shadow in raw_shadows:
         shadow = Shadow(raw_shadow)
@@ -247,7 +252,7 @@ def spatial_graph_diagrams_fixed_crossings(G, crossings):
         U = diagram.underlying_graph()
         if U is not None:
             if nx.is_isomorphic(G, U):
-                if not diagram.has_R6():
+                if not diagram.has_r6():
                     num_cross = len(shadow.crossings)
                     if num_cross == 0:
                         yield diagram
@@ -255,15 +260,15 @@ def spatial_graph_diagrams_fixed_crossings(G, crossings):
                         for signs in itertools.product((0, 1), repeat=num_cross - 1):
                             signs = (0,) + signs
                             D = shadow.spatial_graph_diagram(signs=signs, check=False)
-                            if not D.has_R2():
+                            if not D.has_r2():
                                 yield D
 
 
-def enumerate_yamada_classes(G, max_crossings):
+def enumerate_yamada_classes(plantri_directory, G, max_crossings):
     examined = 0
     polys = dict()
     for crossings in range(0, max_crossings + 1):
-        for D in spatial_graph_diagrams_fixed_crossings(G, crossings):
+        for D in spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
             p = D.normalized_yamada_polynomial()
             if p not in polys:
                 polys[p] = D
