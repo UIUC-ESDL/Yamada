@@ -54,6 +54,8 @@ def generate_isomorphism(g, pos, n=3, rotate=False):
     Generates an isomorphism of a graph with subdivided edges.
     """
 
+    g = g.copy()
+
     def subdivide_edge(g, edge, pos, n=3):
         u, v = edge
         g.remove_edge(u, v)
