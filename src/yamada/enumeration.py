@@ -5,6 +5,7 @@ import itertools
 import subprocess
 import io
 import time
+import glob
 from .spatial_graph_diagrams import Vertex, Edge, Crossing, SpatialGraphDiagram
 from .utilities import read_json_file
 
@@ -305,3 +306,11 @@ def pickle_yamada(data, filename):
 def load_yamada(filename):
     with open(filename, 'rb') as file:
         return pickle.load(file)
+
+def read_pickle(nodes):
+    file = open(max(glob.glob(f'pickles/G{nodes}_C*.pickle')), 'rb')
+    return pickle.load(file)
+
+def num_automorphisms(graph):
+    matcher = nx.isomorphism.GraphMatcher(graph, graph)
+    return len(list(matcher.isomorphisms_iter()))
