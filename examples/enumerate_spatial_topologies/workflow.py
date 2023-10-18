@@ -47,15 +47,15 @@ unique_spatial_topologies, number_topologies = enumerate_yamada_classes(sa_graph
 # %% Generate A Near-Planar Geometric Realization of Each Unique Spatial Topology
 
 
-sg_inputs = position_spatial_graphs_in_3D(unique_spatial_topologies)
-
-# Convert each near-planar geometric realization into a SpatialGraph object
-spatial_graphs = []
-for sg_input in sg_inputs:
-    sg = SpatialGraph(*sg_input)
-    spatial_graphs.append(sg)
-    sg.plot()
-
-    sgd = sg.create_spatial_graph_diagram()
-    print("Yamada Polynomial: ", sgd.normalized_yamada_polynomial())
+# sg_inputs = position_spatial_graphs_in_3D(unique_spatial_topologies)
+#
+# # Convert each near-planar geometric realization into a SpatialGraph object
+# spatial_graphs = []
+# for sg_input in sg_inputs:
+#     sg = SpatialGraph(*sg_input)
+#     spatial_graphs.append(sg)
+#     sg.plot()
+#
+#     sgd = sg.create_spatial_graph_diagram()
+#     print("Yamada Polynomial: ", sgd.normalized_yamada_polynomial())
 

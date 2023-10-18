@@ -199,9 +199,17 @@ class Reidemeister:
         return False
 
     def r1(self):
-        pass
+        for C in self.crossings:
+            for i in range(4):
+                E, e = C.adjacent[i]
+                D, d = E.flow(e)
+                if D == C and (i + 1) % 4 == d:
 
+                    # Remove crossing and merge edges
+                    self.remove_crossing_fuse_edges(C)
 
+                    return None
+        raise ValueError("No R1 move")
 
     def has_r2(self):
         for E in self.edges:
@@ -223,8 +231,6 @@ class Reidemeister:
         #         self.vertices.remove(vertex)
         #         self.data.pop(vertex.label)
         has_r2, edge, crossing_a, crossing_b = self.has_r2()
-
-
 
 
         # self.crossings.remove(C)
@@ -481,6 +487,8 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
+
+        self._merge_edges()
 
     def remove_edge(self, E):
         """

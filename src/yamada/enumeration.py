@@ -172,7 +172,7 @@ def shadows_via_plantri_by_edge_codes(num_tri_verts, num_crossings):
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
-    cmd = ['plantri',
+    cmd = ['.plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
            '-c1',  # graph should be 1-connected
