@@ -46,6 +46,7 @@ rather than directly calculate Yamada polynomials in this script (you'll get err
 import networkx as nx
 import pickle
 from cypari import pari
+import matplotlib.pyplot as plt
 from .H_polynomial import h_poly
 from .utilities import get_coefficients_and_exponents
 
@@ -208,6 +209,8 @@ class Reidemeister:
                     # Remove crossing and merge edges
                     self.remove_crossing_fuse_edges(C)
 
+                    self._merge_edges()
+
                     return None
         raise ValueError("No R1 move")
 
@@ -223,14 +226,16 @@ class Reidemeister:
 
     def r2(self):
 
-        # for vertex in degree_two:
-        #     A, i = vertex.adjacent[0]
-        #     B, j = vertex.adjacent[1]
-        #     if A != vertex and B != vertex:
-        #         A[i] = B[j]
-        #         self.vertices.remove(vertex)
-        #         self.data.pop(vertex.label)
         has_r2, edge, crossing_a, crossing_b = self.has_r2()
+
+        self.remove_crossing_fuse_edges(crossing_a)
+        self.remove_crossing_fuse_edges(crossing_b)
+
+        self._merge_edges()
+
+        return None
+
+
 
 
         # self.crossings.remove(C)
@@ -367,8 +372,6 @@ class SpatialGraphDiagram(Reidemeister):
         """
         Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
         calculations but do not add any information.
-
-        TODO Implement
         """
 
         edges = [edge for edge in self.edges]
@@ -476,6 +479,8 @@ class SpatialGraphDiagram(Reidemeister):
     def remove_crossing_fuse_edges(self, crossing):
         """
         Removes a crossing from the diagram.
+
+        Todo Ensure that this does not return an empty diagram
         """
         A, i = crossing.adjacent[0]
         B, j = crossing.adjacent[1]
@@ -488,7 +493,7 @@ class SpatialGraphDiagram(Reidemeister):
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
 
-        self._merge_edges()
+        # self._merge_edges()
 
     def remove_edge(self, E):
         """
