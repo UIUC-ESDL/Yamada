@@ -12,11 +12,13 @@ from yamada import SpatialGraphDiagram, Crossing, Edge
 
 # ## Reidemeister 1
 # 
+# ![R1 Move](./images/r1_1.png)
+# 
 
 # In[ ]:
 
 
-def test_r1():
+def test_r1_1():
     
     a = pari('A')
 
@@ -44,6 +46,35 @@ def test_r1():
     
     assert yp_after == expected
     
+
+
+# ![R1 Move](./images/r1_2.png)
+
+# In[ ]:
+
+
+def test_r1_2():
+    
+    a = pari('A')
+
+    expected = -a**2 - a -1
+    
+    x1 = Crossing('X')
+    x1[1], x1[3] = x1[2], x1[0]
+    
+    sgd = SpatialGraphDiagram([x1])
+    
+    yp_before = sgd.normalized_yamada_polynomial()
+    
+    assert sgd.has_r1()
+    
+    sgd.r1()
+    
+    yp_after = sgd.normalized_yamada_polynomial()
+    
+    assert yp_before == yp_after
+    
+    assert yp_after == expected
 
 
 # ## Reidemeister 2
