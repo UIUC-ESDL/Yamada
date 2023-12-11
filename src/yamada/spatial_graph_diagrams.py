@@ -235,11 +235,13 @@ class Reidemeister:
 
         return None
 
+    def has_r3(self):
+        pass
 
 
 
-        # self.crossings.remove(C)
-        # self.data.pop(C.label)
+
+
 
     def has_r6(self):
         for V in self.vertices:
@@ -367,23 +369,6 @@ class SpatialGraphDiagram(Reidemeister):
                     E[1] = (B, j)
 
         self.edges = edges
-
-    def _merge_edges(self):
-        """
-        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
-        calculations but do not add any information.
-        """
-
-        edges = [edge for edge in self.edges]
-        for edge in edges:
-
-            A, i = edge.adjacent[0]
-            B, j = edge.adjacent[1]
-
-            if A != edge and B != edge:
-                A[i] = B[j]
-                self.edges.remove(edge)
-                self.data.pop(edge.label)
 
     def _merge_vertices(self):
         """
