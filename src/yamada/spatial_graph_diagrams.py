@@ -105,19 +105,6 @@ class BaseVertex:
     def entry_points(self):
         return [EntryPoint(self, i) for i in range(self.degree)]
 
-    def next_available_index(self):
-        """
-        Returns the next available index.
-
-        This is useful for automatically generating then setting items.
-
-        TODO Verify indexing is correct, since degree should start with 1 not 0
-        """
-        for i in range(self.degree):
-            if self.adjacent[i] is None:
-                return i
-        raise ValueError("No available index")
-
     def already_assigned(self, node):
         """
         Returns true if the index is already assigned
@@ -390,6 +377,36 @@ class SpatialGraphDiagram(Reidemeister):
                 self.vertices.remove(vertex)
                 self.data.pop(vertex.label)
 
+
+    def add_crossing(self, over_edge, under_edge):
+        """
+        Inserts a crossing into the diagram.
+        """
+
+        # Create crossing
+        num_existing_crossings = len(self.crossings)
+        crossing_label = 'x' + str(num_existing_crossings + 1)
+        crossing = Crossing(crossing_label)
+        self.crossings.append(crossing)
+        self.data[crossing.label] = crossing
+
+        # Determine edge adjacents
+        A, j = over_edge.adjacent[0]
+        B, k = over_edge.adjacent[1]
+        C, l = under_edge.adjacent[0]
+        D, m = under_edge.adjacent[1]
+
+        # Remove edges
+        self.remove_edge(over_edge)
+        self.remove_edge(under_edge)
+
+        # Insert the crossing
+        crossing[0] = (A, j)
+        crossing[2] = (B, k)
+        crossing[1] = (C, l)
+        crossing[3] = (D, m)
+
+
     def copy(self):
         """
         Returns a serialized copy of the diagram.
@@ -461,22 +478,22 @@ class SpatialGraphDiagram(Reidemeister):
         self.crossings.remove(C)
         self.data.pop(C.label)
 
-    def remove_crossing_fuse_edges(self, crossing):
-        """
-        Removes a crossing from the diagram.
-
-        Todo Ensure that this does not return an empty diagram
-        """
-        A, i = crossing.adjacent[0]
-        B, j = crossing.adjacent[1]
-        C, k = crossing.adjacent[2]
-        D, l = crossing.adjacent[3]
-
-        A[i] = C[k]
-        B[j] = D[l]
-
-        self.crossings.remove(crossing)
-        self.data.pop(crossing.label)
+    # def remove_crossing_fuse_edges(self, crossing):
+    #     """
+    #     Removes a crossing from the diagram.
+    #
+    #     Todo Ensure that this does not return an empty diagram
+    #     """
+    #     A, i = crossing.adjacent[0]
+    #     B, j = crossing.adjacent[1]
+    #     C, k = crossing.adjacent[2]
+    #     D, l = crossing.adjacent[3]
+    #
+    #     A[i] = C[k]
+    #     B[j] = D[l]
+    #
+    #     self.crossings.remove(crossing)
+    #     self.data.pop(crossing.label)
 
         # self._merge_edges()
 

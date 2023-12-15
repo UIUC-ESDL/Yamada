@@ -65,7 +65,51 @@ print('Before R3:', sgd.normalized_yamada_polynomial())
 
 print('Has R3?', sgd.has_r3())
 
-crossings = sgd.crossings
+faces = sgd.faces()
+
+def has_3_crossings(face):
+
+    crossings = 0
+    entrypoints = face
+    for entrypoint in entrypoints:
+        if isinstance(entrypoint.vertex, Crossing):
+            crossings += 1
+
+    return crossings == 3
+
+def get_candidate_face(faces):
+    candidate_faces = []
+    for face in faces:
+        if has_3_crossings(face):
+            candidate_faces.append(face)
+
+    if len(candidate_faces) == 0:
+        return None
+    else:
+        return candidate_faces[0]
+
+def get_candidate_crossings(face):
+    entrypoints = face
+    crossings = []
+    for entrypoint in entrypoints:
+        if isinstance(entrypoint.vertex, Crossing):
+            crossings.append(entrypoint.vertex)
+    return crossings
+
+candidate_face = get_candidate_face(faces)
+candidate_crossings = get_candidate_crossings(candidate_face)
+
+keep_crossing = candidate_crossings[0]
+remove_crossings = candidate_crossings[1:]
+
+
+
+# Define a circle
+circle = Vertex(2,'circle')
+circle[0]=circle[1]
+
+
+
 
 
 
