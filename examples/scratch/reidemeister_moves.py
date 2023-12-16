@@ -77,6 +77,24 @@ def has_3_crossings(face):
 
     return crossings == 3
 
+
+
+def under_or_over(edge, crossing):
+    if crossing.adjacent[0][0] == edge or crossing.adjacent[2][0] == edge:
+        return 'under'
+    elif crossing.adjacent[1][0] == edge or crossing.adjacent[3][0] == edge:
+        return 'over'
+    else:
+        raise Exception('Edge not adjacent to crossing')
+
+def both_under_or_over(edge, crossing1, crossing2):
+    if under_or_over(edge, crossing1) == under_or_over(edge, crossing2):
+        return 'both ' + under_or_over(edge, crossing1)
+    else:
+        return 'neither'
+
+
+
 def get_candidate_face(faces):
     candidate_faces = []
     for face in faces:
@@ -96,6 +114,7 @@ def get_candidate_crossings(face):
             crossings.append(entrypoint.vertex)
     return crossings
 
+
 def find_common_edge(crossing1, crossing2):
     for adjacent1 in crossing1.adjacent:
         for adjacent2 in crossing2.adjacent:
@@ -108,6 +127,8 @@ def get_crossing_index(crossing, edge):
         if crossing.adjacent[i][0] == edge:
             return i
     raise Exception('Edge not found in crossing')
+
+
 def get_crossing_shift_indices(keep_crossing, remove_crossing1, remove_crossing2):
 
     edge1 = find_common_edge(keep_crossing, remove_crossing1)
@@ -126,6 +147,8 @@ def get_crossing_shift_indices(keep_crossing, remove_crossing1, remove_crossing2
         raise Exception('Edges are not adjacent')
 
     return shifted_crossing_index_e1, shifted_crossing_index_e2
+
+
 
 
 candidate_face = get_candidate_face(faces)
