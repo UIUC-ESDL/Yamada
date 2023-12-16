@@ -478,22 +478,33 @@ class SpatialGraphDiagram(Reidemeister):
         self.crossings.remove(C)
         self.data.pop(C.label)
 
-    # def remove_crossing_fuse_edges(self, crossing):
-    #     """
-    #     Removes a crossing from the diagram.
-    #
-    #     Todo Ensure that this does not return an empty diagram
-    #     """
-    #     A, i = crossing.adjacent[0]
-    #     B, j = crossing.adjacent[1]
-    #     C, k = crossing.adjacent[2]
-    #     D, l = crossing.adjacent[3]
-    #
-    #     A[i] = C[k]
-    #     B[j] = D[l]
-    #
-    #     self.crossings.remove(crossing)
-    #     self.data.pop(crossing.label)
+    def bypass_crossing(self, C, i_e1, i_e2):
+        """
+        Splices two edges together by bypassing a crossing.
+        """
+
+        E1, i1 = C.adjacent[i_e1]
+        E2, i2 = C.adjacent[i_e2]
+
+        E1[i1] = E2[i2]
+
+        self.remove_crossing(C)
+
+    def remove_crossing_fuse_edges(self, crossing):
+        """
+        Removes a crossing from the diagram.
+        """
+
+        A, i = crossing.adjacent[0]
+        B, j = crossing.adjacent[1]
+        C, k = crossing.adjacent[2]
+        D, l = crossing.adjacent[3]
+
+        A[i] = C[k]
+        B[j] = D[l]
+
+        self.crossings.remove(crossing)
+        self.data.pop(crossing.label)
 
         # self._merge_edges()
 

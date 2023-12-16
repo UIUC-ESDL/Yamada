@@ -96,17 +96,58 @@ def get_candidate_crossings(face):
             crossings.append(entrypoint.vertex)
     return crossings
 
+def find_common_edge(crossing1, crossing2):
+    for adjacent1 in crossing1.adjacent:
+        for adjacent2 in crossing2.adjacent:
+            if adjacent1[0] == adjacent2[0]:
+                return adjacent1[0]
+
+
+def get_crossing_index(crossing, edge):
+    for i in range(4):
+        if crossing.adjacent[i][0] == edge:
+            return i
+    raise Exception('Edge not found in crossing')
+def get_crossing_shift_indices(keep_crossing, remove_crossing1, remove_crossing2):
+
+    edge1 = find_common_edge(keep_crossing, remove_crossing1)
+    edge2 = find_common_edge(keep_crossing, remove_crossing2)
+
+    keep_crossing_index_e1 = get_crossing_index(keep_crossing, edge1)
+    keep_crossing_index_e2 = get_crossing_index(keep_crossing, edge2)
+
+    if keep_crossing_index_e1 == (keep_crossing_index_e2-1) % 4:
+        shifted_crossing_index_e1 = (keep_crossing_index_e1-1) % 4
+        shifted_crossing_index_e2 = (keep_crossing_index_e2+1) % 4
+    elif keep_crossing_index_e1 == (keep_crossing_index_e2+1) % 4:
+        shifted_crossing_index_e1 = (keep_crossing_index_e1+1) % 4
+        shifted_crossing_index_e2 = (keep_crossing_index_e2-1) % 4
+    else:
+        raise Exception('Edges are not adjacent')
+
+    return shifted_crossing_index_e1, shifted_crossing_index_e2
+
+
 candidate_face = get_candidate_face(faces)
 candidate_crossings = get_candidate_crossings(candidate_face)
 
 keep_crossing = candidate_crossings[0]
-remove_crossings = candidate_crossings[1:]
+remove_crossing_1 = candidate_crossings[1]
+remove_crossing_2 = candidate_crossings[2]
 
+common_edge_1 = find_common_edge(keep_crossing, remove_crossing_1)
+common_edge_2 = find_common_edge(keep_crossing, remove_crossing_2)
 
+# sgd.remove_crossing_fuse_edges(keep_crossing)
+# sgd.remove_crossing(remove_crossing_1)
+
+# print('adjacent', remove_crossing_1.adjacent)
+
+shifted_index1, shifted_index2 = get_crossing_shift_indices(keep_crossing, remove_crossing_1, remove_crossing_2)
 
 # Define a circle
-circle = Vertex(2,'circle')
-circle[0]=circle[1]
+# circle = Vertex(2,'circle')
+# circle[0]=circle[1]
 
 
 
