@@ -77,6 +77,43 @@ def has_3_crossings(face):
 
     return crossings == 3
 
+def has_r3(sgd):
+    faces = sgd.faces()
+    for face in faces:
+        requirement_1 = has_3_crossings(face)
+        requirement_2 = has_double_over_or_under_edge(face)
+        if requirement_1 and requirement_2:
+            return True
+    return False
+
+def face_has_r3(faces):
+    for face in faces:
+        requirement_1 = has_3_crossings(face)
+        requirement_2 = has_double_over_or_under_edge(face)
+        if requirement_1 and requirement_2:
+            return True
+    return False
+
+def has_double_over_or_under_edge(face):
+    has_double_over_or_under_edge = False
+    entrypoints = face
+    for entrypoint in entrypoints:
+        if isinstance(entrypoint.vertex, Edge):
+            if edge_is_double_over_or_under(entrypoint.vertex):
+                has_double_over_or_under_edge = True
+
+    return has_double_over_or_under_edge
+
+def edge_is_double_over_or_under(edge):
+    crossings = edge.adjacent
+    if len(crossings) != 2:
+        raise Exception('Edge is not adjacent to exactly two crossings')
+    if both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both under':
+        return True
+    elif both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both over':
+        return True
+    else:
+        return False
 
 
 def under_or_over(edge, crossing):
