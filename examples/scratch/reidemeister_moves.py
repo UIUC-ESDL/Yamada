@@ -94,15 +94,28 @@ def face_has_r3(faces):
             return True
     return False
 
-def has_double_over_or_under_edge(face):
-    has_double_over_or_under_edge = False
+def r3(face):
+    pass
+
+def has_double_over_or_under_edge(face, include_info=False):
+    double_over_or_under_edge = False
     entrypoints = face
+    crossings = []
     for entrypoint in entrypoints:
         if isinstance(entrypoint.vertex, Edge):
             if edge_is_double_over_or_under(entrypoint.vertex):
-                has_double_over_or_under_edge = True
+                double_over_or_under_edge = True
 
-    return has_double_over_or_under_edge
+    if include_info:
+
+        r3_edge = entrypoint.vertex
+        r3_crossing_1 = entrypoint.vertex.adjacent[0][0]
+        r3_crossing_2 = entrypoint.vertex.adjacent[1][0]
+        r3_center_crossing =
+
+        return r3_edge, r3_crossing_1, r3_crossing_2, r3_center_crossing
+    else:
+        return double_over_or_under_edge
 
 def edge_is_double_over_or_under(edge):
     crossings = edge.adjacent
