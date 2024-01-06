@@ -137,81 +137,62 @@ candidate_crossings = get_candidate_crossings(candidate_face)
 # keep_crossing = candidate_crossings[0]
 # remove_crossing_1 = candidate_crossings[1]
 # remove_crossing_2 = candidate_crossings[2]
+# TODO Remove hard-coding
 keep_crossing = [crossing for crossing in candidate_crossings if crossing.label == 'x0'][0]
-remove_crossing_1 = [crossing for crossing in candidate_crossings if crossing.label == 'x2'][0]
-remove_crossing_2 = [crossing for crossing in candidate_crossings if crossing.label == 'x3'][0]
+reidemeister_crossing_1 = [crossing for crossing in candidate_crossings if crossing.label == 'x2'][0]
+reidemeister_crossing_2 = [crossing for crossing in candidate_crossings if crossing.label == 'x3'][0]
 
-# Define the remove crossing corners, and which are under/over
-rc1_0_under = remove_crossing_1.adjacent[0]
-rc1_1_over = remove_crossing_1.adjacent[1]
-rc1_2_under = remove_crossing_1.adjacent[2]
-rc1_3_over = remove_crossing_1.adjacent[3]
+# Define the Reidemeister crossing corners, and which are under/over
+rc1_0_under = reidemeister_crossing_1.adjacent[0]
+rc1_1_over = reidemeister_crossing_1.adjacent[1]
+rc1_2_under = reidemeister_crossing_1.adjacent[2]
+rc1_3_over = reidemeister_crossing_1.adjacent[3]
 rc1_edges = [rc1_0_under, rc1_1_over, rc1_2_under, rc1_3_over]
 
-rc2_0_under = remove_crossing_2.adjacent[0]
-rc2_1_over = remove_crossing_2.adjacent[1]
-rc2_2_under = remove_crossing_2.adjacent[2]
-rc2_3_over = remove_crossing_2.adjacent[3]
+
+
+rc2_0_under = reidemeister_crossing_2.adjacent[0]
+rc2_1_over = reidemeister_crossing_2.adjacent[1]
+rc2_2_under = reidemeister_crossing_2.adjacent[2]
+rc2_3_over = reidemeister_crossing_2.adjacent[3]
 rc2_edges = [rc2_0_under, rc2_1_over, rc2_2_under, rc2_3_over]
 
 # Find the edges the keep and each remove crossing have in common
-common_edge_1 = find_common_edge(keep_crossing, remove_crossing_1)
-common_edge_2 = find_common_edge(keep_crossing, remove_crossing_2)
+common_edge_1 = find_common_edge(keep_crossing, reidemeister_crossing_1)
+common_edge_2 = find_common_edge(keep_crossing, reidemeister_crossing_2)
 uncommon_edge = find_opposite_edge(keep_crossing, candidate_face)
 
 # Find the indices of common and uncommon edges
-rc1_common_indices = [get_index_of_crossing_corner(remove_crossing_1, common_edge_1, opposite_side=False),
-                      get_index_of_crossing_corner(remove_crossing_1, common_edge_1, opposite_side=True)]
-
-rc1_uncommon_indices = [get_index_of_crossing_corner(remove_crossing_1, uncommon_edge, opposite_side=False),
-                        get_index_of_crossing_corner(remove_crossing_1, uncommon_edge, opposite_side=True)]
-
-rc2_common_indices = [get_index_of_crossing_corner(remove_crossing_2, common_edge_2, opposite_side=False),
-                      get_index_of_crossing_corner(remove_crossing_2, common_edge_2, opposite_side=True)]
-
-rc2_uncommon_indices = [get_index_of_crossing_corner(remove_crossing_2, uncommon_edge, opposite_side=False),
-                        get_index_of_crossing_corner(remove_crossing_2, uncommon_edge, opposite_side=True)]
-
-# Delete remove crossing 1, delete remove crossing 2
-sgd.remove_crossing(remove_crossing_1)
-sgd.remove_crossing(remove_crossing_2)
+rc1_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1)
+rc2_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, common_edge_2)
+rc1_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1, opposite_side=True)
+rc2_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, common_edge_2, opposite_side=True)
 
 # Fuse the edges of the keep crossing that are not being shifted by the Reidemeister move
-sgd.fuse_edges(remove_crossing_1.adjacent[rc1_common_indices[0]], remove_crossing_1.adjacent[rc1_common_indices[1]])
-sgd.fuse_edges(remove_crossing_2.adjacent[rc2_common_indices[0]], remove_crossing_2.adjacent[rc2_common_indices[1]])
+sgd.fuse_edges(reidemeister_crossing_1.adjacent[rc1_common_edge_index], reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index])
+sgd.fuse_edges(reidemeister_crossing_2.adjacent[rc2_common_edge_index], reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index])
 
-# Insert the new crossings
+# Reassign the Reidemeister crossing edges
 
-# RC1 is under or over; RC2 is under or over
-rc1_shifting_edge_is_under_or_over = sgd._under_or_over(remove_crossing_1.adjacent[rc1_uncommon_indices[0]][0],
-                                                        remove_crossing_1)
-
-rc2_shifting_edge_is_under_or_over = sgd._under_or_over(remove_crossing_2.adjacent[rc2_uncommon_indices[0]][0],
-                                                        remove_crossing_2)
-
-# Assert RC1 and RC2 are same under/over
-assert rc1_shifting_edge_is_under_or_over == rc2_shifting_edge_is_under_or_over
-
-# KC is under or over
-keep_crossing_shifting_edge_is_under_or_over_1 = sgd._under_or_over(common_edge_1, remove_crossing_1)
-keep_crossing_shifting_edge_is_under_or_over_2 = sgd._under_or_over(common_edge_2, remove_crossing_2)
-assert keep_crossing_shifting_edge_is_under_or_over_1 == keep_crossing_shifting_edge_is_under_or_over_2
-
-# Assert KC is opposite under/over of RC1 and RC2
-if rc1_shifting_edge_is_under_or_over == 'over':
-    # Assert KC is opposite under/over of RC1 and RC2
-    assert keep_crossing_shifting_edge_is_under_or_over_1 == 'under'
-elif rc1_shifting_edge_is_under_or_over == 'under':
-    assert keep_crossing_shifting_edge_is_under_or_over_1 == 'over'
-else:
-    raise Exception('Under or over not found')
+shifted_index1, shifted_index2 = get_crossing_shift_indices(keep_crossing, reidemeister_crossing_1, reidemeister_crossing_2)
 
 
+# edge, index = keep_crossing.adjacent[keep/rcx shift index]
+# rcx_crossing[rcx common edge index] = edge[index]
+# rcx_crossing[rcx common flipside edge index] = keep_crossing[keep/rcx shift index]
+
+rc1_new_edge, rc1_new_edge_index = keep_crossing.adjacent[shifted_index1]
+rc2_new_edge, rc2_new_edge_index = keep_crossing.adjacent[shifted_index2]
+
+reidemeister_crossing_1[rc1_common_edge_index] = rc1_new_edge[rc1_new_edge_index]
+reidemeister_crossing_2[rc2_common_edge_index] = rc2_new_edge[rc2_new_edge_index]
+
+reidemeister_crossing_1[rc1_common_flipside_edge_index] = keep_crossing[shifted_index1]
+reidemeister_crossing_2[rc2_common_flipside_edge_index] = keep_crossing[shifted_index2]
 
 # Create crossing
 
 
-shifted_index1, shifted_index2 = get_crossing_shift_indices(keep_crossing, remove_crossing_1, remove_crossing_2)
 
 # Insert new crossing 1, insert new crossing 2
 # # Keep crossing edge-->shift index, under/over edge -->
