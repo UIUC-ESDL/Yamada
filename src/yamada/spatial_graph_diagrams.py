@@ -251,7 +251,7 @@ class Reidemeister:
 
         return crossings == 3
 
-    def _has_double_over_or_under_edge(self, face, include_info=False):
+    def _has_double_over_or_under_edge(self, face):
         double_over_or_under_edge = False
         entrypoints = face
         crossings = []
@@ -260,15 +260,7 @@ class Reidemeister:
                 if self._edge_is_double_over_or_under(entrypoint.vertex):
                     double_over_or_under_edge = True
 
-        if include_info:
-            r3_edge = entrypoint.vertex
-            r3_crossing_1 = entrypoint.vertex.adjacent[0][0]
-            r3_crossing_2 = entrypoint.vertex.adjacent[1][0]
-            r3_center_crossing = 1 # FIXME
-
-            return r3_edge, r3_crossing_1, r3_crossing_2, r3_center_crossing
-        else:
-            return double_over_or_under_edge
+        return double_over_or_under_edge
 
 
     def _edge_is_double_over_or_under(self, edge):
@@ -474,6 +466,26 @@ class SpatialGraphDiagram(Reidemeister):
         crossing[1] = (C, l)
         crossing[3] = (D, m)
 
+    def add_crossing_by_indices(self, obj_index_tuple_0, obj_index_tuple_1, obj_index_tuple_2, obj_index_tuple_3):
+        """
+        Inserts a crossing into the diagram.
+        Indices follow standard order (0 & 2 under, 1 & 3 over)
+        """
+
+        # Create crossing
+        num_existing_crossings = len(self.crossings)
+        crossing_label = 'x' + str(num_existing_crossings + 1)
+        crossing = Crossing(crossing_label)
+        self.crossings.append(crossing)
+        self.data[crossing.label] = crossing
+
+        # Insert the crossing
+        # TODO Is there any way I could mess this up by flipping 0<-->2 or 1<-->3?
+        crossing[0] = obj_index_tuple_0
+        crossing[2] = obj_index_tuple_2
+        crossing[1] = obj_index_tuple_1
+        crossing[3] = obj_index_tuple_3
+
 
     def copy(self):
         """
@@ -558,9 +570,15 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.remove_crossing(C)
 
+    def fuse_edges(self, edge_index_tuple_1, edge_index_tuple_2):
+        A, i = edge_index_tuple_1
+        B, j = edge_index_tuple_2
+        A[i] = B[j]
+
     def remove_crossing_fuse_edges(self, crossing):
         """
         Removes a crossing from the diagram.
+        TODO Use fuse function above??
         """
 
         A, i = crossing.adjacent[0]
