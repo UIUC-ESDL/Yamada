@@ -187,14 +187,25 @@ rc2_new_edge, rc2_new_edge_index = keep_crossing.adjacent[shifted_index2]
 reidemeister_crossing_1[rc1_common_edge_index] = rc1_new_edge[rc1_new_edge_index]
 reidemeister_crossing_2[rc2_common_edge_index] = rc2_new_edge[rc2_new_edge_index]
 
-reidemeister_crossing_1[rc1_common_flipside_edge_index] = keep_crossing[shifted_index1]
-reidemeister_crossing_2[rc2_common_flipside_edge_index] = keep_crossing[shifted_index2]
+# Shift the two R3 crossings (commented out while trying to add edges manually)
+# reidemeister_crossing_1[rc1_common_flipside_edge_index] = keep_crossing[shifted_index1]
+# reidemeister_crossing_2[rc2_common_flipside_edge_index] = keep_crossing[shifted_index2]
 
-# Create crossing
+# Add Edges?
+er1 = Edge('er1')
+er2 = Edge('er2')
 
+sgd.add_edge(er1,
+             reidemeister_crossing_1, rc1_common_flipside_edge_index,
+             keep_crossing, shifted_index1)
 
+sgd.add_edge(er2,
+             reidemeister_crossing_2, rc2_common_flipside_edge_index,
+             keep_crossing, shifted_index2)
 
-# Insert new crossing 1, insert new crossing 2
-# # Keep crossing edge-->shift index, under/over edge -->
-#
+# Is it necessary to merge the vertices?
+# sgd._merge_vertices()
+
+yp = sgd.normalized_yamada_polynomial()
+print('YP', yp)
 

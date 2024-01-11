@@ -417,6 +417,22 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.edges = edges
 
+    def inflate_edge(self, crossing_1, crossing_2):
+        """
+        Splices and edge between two connected crossings
+        """
+
+        E = Edge(len(self.edges))
+        self.edges.append(E)
+        self.data[E.label] = E
+
+        c1_index_to_c2 = [i for i in range(4) if crossing_1.adjacent[i][0] == crossing_2][0]
+        c2_index_to_c1 = [i for i in range(4) if crossing_2.adjacent[i][0] == crossing_1][0]
+
+        E[0] = crossing_1.adjacent[c1_index_to_c2]
+        E[1] = crossing_2.adjacent[c2_index_to_c1]
+
+
     def _merge_vertices(self):
         """
         Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
@@ -436,6 +452,18 @@ class SpatialGraphDiagram(Reidemeister):
                 A[i] = B[j]
                 self.vertices.remove(vertex)
                 self.data.pop(vertex.label)
+
+    def add_edge(self, E, A, i, B, j):
+        """
+        Adds an edge to the diagram.
+        """
+
+        E[0] = (A, i)
+        E[1] = (B, j)
+
+        self.edges.append(E)
+        self.data[E.label] = E
+
 
 
     def add_crossing(self, over_edge, under_edge):
