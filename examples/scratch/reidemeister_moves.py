@@ -54,6 +54,113 @@ def pre_r3():
 
     return sgd
 
+def post_r3():
+
+    x0 = Crossing('x0')
+    x1 = Crossing('x1')
+    x2 = Crossing('x2')
+    x3 = Crossing('x3')
+    x4 = Crossing('x4')
+
+    e0 = Edge('e0')
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    e3 = Edge('e3')
+    e4 = Edge('e4')
+    e5 = Edge('e5')
+    e6 = Edge('e6')
+    e7 = Edge('e7')
+    e8 = Edge('e8')
+    e9 = Edge('e9')
+    er1 = Edge('er1')
+    er2 = Edge('er2')
+
+    x0[0] = er1[0]
+    x0[1] = er2[0]
+    x0[2] = e2[0]
+    x0[3] = e1[0]
+
+    x1[0] = e4[1]
+    x1[1] = e0[1]
+    x1[2] = e5[0]
+    x1[3] = e8[0]
+
+    x2[0] = e5[1]
+    x2[1] = e0[0]
+    x2[2] = e6[1]
+    x2[3] = er1[1]
+
+    x3[0] = e7[1]
+    x3[1] = er2[1]
+    x3[2] = e6[0]
+    x3[3] = e3[0]
+
+    x4[0] = e4[0]
+    x4[1] = e9[0]
+    x4[2] = e7[0]
+    x4[3] = e3[1]
+
+    e1[1] = e8[1]
+    e2[1] = e9[1]
+
+
+    sgd = SpatialGraphDiagram([x0, x1, x2, x3, x4, e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, er1, er2])
+
+    return sgd
+
+def post_r3_corrected():
+
+    x0 = Crossing('x0')
+    x1 = Crossing('x1')
+    x2 = Crossing('x2')
+    x3 = Crossing('x3')
+    x4 = Crossing('x4')
+
+    e0 = Edge('e0')
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    e3 = Edge('e3')
+    e4 = Edge('e4')
+    e5 = Edge('e5')
+    e6 = Edge('e6')
+    e7 = Edge('e7')
+    e8 = Edge('e8')
+    e9 = Edge('e9')
+    er1 = Edge('er1')
+    er2 = Edge('er2')
+
+    x0[0] = er1[0]
+    x0[1] = er2[0]
+    x0[2] = e2[0]
+    x0[3] = e1[0]
+
+    x1[0] = e4[1]
+    x1[1] = e0[1]
+    x1[2] = e5[0]
+    x1[3] = e8[0]
+
+    x2[0] = e5[1]
+    x2[1] = e0[0]
+    x2[2] = e6[1]
+    x2[3] = er1[1]
+
+    x3[0] = e7[1]
+    x3[1] = er2[1]
+    x3[2] = e6[0]
+    x3[3] = e3[0]
+
+    x4[0] = e4[0]
+    x4[1] = e9[0]
+    x4[2] = e7[0]
+    x4[3] = e3[1]
+
+    e1[1] = e8[1]
+    e2[1] = e9[1]
+
+
+    sgd = SpatialGraphDiagram([x0, x1, x2, x3, x4, e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, er1, er2])
+
+    return sgd
 
 sgd = pre_r3()
 
@@ -85,7 +192,7 @@ def find_common_edge(crossing1, crossing2):
 def find_opposite_edge(crossing, face):
     for entrypoint in face:
         if isinstance(entrypoint.vertex, Edge):
-            crossing_adjacent = [adjacent[0] for adjacent in keep_crossing.adjacent]
+            crossing_adjacent = [adjacent[0] for adjacent in crossing.adjacent]
             if entrypoint.vertex not in crossing_adjacent:
                 return entrypoint.vertex
 
@@ -168,9 +275,17 @@ rc2_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, co
 rc1_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1, opposite_side=True)
 rc2_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, common_edge_2, opposite_side=True)
 
+# Fixme
 # Fuse the edges of the keep crossing that are not being shifted by the Reidemeister move
-sgd.fuse_edges(reidemeister_crossing_1.adjacent[rc1_common_edge_index], reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index])
-sgd.fuse_edges(reidemeister_crossing_2.adjacent[rc2_common_edge_index], reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index])
+sgd.remove_edge(common_edge_1)
+sgd.remove_edge(common_edge_2)
+kc_rc1_index = get_index_of_crossing_corner(keep_crossing, common_edge_1)
+kc_rc2_index = get_index_of_crossing_corner(keep_crossing, common_edge_2)
+keep_crossing[kc_rc1_index] = reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index]
+keep_crossing[kc_rc2_index] = reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index]
+
+# sgd.fuse_edges(reidemeister_crossing_1.adjacent[rc1_common_edge_index], reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index])
+# sgd.fuse_edges(reidemeister_crossing_2.adjacent[rc2_common_edge_index], reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index])
 
 # Reassign the Reidemeister crossing edges
 
@@ -207,5 +322,5 @@ sgd.add_edge(er2,
 # sgd._merge_vertices()
 
 yp = sgd.normalized_yamada_polynomial()
-print('YP', yp)
+print('After R3:', yp)
 
