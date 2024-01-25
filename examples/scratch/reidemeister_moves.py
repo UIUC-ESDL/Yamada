@@ -323,4 +323,5 @@ sgd.add_edge(er2,
 
 yp = sgd.normalized_yamada_polynomial()
 print('After R3:', yp)
+print('Has R3?', sgd.has_r3()[0])
 
