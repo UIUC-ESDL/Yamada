@@ -172,7 +172,6 @@ print('Has R3?', sgd.has_r3()[0])
 def r3(face):
     pass
 
-
 def get_candidate_crossings(face):
     entrypoints = face
     crossings = []
