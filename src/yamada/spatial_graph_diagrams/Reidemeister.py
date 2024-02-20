@@ -85,11 +85,12 @@ def has_r3(sgd):
         prerequisite_2, candidate_face_edges = face_has_double_over_or_under_edge(face)
         if prerequisite_1 and prerequisite_2:
             candidate_faces.append(face)
+            candidate_faces_edges.append(candidate_face_edges)
 
     if len(candidate_faces) > 0:
-        return True, candidate_faces
+        return True, candidate_faces, candidate_faces_edges
     else:
-        return False, None
+        return False, None, None
 
 
 def face_has_3_crossings(face):

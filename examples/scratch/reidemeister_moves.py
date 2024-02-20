@@ -1,7 +1,7 @@
 from cypari import pari
 from yamada.spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 from yamada.spatial_graph_diagrams.diagram_elements import Vertex, Edge, Crossing
-from yamada.spatial_graph_diagrams.Reidemeister import has_r1, has_r2, has_r3, r1, r2, r3
+from yamada.spatial_graph_diagrams.Reidemeister import *
 
 a = pari('A')
 
@@ -168,16 +168,8 @@ sgd = pre_r3()
 
 print('Before R3:', sgd.normalized_yamada_polynomial())
 
-print('Has R3?', has_r3(sgd)[0])
-
-
-def get_candidate_crossings(face):
-    entrypoints = face
-    crossings = []
-    for entrypoint in entrypoints:
-        if isinstance(entrypoint.vertex, Crossing):
-            crossings.append(entrypoint.vertex)
-    return crossings
+pre_r3_has_r3, candidate_faces, candidate_faces_edges = has_r3(sgd)
+print('Has R3?', pre_r3_has_r3)
 
 
 def find_common_edge(crossing1, crossing2):
@@ -282,27 +274,15 @@ kc_rc2_index = get_index_of_crossing_corner(keep_crossing, common_edge_2)
 keep_crossing[kc_rc1_index] = reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index]
 keep_crossing[kc_rc2_index] = reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index]
 
-# sgd.fuse_edges(reidemeister_crossing_1.adjacent[rc1_common_edge_index], reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index])
-# sgd.fuse_edges(reidemeister_crossing_2.adjacent[rc2_common_edge_index], reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index])
-
 # Reassign the Reidemeister crossing edges
 
 shifted_index1, shifted_index2 = get_crossing_shift_indices(keep_crossing, reidemeister_crossing_1, reidemeister_crossing_2)
-
-
-# edge, index = keep_crossing.adjacent[keep/rcx shift index]
-# rcx_crossing[rcx common edge index] = edge[index]
-# rcx_crossing[rcx common flipside edge index] = keep_crossing[keep/rcx shift index]
 
 rc1_new_edge, rc1_new_edge_index = keep_crossing.adjacent[shifted_index1]
 rc2_new_edge, rc2_new_edge_index = keep_crossing.adjacent[shifted_index2]
 
 reidemeister_crossing_1[rc1_common_edge_index] = rc1_new_edge[rc1_new_edge_index]
 reidemeister_crossing_2[rc2_common_edge_index] = rc2_new_edge[rc2_new_edge_index]
-
-# Shift the two R3 crossings (commented out while trying to add edges manually)
-# reidemeister_crossing_1[rc1_common_flipside_edge_index] = keep_crossing[shifted_index1]
-# reidemeister_crossing_2[rc2_common_flipside_edge_index] = keep_crossing[shifted_index2]
 
 # Add Edges?
 er1 = Edge('er1')
