@@ -78,6 +78,7 @@ def has_r3(sgd):
 
     faces = sgd.faces()
     candidate_faces = []
+
     candidate_faces_edges = []
 
     for face in faces:
@@ -138,9 +139,114 @@ def edge_is_over(edge, crossing):
         return False
 
 
-def r3():
-    pass
+def r3(sgd, face, edge):
 
+    # Make a copy of the sgd object
+    # TODO DOES THIS CAUSE ISSUES?
+    # sgd = sgd.copy()
+
+    # Label the crossings
+    crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
+    reidemeister_crossing_1 = edge.adjacent[0][0]
+    reidemeister_crossing_2 = edge.adjacent[1][0]
+    keep_crossing = [crossing for crossing in crossings if crossing != reidemeister_crossing_1 and crossing != reidemeister_crossing_2][0]
+
+    # Label the edges
+    common_edge_1 = find_common_edge(keep_crossing, reidemeister_crossing_1)
+    common_edge_2 = find_common_edge(keep_crossing, reidemeister_crossing_2)
+    uncommon_edge = edge
+
+    # ...
+
+    # Find the Reidemeister crossing indices of the common edges, and their continuations on the other sides
+    rc1_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1)
+    rc1_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1,
+                                                                  opposite_side=True)
+
+    rc2_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, common_edge_2)
+    rc2_common_flipside_edge_index = get_index_of_crossing_corner(reidemeister_crossing_2, common_edge_2,
+                                                                  opposite_side=True)
+
+    # ...
+    kc_rc1_index = get_index_of_crossing_corner(keep_crossing, common_edge_1)
+    kc_rc2_index = get_index_of_crossing_corner(keep_crossing, common_edge_2)
+
+    # Remove the edges between the Reidemeister crossings and the keep crossing.
+    sgd.remove_edge(common_edge_1)
+    sgd.remove_edge(common_edge_2)
+
+    # Connect the Reidemeister crossing flipside edges to the keep crossing
+    keep_crossing[kc_rc1_index] = reidemeister_crossing_1.adjacent[rc1_common_flipside_edge_index]
+    keep_crossing[kc_rc2_index] = reidemeister_crossing_2.adjacent[rc2_common_flipside_edge_index]
+
+    # Find the shifted indices of the Reidemeister crossings
+    shifted_index1, shifted_index2 = get_crossing_shift_indices(keep_crossing, reidemeister_crossing_1,
+                                                                reidemeister_crossing_2)
+
+    rc1_new_edge, rc1_new_edge_index = keep_crossing.adjacent[shifted_index1]
+    rc2_new_edge, rc2_new_edge_index = keep_crossing.adjacent[shifted_index2]
+
+    reidemeister_crossing_1[rc1_common_edge_index] = rc1_new_edge[rc1_new_edge_index]
+    reidemeister_crossing_2[rc2_common_edge_index] = rc2_new_edge[rc2_new_edge_index]
+
+    # Add Edges?
+    # TODO Automate naming
+    er1 = Edge('er1')
+    er2 = Edge('er2')
+
+    sgd.add_edge(er1,
+                 reidemeister_crossing_1, rc1_common_flipside_edge_index,
+                 keep_crossing, shifted_index1)
+
+    sgd.add_edge(er2,
+                 reidemeister_crossing_2, rc2_common_flipside_edge_index,
+                 keep_crossing, shifted_index2)
+
+    return sgd
+
+
+def find_common_edge(crossing1, crossing2):
+    for adjacent1 in crossing1.adjacent:
+        for adjacent2 in crossing2.adjacent:
+            if adjacent1[0] == adjacent2[0]:
+                return adjacent1[0]
+
+
+def find_opposite_edge(crossing, face):
+    for entrypoint in face:
+        if isinstance(entrypoint.vertex, Edge):
+            crossing_adjacent = [adjacent[0] for adjacent in crossing.adjacent]
+            if entrypoint.vertex not in crossing_adjacent:
+                return entrypoint.vertex
+
+
+def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
+    for i in range(4):
+        if crossing.adjacent[i][0] == corner:
+            if not opposite_side:
+                return i
+            else:
+                return (i + 2) % 4
+    raise Exception('Corner not found in crossing')
+
+
+def get_crossing_shift_indices(keep_crossing, remove_crossing1, remove_crossing2):
+    edge1 = find_common_edge(keep_crossing, remove_crossing1)
+    edge2 = find_common_edge(keep_crossing, remove_crossing2)
+
+    keep_crossing_index_e1 = get_index_of_crossing_corner(keep_crossing, edge1)
+    keep_crossing_index_e2 = get_index_of_crossing_corner(keep_crossing, edge2)
+
+    if keep_crossing_index_e1 == (keep_crossing_index_e2 - 1) % 4:
+        shifted_crossing_index_e1 = (keep_crossing_index_e1 - 1) % 4
+        shifted_crossing_index_e2 = (keep_crossing_index_e2 + 1) % 4
+    elif keep_crossing_index_e1 == (keep_crossing_index_e2 + 1) % 4:
+        shifted_crossing_index_e1 = (keep_crossing_index_e1 + 1) % 4
+        shifted_crossing_index_e2 = (keep_crossing_index_e2 - 1) % 4
+    else:
+        raise Exception('Edges are not adjacent')
+
+    return shifted_crossing_index_e1, shifted_crossing_index_e2
 
 
 # %% Reidemeister 4
