@@ -1,5 +1,7 @@
 from cypari import pari
-from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing
+from yamada.spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.spatial_graph_diagrams.diagram_elements import Vertex, Edge, Crossing
+from yamada.spatial_graph_diagrams.Reidemeister import has_r1, has_r2, has_r3, r1, r2, r3
 
 a = pari('A')
 
@@ -166,11 +168,8 @@ sgd = pre_r3()
 
 print('Before R3:', sgd.normalized_yamada_polynomial())
 
-print('Has R3?', sgd.has_r3()[0])
+print('Has R3?', has_r3(sgd)[0])
 
-
-def r3(face):
-    pass
 
 def get_candidate_crossings(face):
     entrypoints = face
@@ -322,5 +321,5 @@ sgd.add_edge(er2,
 
 yp = sgd.normalized_yamada_polynomial()
 print('After R3:', yp)
-print('Has R3?', sgd.has_r3()[0])
+print('Has R3?', has_r3(sgd)[0])
 

@@ -50,12 +50,12 @@ import matplotlib.pyplot as plt
 from ..H_polynomial import h_poly
 from ..utilities import get_coefficients_and_exponents
 from .diagram_elements import Vertex, Edge, Crossing, EntryPoint
+from .Reidemeister import has_r1, r1, has_r2, r2, has_r3, r3
 
 
 
 
-
-class SpatialGraphDiagram(Reidemeister):
+class SpatialGraphDiagram:
     """
 
     """
@@ -148,7 +148,7 @@ class SpatialGraphDiagram(Reidemeister):
 
     def _inflate_edges(self):
         """
-        Creates edges from the crossings and vertices.
+        Creates and inserts an edge for each pair of crossings and/or vertices.
         """
 
         curr_index = 0
@@ -167,20 +167,21 @@ class SpatialGraphDiagram(Reidemeister):
 
         self.edges = edges
 
-    def inflate_edge(self, crossing_1, crossing_2):
-        """
-        Splices and edge between two connected crossings
-        """
-
-        E = Edge(len(self.edges))
-        self.edges.append(E)
-        self.data[E.label] = E
-
-        c1_index_to_c2 = [i for i in range(4) if crossing_1.adjacent[i][0] == crossing_2][0]
-        c2_index_to_c1 = [i for i in range(4) if crossing_2.adjacent[i][0] == crossing_1][0]
-
-        E[0] = crossing_1.adjacent[c1_index_to_c2]
-        E[1] = crossing_2.adjacent[c2_index_to_c1]
+    # def inflate_edge(self, crossing_1, crossing_2):
+    #     """
+    #     Splices and edge between two connected crossings
+    #     TODO Delete?
+    #     """
+    #
+    #     E = Edge(len(self.edges))
+    #     self.edges.append(E)
+    #     self.data[E.label] = E
+    #
+    #     c1_index_to_c2 = [i for i in range(4) if crossing_1.adjacent[i][0] == crossing_2][0]
+    #     c2_index_to_c1 = [i for i in range(4) if crossing_2.adjacent[i][0] == crossing_1][0]
+    #
+    #     E[0] = crossing_1.adjacent[c1_index_to_c2]
+    #     E[1] = crossing_2.adjacent[c2_index_to_c1]
 
 
     def _merge_vertices(self):
@@ -203,6 +204,15 @@ class SpatialGraphDiagram(Reidemeister):
                 self.vertices.remove(vertex)
                 self.data.pop(vertex.label)
 
+    def add_vertex(self, V):
+        """
+        Adds a vertex to the diagram.
+        """
+
+        self.vertices.append(V)
+        self.data[V.label] = V
+
+
     def add_edge(self, E, A, i, B, j):
         """
         Adds an edge to the diagram.
@@ -214,11 +224,23 @@ class SpatialGraphDiagram(Reidemeister):
         self.edges.append(E)
         self.data[E.label] = E
 
+    def fuse_edges(self, edge_index_tuple_1, edge_index_tuple_2):
+        A, i = edge_index_tuple_1
+        B, j = edge_index_tuple_2
+        A[i] = B[j]
 
+    def remove_edge(self, E):
+        """
+        Removes an edge from the diagram.
+        """
+
+        self.edges.remove(E)
+        self.data.pop(E.label)
 
     def add_crossing(self, over_edge, under_edge):
         """
         Inserts a crossing into the diagram.
+        TODO Consolidate with other add crossing?
         """
 
         # Create crossing
@@ -244,6 +266,27 @@ class SpatialGraphDiagram(Reidemeister):
         crossing[1] = (C, l)
         crossing[3] = (D, m)
 
+    def remove_crossing(self, C):
+        """
+        Removes a crossing from the diagram.
+        TODO Consolidate with bypass crossing?
+        """
+
+        self.crossings.remove(C)
+        self.data.pop(C.label)
+
+    def bypass_crossing(self, C, i_e1, i_e2):
+        """
+        Splices two edges together by bypassing a crossing.
+        """
+
+        E1, i1 = C.adjacent[i_e1]
+        E2, i2 = C.adjacent[i_e2]
+
+        E1[i1] = E2[i2]
+
+        self.remove_crossing(C)
+
     def add_crossing_by_indices(self, obj_index_tuple_0, obj_index_tuple_1, obj_index_tuple_2, obj_index_tuple_3):
         """
         Inserts a crossing into the diagram.
@@ -263,6 +306,41 @@ class SpatialGraphDiagram(Reidemeister):
         crossing[2] = obj_index_tuple_2
         crossing[1] = obj_index_tuple_1
         crossing[3] = obj_index_tuple_3
+
+    def short_cut(self, crossing, i0):
+        """
+        Short-cuts a crossing by removing the edge between them.
+        """
+
+        i1 = (i0 + 1) % 4
+        E0, j0 = crossing.adjacent[i0]
+        E1, j1 = crossing.adjacent[i1]
+        if E0 == E1:
+            V0 = Vertex(2, repr(E0) + '_stopper')
+            self.add_vertex(V0)
+            V0[0] = E0[j0]
+            V0[1] = E1[j1]
+        else:
+            E1[j1] = E0[j0]
+            E1.fuse()
+            self.remove_edge(E1)
+
+    def remove_crossing_fuse_edges(self, crossing):
+        """
+        Removes a crossing from the diagram.
+        TODO Use fuse function above??
+        """
+
+        A, i = crossing.adjacent[0]
+        B, j = crossing.adjacent[1]
+        C, k = crossing.adjacent[2]
+        D, l = crossing.adjacent[3]
+
+        A[i] = C[k]
+        B[j] = D[l]
+
+        self.crossings.remove(crossing)
+        self.data.pop(crossing.label)
 
 
     def copy(self):
@@ -328,83 +406,10 @@ class SpatialGraphDiagram(Reidemeister):
         G.check_structure()
         return G
 
-    def remove_crossing(self, C):
-        """
-        Removes a crossing from the diagram.
-        """
 
-        self.crossings.remove(C)
-        self.data.pop(C.label)
 
-    def bypass_crossing(self, C, i_e1, i_e2):
-        """
-        Splices two edges together by bypassing a crossing.
-        """
 
-        E1, i1 = C.adjacent[i_e1]
-        E2, i2 = C.adjacent[i_e2]
 
-        E1[i1] = E2[i2]
-
-        self.remove_crossing(C)
-
-    def fuse_edges(self, edge_index_tuple_1, edge_index_tuple_2):
-        A, i = edge_index_tuple_1
-        B, j = edge_index_tuple_2
-        A[i] = B[j]
-
-    def remove_crossing_fuse_edges(self, crossing):
-        """
-        Removes a crossing from the diagram.
-        TODO Use fuse function above??
-        """
-
-        A, i = crossing.adjacent[0]
-        B, j = crossing.adjacent[1]
-        C, k = crossing.adjacent[2]
-        D, l = crossing.adjacent[3]
-
-        A[i] = C[k]
-        B[j] = D[l]
-
-        self.crossings.remove(crossing)
-        self.data.pop(crossing.label)
-
-        # self._merge_edges()
-
-    def remove_edge(self, E):
-        """
-        Removes an edge from the diagram.
-        """
-
-        self.edges.remove(E)
-        self.data.pop(E.label)
-
-    def add_vertex(self, V):
-        """
-        Adds a vertex to the diagram.
-        """
-
-        self.vertices.append(V)
-        self.data[V.label] = V
-
-    def short_cut(self, crossing, i0):
-        """
-        Short-cuts a crossing by removing the edge between them.
-        """
-
-        i1 = (i0 + 1) % 4
-        E0, j0 = crossing.adjacent[i0]
-        E1, j1 = crossing.adjacent[i1]
-        if E0 == E1:
-            V0 = Vertex(2, repr(E0) + '_stopper')
-            self.add_vertex(V0)
-            V0[0] = E0[j0]
-            V0[1] = E1[j1]
-        else:
-            E1[j1] = E0[j0]
-            E1.fuse()
-            self.remove_edge(E1)
 
 
 

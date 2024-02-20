@@ -159,6 +159,8 @@ def position_spatial_graphs_in_3D(ust_dict, z_height=20):
         sg_inputs.append((nodes, node_positions, edges))
 
     return sg_inputs
+
+# TODO Implement graphing with labels
     
 # def draw_spatial_graph_in_3D(G, add_disks=False, z_height=20):
 #     main_nodes, other_nodes, segs = position_spatial_graph_in_3D(G, z_height)

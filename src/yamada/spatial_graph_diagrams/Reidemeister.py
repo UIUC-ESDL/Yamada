@@ -69,8 +69,8 @@ def has_r3(sgd):
     faces = sgd.faces()
     r3_faces = []
     for face in faces:
-        requirement_1 = sgd._has_3_crossings(face)
-        requirement_2 = sgd._has_double_over_or_under_edge(face)
+        requirement_1 = _face_has_3_crossings(face)
+        requirement_2 = _face_has_double_over_or_under_edge(face)
         if requirement_1 and requirement_2:
             r3_faces.append(face)
 
@@ -82,14 +82,14 @@ def has_r3(sgd):
 
 def _face_has_r3(faces):
     for face in faces:
-        requirement_1 = _has_3_crossings(face)
-        requirement_2 = _has_double_over_or_under_edge(face)
+        requirement_1 = _face_has_3_crossings(face)
+        requirement_2 = _face_has_double_over_or_under_edge(face)
         if requirement_1 and requirement_2:
             return True
     return False
 
 
-def _has_3_crossings(face):
+def _face_has_3_crossings(face):
 
     crossings = 0
     entrypoints = face
@@ -99,7 +99,7 @@ def _has_3_crossings(face):
 
     return crossings == 3
 
-def _has_double_over_or_under_edge(face):
+def _face_has_double_over_or_under_edge(face):
     double_over_or_under_edge = False
     entrypoints = face
     crossings = []
@@ -116,26 +116,29 @@ def _edge_is_double_over_or_under(edge):
     if len(crossings) != 2:
         raise Exception('Edge is not adjacent to exactly two crossings')
 
-    if _both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both under':
+    if _edge_is_both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both under':
         return True
-    elif _both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both over':
+    elif _edge_is_both_under_or_over(edge, crossings[0][0], crossings[1][0]) == 'both over':
         return True
     else:
         return False
 
-def _both_under_or_over(edge, crossing1, crossing2):
-    if _under_or_over(edge, crossing1) == _under_or_over(edge, crossing2):
-        return 'both ' + _under_or_over(edge, crossing1)
+def _edge_is_both_under_or_over(edge, crossing1, crossing2):
+    if _edge_is_under_or_over(edge, crossing1) == _edge_is_under_or_over(edge, crossing2):
+        return 'both ' + _edge_is_under_or_over(edge, crossing1)
     else:
         return 'neither'
 
-def _under_or_over(edge, crossing):
+def _edge_is_under_or_over(edge, crossing):
     if crossing.adjacent[0][0] == edge or crossing.adjacent[2][0] == edge:
         return 'under'
     elif crossing.adjacent[1][0] == edge or crossing.adjacent[3][0] == edge:
         return 'over'
     else:
         raise Exception('Edge not adjacent to crossing')
+
+def r3():
+    pass
 
 # %% Reidemeister 4
 

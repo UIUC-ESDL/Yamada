@@ -6,7 +6,8 @@ import subprocess
 import io
 import time
 import glob
-from .spatial_graph_diagrams import Vertex, Edge, Crossing, SpatialGraphDiagram
+from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
+from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 from .utilities import read_json_file
 
 

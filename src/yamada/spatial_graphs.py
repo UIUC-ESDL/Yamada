@@ -10,7 +10,8 @@ from itertools import combinations
 from numba import njit
 import math
 
-from .spatial_graph_diagrams import (Vertex, Crossing, SpatialGraphDiagram)
+from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
+from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 
 
 class AbstractGraph:
