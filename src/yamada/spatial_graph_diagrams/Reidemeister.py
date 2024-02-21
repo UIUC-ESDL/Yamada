@@ -74,42 +74,61 @@ def has_r3(sgd):
     Prerequisite 1: The SGD has at least one face with 3 crossings
     Prerequisite 2: At least one of the three edges of the face passes
     over or under the other two edges
+
+    Returns: ...
     """
 
     faces = sgd.faces()
-    candidate_faces_indices = []
-    candidate_faces_edges_labels = []
+    candidates = []
 
-    for i, face in enumerate(faces):
-        prerequisite_1 = face_has_3_crossings(face)
-        prerequisite_2, candidate_face_edges_labels = face_has_double_over_or_under_edge(face)
+    for face in faces:
+        prerequisite_1, crossings = face_has_3_crossings(face)
+        prerequisite_2, reidemeister_edges, other_edges = face_has_double_over_or_under_edge(face)
         if prerequisite_1 and prerequisite_2:
-            candidate_faces_indices.append(i)
-            candidate_faces_edges_labels.append(candidate_face_edges_labels)
+            for reidemeister_edge, other_two_edges in zip(reidemeister_edges, other_edges):
+                reidemeister_crossing = find_opposite_crossing(face, reidemeister_edge)
+                other_two_crossings = [crossing for crossing in crossings if crossing != reidemeister_crossing]
+                other_crossing_1 = other_two_crossings[0]
+                other_crossing_2 = other_two_crossings[1]
+                other_edge_1 = find_common_edge(reidemeister_crossing, other_crossing_1)
+                other_edge_2 = find_common_edge(reidemeister_crossing, other_crossing_2)
 
-    if len(candidate_faces_indices) > 0:
-        return True, candidate_faces_indices, candidate_faces_edges_labels
+                candidate = {'reidemeister crossing': reidemeister_crossing.label,
+                             'other crossing 1': other_crossing_1.label,
+                             'other crossing 2': other_crossing_2.label,
+                             'reidemeister edge': reidemeister_edge.label,
+                             'other edge 1': other_edge_1.label,
+                             'other edge 2': other_edge_2.label}
+                candidates.append(candidate)
+
+    if len(candidates) > 0:
+        return True, candidates
     else:
-        return False, None, None
+        return False, None
 
 
 def face_has_3_crossings(face):
     crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-    return len(crossings) == 3
+    has_3_crossings = len(crossings) == 3
+    return has_3_crossings, crossings
 
 def face_has_double_over_or_under_edge(face):
 
     edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-    candidate_edges = []
+    reidemeister_edges = []
+    other_edges = []
     for edge in edges:
         is_double_over_or_under, _ = edge_is_double_over_or_under(edge)
+        reidemeister_edge = edge
+        other_two_edges = [e for e in edges if e != edge]
         if is_double_over_or_under:
-            candidate_edges.append(edge.label)
+            reidemeister_edges.append(reidemeister_edge)
+            other_edges.append(other_two_edges)
 
-    if len(candidate_edges) > 0:
-        return True, candidate_edges
+    if len(reidemeister_edges) > 0:
+        return True, reidemeister_edges, other_edges
     else:
-        return False, None
+        return False, None, None
 
 
 def edge_is_double_over_or_under(edge):
@@ -137,24 +156,45 @@ def edge_is_over(edge, crossing):
     else:
         return False
 
+def find_opposite_edge(face, crossing):
+    for entrypoint in face:
+        if isinstance(entrypoint.vertex, Edge):
+            crossing_adjacent = [adjacent[0] for adjacent in crossing.adjacent]
+            if entrypoint.vertex not in crossing_adjacent:
+                return entrypoint.vertex
 
-def r3(sgd, face_index, edge_label):
+def find_opposite_crossing(face, edge):
+    for entrypoint in face:
+        if isinstance(entrypoint.vertex, Crossing):
+            edge_adjacent = [adjacent[0] for adjacent in edge.adjacent]
+            if entrypoint.vertex not in edge_adjacent:
+                return entrypoint.vertex
+
+
+# TODO INPUT IS A VALID FACE
+
+def r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2):
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
-    face = sgd.faces()[face_index]
-    edge = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge) and entrypoint.vertex.label == edge_label][0]
+    # face = sgd.faces()[face_index]
+    # edge = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge) and entrypoint.vertex.label == edge_label][0]
 
-    # Label the crossings
-    crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-    reidemeister_crossing_1 = edge.adjacent[0][0]
-    reidemeister_crossing_2 = edge.adjacent[1][0]
-    keep_crossing = [crossing for crossing in crossings if crossing != reidemeister_crossing_1 and crossing != reidemeister_crossing_2][0]
+    # # Label the crossings
+    # crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
+    # reidemeister_crossing_1 = edge.adjacent[0][0]
+    # reidemeister_crossing_2 = edge.adjacent[1][0]
+    # keep_crossing = reidemeister_crossing
 
-    # Label the edges
-    common_edge_1 = find_common_edge(keep_crossing, reidemeister_crossing_1)
-    common_edge_2 = find_common_edge(keep_crossing, reidemeister_crossing_2)
+    # Find the objects given the labels
+    keep_crossing = [crossing for crossing in sgd.crossings if crossing.label == reidemeister_crossing][0]
+    reidemeister_crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == other_crossing_1][0]
+    reidemeister_crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == other_crossing_2][0]
+    reidemeister_edge = [edge for edge in sgd.edges if edge.label == reidemeister_edge][0]
+    common_edge_1 = [edge for edge in sgd.edges if edge.label == other_edge_1][0]
+    common_edge_2 = [edge for edge in sgd.edges if edge.label == other_edge_2][0]
+
 
     # Find the Reidemeister crossing indices of the common edges, and their continuations on the other sides
     rc1_common_edge_index = get_index_of_crossing_corner(reidemeister_crossing_1, common_edge_1)
@@ -209,13 +249,6 @@ def find_common_edge(crossing1, crossing2):
             if adjacent1[0] == adjacent2[0]:
                 return adjacent1[0]
 
-
-def find_opposite_edge(crossing, face):
-    for entrypoint in face:
-        if isinstance(entrypoint.vertex, Edge):
-            crossing_adjacent = [adjacent[0] for adjacent in crossing.adjacent]
-            if entrypoint.vertex not in crossing_adjacent:
-                return entrypoint.vertex
 
 
 def get_index_of_crossing_corner(crossing, corner, opposite_side=False):

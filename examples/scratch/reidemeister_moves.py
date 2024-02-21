@@ -113,24 +113,19 @@ sgd = pre_r3()
 
 print('Before R3:', sgd.normalized_yamada_polynomial())
 
-pre_r3_has_r3, candidate_faces, candidate_faces_edges = has_r3(sgd)
+pre_r3_has_r3, candidates = has_r3(sgd)
 print('Has R3?', pre_r3_has_r3)
 
 # Hard-coded demo
-demo_edge = 'e6'
-demo_crossings = ['x0', 'x2', 'x3']
+reidemeister_crossing = 'x0'
+other_crossing_1 = 'x3'
+other_crossing_2 = 'x2'
+reidemeister_edge = 'e6'
+other_edge_1 = 'e2'
+other_edge_2 = 'e1'
 
-# Find the face and edge objects for the demo
-faces = sgd.faces()
-for face in faces:
-    entrypoints = [entrypoint.vertex.label for entrypoint in face]
-    if all([demo_crossing in entrypoints for demo_crossing in demo_crossings]):
-        candidate_face = face
-        break
 
-candidate_edge = [entrypoint.vertex for entrypoint in candidate_face if entrypoint.vertex.label == demo_edge][0]
-
-sgd_r3 = r3(sgd, candidate_face, candidate_edge)
+sgd_r3 = r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2)
 
 
 
