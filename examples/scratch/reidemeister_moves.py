@@ -113,16 +113,34 @@ sgd = pre_r3()
 
 print('Before R3:', sgd.normalized_yamada_polynomial())
 
+print('has r1?', has_r1(sgd))
+print('has r2?', has_r2(sgd)[0])
+
+sgd = r2(sgd)
+
 pre_r3_has_r3, candidates = has_r3(sgd)
 print('Has R3?', pre_r3_has_r3)
 
+
+
+print('has r1?', has_r1(sgd))
+print('has r2?', has_r2(sgd)[0])
+
 # Hard-coded demo
-reidemeister_crossing = 'x0'
-other_crossing_1 = 'x3'
-other_crossing_2 = 'x2'
-reidemeister_edge = 'e6'
-other_edge_1 = 'e2'
-other_edge_2 = 'e1'
+# reidemeister_crossing = 'x0'
+# other_crossing_1 = 'x3'
+# other_crossing_2 = 'x2'
+# reidemeister_edge = 'e6'
+# other_edge_1 = 'e2'
+# other_edge_2 = 'e1'
+
+candidate = candidates[0]
+reidemeister_crossing = candidate['reidemeister crossing']
+other_crossing_1 = candidate['other crossing 1']
+other_crossing_2 = candidate['other crossing 2']
+reidemeister_edge = candidate['reidemeister edge']
+other_edge_1 = candidate['other edge 1']
+other_edge_2 = candidate['other edge 2']
 
 
 sgd_r3 = r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2)

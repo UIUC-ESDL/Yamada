@@ -47,14 +47,14 @@ def has_r2(sgd):
             if isinstance(B, Crossing):
                 if (a + b) % 2 == 0:
                     return True, E, A, B
-    return False
+    return False, None, None, None
 
 def r2(sgd):
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
-    has_r2, edge, crossing_a, crossing_b = sgd.has_r2()
+    sgd_has_r2, edge, crossing_a, crossing_b = has_r2(sgd)
 
     sgd.remove_crossing_fuse_edges(crossing_a)
     sgd.remove_crossing_fuse_edges(crossing_b)
@@ -171,21 +171,12 @@ def find_opposite_crossing(face, edge):
                 return entrypoint.vertex
 
 
-# TODO INPUT IS A VALID FACE
+# TODO VERIFY INPUT IS A VALID FACE
 
 def r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2):
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
-
-    # face = sgd.faces()[face_index]
-    # edge = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge) and entrypoint.vertex.label == edge_label][0]
-
-    # # Label the crossings
-    # crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-    # reidemeister_crossing_1 = edge.adjacent[0][0]
-    # reidemeister_crossing_2 = edge.adjacent[1][0]
-    # keep_crossing = reidemeister_crossing
 
     # Find the objects given the labels
     keep_crossing = [crossing for crossing in sgd.crossings if crossing.label == reidemeister_crossing][0]
@@ -227,16 +218,17 @@ def r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeis
     reidemeister_crossing_1[rc1_common_edge_index] = rc1_new_edge[rc1_new_edge_index]
     reidemeister_crossing_2[rc2_common_edge_index] = rc2_new_edge[rc2_new_edge_index]
 
-    # Add Edges?
-    # TODO Automate naming
-    er1 = Edge('er1')
-    er2 = Edge('er2')
+    # Add two new edges
+    new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
+    new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
+    new_edge_1 = Edge(new_edge_1_label)
+    new_edge_2 = Edge(new_edge_2_label)
 
-    sgd.add_edge(er1,
+    sgd.add_edge(new_edge_1,
                  reidemeister_crossing_1, rc1_common_flipside_edge_index,
                  keep_crossing, shifted_index1)
 
-    sgd.add_edge(er2,
+    sgd.add_edge(new_edge_2,
                  reidemeister_crossing_2, rc2_common_flipside_edge_index,
                  keep_crossing, shifted_index2)
 

@@ -83,6 +83,23 @@ class SpatialGraphDiagram:
         if check:
             self._check()
 
+    def _merge_edges(self):
+        """
+        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
+        calculations but do not add any information.
+        """
+
+        edges = [edge for edge in self.edges]
+        for edge in edges:
+
+            A, i = edge.adjacent[0]
+            B, j = edge.adjacent[1]
+
+            if A != edge and B != edge:
+                A[i] = B[j]
+                self.edges.remove(edge)
+                self.data.pop(edge.label)
+
     def faces(self):
         """
         The faces are the complementary regions of the diagram. Each
