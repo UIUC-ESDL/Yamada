@@ -49,16 +49,6 @@ def has_r2(sgd):
     1. There must exist a pair of crossings that share two common edges.
     2. One edge must pass over both crossings, and the other edge must pass under both crossings.
     """
-    # edges = sgd.edges
-    # for edge in edges:
-    #     A, a = edge.adjacent[0]
-    #     B, b = edge.adjacent[1]
-    #     if isinstance(A, Crossing) and isinstance(B, Crossing):
-    #         # If a & b are both positive, then the modulo is 0 and the edge passes under both crossings
-    #         # If a & b are both negative, then the modulo is 0 and the edge passes over both crossings
-    #         # If a or b is
-    #         if (a + b) % 2 == 0:
-    #             return True, edge, A, B
 
     # Initialize the lists
     crossings_pairs = []

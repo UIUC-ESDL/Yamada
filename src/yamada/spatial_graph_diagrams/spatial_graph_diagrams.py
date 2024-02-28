@@ -246,6 +246,7 @@ class SpatialGraphDiagram:
         B, j = edge_index_tuple_2
         A[i] = B[j]
 
+
     def remove_edge(self, E):
         """
         Removes an edge from the diagram.
@@ -358,6 +359,20 @@ class SpatialGraphDiagram:
 
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
+
+
+    def remove_unnecessary_edges(self):
+        """
+        Removes edges that connect two other edges.
+        """
+        uncessary_edges = [edge for edge in self.edges if isinstance(edge.adjacent[0][0], Edge) and isinstance(edge.adjacent[1][0], Edge)]
+        for edge in uncessary_edges:
+            A, i = edge.adjacent[0]
+            B, j = edge.adjacent[1]
+            A[i] = B[j]
+            self.remove_edge(edge)
+
+
 
 
     def copy(self):
