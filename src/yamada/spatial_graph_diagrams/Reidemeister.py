@@ -9,6 +9,7 @@ from .diagram_elements import Edge, Crossing
 # %% Reidemeister 1
 
 def has_r1(sgd):
+
     for C in sgd.crossings:
         for i in range(4):
             E, e = C.adjacent[i]
