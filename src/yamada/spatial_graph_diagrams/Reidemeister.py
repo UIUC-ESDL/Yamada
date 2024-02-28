@@ -81,6 +81,12 @@ def r2(sgd, crossing_pair, edge_pair):
     4. Delete the crossings
     5. Create two new edges
     6. Connect the new edges to the far side vertices/crossings
+
+
+    sgd.remove_crossing_fuse_edges(crossing_a)
+    sgd.remove_crossing_fuse_edges(crossing_b)
+
+    sgd._merge_edges()
     """
 
     # Make a copy of the sgd object
@@ -104,32 +110,37 @@ def r2(sgd, crossing_pair, edge_pair):
     edge2_flipside2, edge2_flipside2_index = find_flipside_edge(crossing2, edge2)
 
     # Find the far side vertices/crossings
-    edge1_farsidevertex_1, edge1_farsidevertex_1_index = [adjacent for adjacent in edge1_flipside1.adjacent if adjacent[0] != crossing1][0]
-    edge1_farsidevertex_2, edge1_farsidevertex_2_index = [adjacent for adjacent in edge1_flipside2.adjacent if adjacent[0] != crossing2][0]
-    edge2_farsidevertex_1, edge2_farsidevertex_1_index = [adjacent for adjacent in edge2_flipside1.adjacent if adjacent[0] != crossing1][0]
-    edge2_farsidevertex_2, edge2_farsidevertex_2_index = [adjacent for adjacent in edge2_flipside2.adjacent if adjacent[0] != crossing2][0]
-
-    # Remove the edges
-    sgd.remove_edge(edge1)
-    sgd.remove_edge(edge2)
-    sgd.remove_edge(edge1_flipside1)
-    sgd.remove_edge(edge1_flipside2)
-    sgd.remove_edge(edge2_flipside1)
-    sgd.remove_edge(edge2_flipside2)
+    # edge1_farsidevertex_1, edge1_farsidevertex_1_index = [adjacent for adjacent in edge1_flipside1.adjacent if adjacent[0] != crossing1][0]
+    # edge1_farsidevertex_2, edge1_farsidevertex_2_index = [adjacent for adjacent in edge1_flipside2.adjacent if adjacent[0] != crossing2][0]
+    # edge2_farsidevertex_1, edge2_farsidevertex_1_index = [adjacent for adjacent in edge2_flipside1.adjacent if adjacent[0] != crossing1][0]
+    # edge2_farsidevertex_2, edge2_farsidevertex_2_index = [adjacent for adjacent in edge2_flipside2.adjacent if adjacent[0] != crossing2][0]
 
     # Remove the crossings
     sgd.remove_crossing(crossing1)
     sgd.remove_crossing(crossing2)
 
-    # Create two new edges
-    new_edge1_label = 'ne' + str(len(sgd.edges) + 1)
-    new_edge2_label = 'ne' + str(len(sgd.edges) + 2)
+    # Remove the edges
+    sgd.remove_edge(edge1)
+    sgd.remove_edge(edge2)
 
-    new_edge1 = Edge(new_edge1_label)
-    new_edge2 = Edge(new_edge2_label)
+    # Fuse the flipside edges
+    sgd.fuse_edges((edge1_flipside1, edge1_flipside1_index), (edge1_flipside2, edge1_flipside2_index))
+    sgd.fuse_edges((edge2_flipside1, edge2_flipside1_index), (edge2_flipside2, edge2_flipside2_index))
 
-    sgd.add_edge(new_edge1, edge1_farsidevertex_1, edge1_farsidevertex_1_index, edge1_farsidevertex_2, edge1_farsidevertex_2_index)
-    sgd.add_edge(new_edge2, edge2_farsidevertex_1, edge2_farsidevertex_1_index, edge2_farsidevertex_2, edge2_farsidevertex_2_index)
+    # sgd.remove_edge(edge1_flipside1)
+    # sgd.remove_edge(edge1_flipside2)
+    # sgd.remove_edge(edge2_flipside1)
+    # sgd.remove_edge(edge2_flipside2)
+
+    # # Create two new edges
+    # new_edge1_label = 'ne' + str(len(sgd.edges) + 1)
+    # new_edge2_label = 'ne' + str(len(sgd.edges) + 2)
+    #
+    # new_edge1 = Edge(new_edge1_label)
+    # new_edge2 = Edge(new_edge2_label)
+    #
+    # sgd.add_edge(new_edge1, edge1_farsidevertex_1, edge1_farsidevertex_1_index, edge1_farsidevertex_2, edge1_farsidevertex_2_index)
+    # sgd.add_edge(new_edge2, edge2_farsidevertex_1, edge2_farsidevertex_1_index, edge2_farsidevertex_2, edge2_farsidevertex_2_index)
 
 
     return sgd
