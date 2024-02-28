@@ -1,3 +1,4 @@
+from itertools import combinations
 from .diagram_elements import Edge, Crossing
 
 # TODO Do I Need to Return the sgd object?
@@ -41,28 +42,116 @@ def r1(sgd):
 # %% Reidemeister 2
 
 def has_r2(sgd):
-    for E in sgd.edges:
-        A, a = E.adjacent[0]
-        if isinstance(A, Crossing):
-            B, b = E.adjacent[1]
-            if isinstance(B, Crossing):
-                if (a + b) % 2 == 0:
-                    return True, E, A, B
-    return False, None, None, None
+    """
+    TODO Need to consult with Prof Dunfield how to handle an R2 that will result in unknots
 
-def r2(sgd):
+    Criteria:
+    1. There must exist a pair of crossings that share two common edges.
+    2. One edge must pass over both crossings, and the other edge must pass under both crossings.
+    """
+    # edges = sgd.edges
+    # for edge in edges:
+    #     A, a = edge.adjacent[0]
+    #     B, b = edge.adjacent[1]
+    #     if isinstance(A, Crossing) and isinstance(B, Crossing):
+    #         # If a & b are both positive, then the modulo is 0 and the edge passes under both crossings
+    #         # If a & b are both negative, then the modulo is 0 and the edge passes over both crossings
+    #         # If a or b is
+    #         if (a + b) % 2 == 0:
+    #             return True, edge, A, B
+
+    # Initialize the lists
+    crossings_pairs = []
+    edge_pairs = []
+
+    crossing_combinations = list(combinations(sgd.crossings, 2))
+    for crossing1, crossing2 in crossing_combinations:
+        common_edges = find_common_edges(crossing1, crossing2)
+
+        if len(common_edges) >= 2:
+            pairs_of_common_edges = list(combinations(common_edges, 2))
+            for edge1, edge2 in pairs_of_common_edges:
+
+                if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
+                    crossings_pairs.append((crossing1.label, crossing2.label))
+                    edge_pairs.append((edge1.label, edge2.label))
+
+
+    if len(crossings_pairs) > 0:
+        return True, crossings_pairs, edge_pairs
+    else:
+        return False, None, None
+
+
+def r2(sgd, crossing_pair, edge_pair):
+    """
+    1. Find the edges that are on the flip side of the crossings of the common edges.
+    2. Find the vertices/crossings that are on the far sides of those edges.
+    3. Remove those edges and the common edges.
+    4. Delete the crossings
+    5. Create two new edges
+    6. Connect the new edges to the far side vertices/crossings
+    """
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
-    sgd_has_r2, edge, crossing_a, crossing_b = has_r2(sgd)
+    # Verify that the sgd object has an R2 move
+    # sgd_has_r2, _, _ = has_r2(sgd)
+    # if not sgd_has_r2:
+    #     raise ValueError("No R2 move")
 
-    sgd.remove_crossing_fuse_edges(crossing_a)
-    sgd.remove_crossing_fuse_edges(crossing_b)
+    # Find the objects given the labels
+    crossing1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[0]][0]
+    crossing2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[1]][0]
+    edge1 = [edge for edge in sgd.edges if edge.label == edge_pair[0]][0]
+    edge2 = [edge for edge in sgd.edges if edge.label == edge_pair[1]][0]
 
-    sgd._merge_edges()
+    # Find the flip side edges
+    edge1_flipside1, edge1_flipside1_index = find_flipside_edge(crossing1, edge1)
+    edge1_flipside2, edge1_flipside2_index = find_flipside_edge(crossing2, edge1)
+    edge2_flipside1, edge2_flipside1_index = find_flipside_edge(crossing1, edge2)
+    edge2_flipside2, edge2_flipside2_index = find_flipside_edge(crossing2, edge2)
+
+    # Find the far side vertices/crossings
+    edge1_farsidevertex_1, edge1_farsidevertex_1_index = [adjacent for adjacent in edge1_flipside1.adjacent if adjacent[0] != crossing1][0]
+    edge1_farsidevertex_2, edge1_farsidevertex_2_index = [adjacent for adjacent in edge1_flipside2.adjacent if adjacent[0] != crossing2][0]
+    edge2_farsidevertex_1, edge2_farsidevertex_1_index = [adjacent for adjacent in edge2_flipside1.adjacent if adjacent[0] != crossing1][0]
+    edge2_farsidevertex_2, edge2_farsidevertex_2_index = [adjacent for adjacent in edge2_flipside2.adjacent if adjacent[0] != crossing2][0]
+
+    # Remove the edges
+    sgd.remove_edge(edge1)
+    sgd.remove_edge(edge2)
+    sgd.remove_edge(edge1_flipside1)
+    sgd.remove_edge(edge1_flipside2)
+    sgd.remove_edge(edge2_flipside1)
+    sgd.remove_edge(edge2_flipside2)
+
+    # Remove the crossings
+    sgd.remove_crossing(crossing1)
+    sgd.remove_crossing(crossing2)
+
+    # Create two new edges
+    new_edge1_label = 'ne' + str(len(sgd.edges) + 1)
+    new_edge2_label = 'ne' + str(len(sgd.edges) + 2)
+
+    new_edge1 = Edge(new_edge1_label)
+    new_edge2 = Edge(new_edge2_label)
+
+    sgd.add_edge(new_edge1, edge1_farsidevertex_1, edge1_farsidevertex_1_index, edge1_farsidevertex_2, edge1_farsidevertex_2_index)
+    sgd.add_edge(new_edge2, edge2_farsidevertex_1, edge2_farsidevertex_1_index, edge2_farsidevertex_2, edge2_farsidevertex_2_index)
+
 
     return sgd
+
+def find_flipside_edge(crossing, edge):
+    # for adjacent in crossing.adjacent:
+    #     if adjacent[0] == edge:
+    #         return crossing.adjacent[(adjacent[1] + 2) % 4]
+    crossing_index_edge = get_index_of_crossing_corner(crossing, edge)
+    flipside_index = (crossing_index_edge + 2) % 4
+    return crossing.adjacent[flipside_index]
+
 
 # %% Reidemeister 3
 
@@ -241,6 +330,15 @@ def find_common_edge(crossing1, crossing2):
         for adjacent2 in crossing2.adjacent:
             if adjacent1[0] == adjacent2[0]:
                 return adjacent1[0]
+
+def find_common_edges(crossing1, crossing2):
+    common_edges = []
+    for adjacent1 in crossing1.adjacent:
+        for adjacent2 in crossing2.adjacent:
+            if adjacent1[0] == adjacent2[0]:
+                common_edges.append(adjacent1[0])
+
+    return common_edges
 
 
 

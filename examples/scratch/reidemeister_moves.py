@@ -111,20 +111,31 @@ def post_r3_corrected():
 
 sgd = pre_r3()
 
-print('Before R3:', sgd.normalized_yamada_polynomial())
+print('Before R2:', sgd.normalized_yamada_polynomial())
 
-# TODO NEED TO FIX R2 MOVES. Make sure R1/R2/R3 all work.
-sgd_has_r2, E, A, B = has_r2(sgd)
+
+sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
 print('has r2?', sgd_has_r2)
 
-sgd = r2(sgd)
+sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+
+print('After R2:', sgd.normalized_yamada_polynomial())
+
+sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
+print('has r2?', sgd_has_r2)
+
+sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+
+print('After R2:', sgd.normalized_yamada_polynomial())
+
+
 
 # pre_r3_has_r3, candidates = has_r3(sgd)
 # print('Has R3?', pre_r3_has_r3)
 
 
 
-print('has r2?', has_r2(sgd)[0])
+# print('has r2?', has_r2(sgd)[0])
 
 # Hard-coded demo
 # reidemeister_crossing = 'x0'
