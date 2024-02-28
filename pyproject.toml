@@ -27,6 +27,7 @@ dependencies = [
     "jupyter",
     "nbconvert",
     "numba",
+    "nbmake",
 ]
 
 [project.optional-dependencies]
