@@ -73,7 +73,7 @@ def has_r2(sgd):
         return False, None, None
 
 
-def r2(sgd, crossing_pair, edge_pair):
+def r2(sgd, crossing_pair):
     """
     1. Find the edges that are on the flip side of the crossings of the common edges.
     2. Find the vertices/crossings that are on the far sides of those edges.
@@ -93,65 +93,20 @@ def r2(sgd, crossing_pair, edge_pair):
     sgd = sgd.copy()
 
     # Verify that the sgd object has an R2 move
-    # sgd_has_r2, _, _ = has_r2(sgd)
-    # if not sgd_has_r2:
-    #     raise ValueError("No R2 move")
+    sgd_has_r2, _, _ = has_r2(sgd)
+    if not sgd_has_r2:
+        raise ValueError("No R2 move")
 
     # Find the objects given the labels
     crossing1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[0]][0]
     crossing2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[1]][0]
-    edge1 = [edge for edge in sgd.edges if edge.label == edge_pair[0]][0]
-    edge2 = [edge for edge in sgd.edges if edge.label == edge_pair[1]][0]
-
-    # Find the flip side edges
-    edge1_flipside1, edge1_flipside1_index = find_flipside_edge(crossing1, edge1)
-    edge1_flipside2, edge1_flipside2_index = find_flipside_edge(crossing2, edge1)
-    edge2_flipside1, edge2_flipside1_index = find_flipside_edge(crossing1, edge2)
-    edge2_flipside2, edge2_flipside2_index = find_flipside_edge(crossing2, edge2)
-
-    # Find the far side vertices/crossings
-    # edge1_farsidevertex_1, edge1_farsidevertex_1_index = [adjacent for adjacent in edge1_flipside1.adjacent if adjacent[0] != crossing1][0]
-    # edge1_farsidevertex_2, edge1_farsidevertex_2_index = [adjacent for adjacent in edge1_flipside2.adjacent if adjacent[0] != crossing2][0]
-    # edge2_farsidevertex_1, edge2_farsidevertex_1_index = [adjacent for adjacent in edge2_flipside1.adjacent if adjacent[0] != crossing1][0]
-    # edge2_farsidevertex_2, edge2_farsidevertex_2_index = [adjacent for adjacent in edge2_flipside2.adjacent if adjacent[0] != crossing2][0]
-
-    # Remove the crossings
-    # sgd.remove_crossing(crossing1)
-    # sgd.remove_crossing(crossing2)
-
-    # Remove the edges
-    # sgd.remove_edge(edge1)
-    # sgd.remove_edge(edge2)
-
-    # Fuse the flipside edges
-    # sgd.fuse_edges((edge1_flipside1, edge1_flipside1_index), (edge1_flipside2, edge1_flipside2_index))
-    # sgd.fuse_edges((edge2_flipside1, edge2_flipside1_index), (edge2_flipside2, edge2_flipside2_index))
 
     sgd.remove_crossing_fuse_edges(crossing1)
     sgd.remove_crossing_fuse_edges(crossing2)
 
-    # sgd.remove_edge(edge1_flipside1)
-    # sgd.remove_edge(edge1_flipside2)
-    # sgd.remove_edge(edge2_flipside1)
-    # sgd.remove_edge(edge2_flipside2)
-
-    # # Create two new edges
-    # new_edge1_label = 'ne' + str(len(sgd.edges) + 1)
-    # new_edge2_label = 'ne' + str(len(sgd.edges) + 2)
-    #
-    # new_edge1 = Edge(new_edge1_label)
-    # new_edge2 = Edge(new_edge2_label)
-    #
-    # sgd.add_edge(new_edge1, edge1_farsidevertex_1, edge1_farsidevertex_1_index, edge1_farsidevertex_2, edge1_farsidevertex_2_index)
-    # sgd.add_edge(new_edge2, edge2_farsidevertex_1, edge2_farsidevertex_1_index, edge2_farsidevertex_2, edge2_farsidevertex_2_index)
-
-
     return sgd
 
 def find_flipside_edge(crossing, edge):
-    # for adjacent in crossing.adjacent:
-    #     if adjacent[0] == edge:
-    #         return crossing.adjacent[(adjacent[1] + 2) % 4]
     crossing_index_edge = get_index_of_crossing_corner(crossing, edge)
     flipside_index = (crossing_index_edge + 2) % 4
     return crossing.adjacent[flipside_index]
