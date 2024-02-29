@@ -241,20 +241,22 @@ class SpatialGraphDiagram:
         self.edges.append(E)
         self.data[E.label] = E
 
-    def fuse_edges(self, edge_index_tuple_1, edge_index_tuple_2):
-        A, i = edge_index_tuple_1
-        B, j = edge_index_tuple_2
+    def connect_edges(self, edge_1, edge_1_index, edge_2, edge_2_index):
+        """
+        Connects two edges together
+        """
 
-        # Define two new vertices
-        Va_label = 'v' + str(len(self.vertices) + 1)
-        Va = Vertex(2, Va_label)
+        # Initialize a new vertex to connect the two edges
+        new_vertex_number = len(self.vertices) + 1
+        new_vertex_label = 'v' + str(new_vertex_number)
+        new_vertex = Vertex(2, new_vertex_label)
 
         # Add the vertex to the diagram
-        self.add_vertex(Va)
+        self.add_vertex(new_vertex)
 
-        # Add the edges to the vertex
-        A[i] = Va[0]
-        B[j] = Va[1]
+        # Assign the edges to the new vertex
+        edge_1[edge_1_index] = new_vertex[0]
+        edge_2[edge_2_index] = new_vertex[1]
 
 
     def remove_edge(self, E):
@@ -356,7 +358,7 @@ class SpatialGraphDiagram:
     def remove_crossing_fuse_edges(self, crossing):
         """
         Removes a crossing from the diagram.
-        TODO Use fuse function above??
+        TODO Use fuse function above?? Redundant?
         """
 
         A, i = crossing.adjacent[0]
@@ -364,11 +366,12 @@ class SpatialGraphDiagram:
         C, k = crossing.adjacent[2]
         D, l = crossing.adjacent[3]
 
-        self.crossings.remove(crossing)
-        self.data.pop(crossing.label)
+        # self.crossings.remove(crossing)
+        # self.data.pop(crossing.label)
+        self.remove_crossing(crossing)
 
-        self.fuse_edges((A, i), (C, k))
-        self.fuse_edges((B, j), (D, l))
+        self.connect_edges(A, i, C, k)
+        self.connect_edges(B, j, D, l)
 
 
     def remove_unnecessary_edges(self):
