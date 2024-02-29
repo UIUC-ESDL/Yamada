@@ -132,6 +132,8 @@ def has_r3(sgd):
 
     for face in faces:
         prerequisite_1, crossings = face_has_3_crossings(face)
+        if not prerequisite_1:
+            break  # Prereq 2 can't be satisfied if prereq 1 is not satisfied
         prerequisite_2, reidemeister_edges, other_edges = face_has_double_over_or_under_edge(face)
         if prerequisite_1 and prerequisite_2:
             for reidemeister_edge, other_two_edges in zip(reidemeister_edges, other_edges):
@@ -363,20 +365,26 @@ def reidemeister_simplify(sgd, num_trys=10):
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
-    def r1_and_r2_simplify(sgd):
+    r1_count = 0
+    r2_count = 0
+    r3_count = 0
+
+    def r1_and_r2_simplify(sgd, r1_count, r2_count):
         max_iter = 100
         i=0
         while has_r1(sgd) or has_r2(sgd)[0]:
             if has_r1(sgd):
                 sgd = r1(sgd)
+                r1_count += 1
             if has_r2(sgd)[0]:
-                sgd = r2(sgd, has_r2(sgd)[1][0], has_r2(sgd)[2][0])
+                sgd = r2(sgd, has_r2(sgd)[1][0])
+                r2_count += 1
             if i > max_iter:
                 raise ValueError("R1 and R2 simplification did not converge")
-        return sgd
+        return sgd, r1_count, r2_count
 
     # Apply initial simplifications
-    sgd = r1_and_r2_simplify(sgd)
+    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
 
     # Apply Reidemeister 3 moves
     for i in range(num_trys):
@@ -387,8 +395,12 @@ def reidemeister_simplify(sgd, num_trys=10):
             sgd = r3(sgd, candidate['reidemeister crossing'], candidate['other crossing 1'],
                      candidate['other crossing 2'], candidate['reidemeister edge'],
                      candidate['other edge 1'], candidate['other edge 2'])
-            sgd = r1_and_r2_simplify(sgd)
+            r3_count += 1
+            sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
         else:
             break
 
-    return sgd
+    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
+
+    # TODO NEED ONE MORE R1
+    return sgd, r1_count, r2_count, r3_count

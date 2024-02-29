@@ -111,22 +111,27 @@ def post_r3_corrected():
 
 sgd = pre_r3()
 
-print('Before R2:', sgd.normalized_yamada_polynomial())
+print('Before R Simplify:', sgd.normalized_yamada_polynomial())
 
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
 
-sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
-print('has r2?', sgd_has_r2)
+# sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
+# print('has r2?', sgd_has_r2)
+#
+# sgd = r2(sgd, crossing_pairs[0])
+#
+print('After R Simplify: ', sgd.normalized_yamada_polynomial())
 
-sgd = r2(sgd, crossing_pairs[0])
-
-print('After R2: ', sgd.normalized_yamada_polynomial())
-
-sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
-print('has r2?', sgd_has_r2)
-
-sgd = r2(sgd, crossing_pairs[0])
-
-print('After R2: ', sgd.normalized_yamada_polynomial())
+print('R1 count:', r1_count)
+print('R2 count:', r2_count)
+print('R3 count:', r3_count)
+#
+# sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
+# print('has r2?', sgd_has_r2)
+#
+# sgd = r2(sgd, crossing_pairs[0])
+#
+# print('After R2: ', sgd.normalized_yamada_polynomial())
 
 
 
