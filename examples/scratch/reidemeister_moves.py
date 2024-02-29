@@ -109,24 +109,75 @@ def post_r3_corrected():
 
     return sgd
 
-sgd = pre_r3()
+# sgd = pre_r3()
+#
+# print('Before R2:', sgd.normalized_yamada_polynomial())
+#
+#
+# sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
+# print('has r2?', sgd_has_r2)
+#
+# sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+#
+# print('After R2:', sgd.normalized_yamada_polynomial())
+#
+# sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
+# print('has r2?', sgd_has_r2)
+#
+# sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+#
+# print('After R2:', sgd.normalized_yamada_polynomial())
 
-print('Before R2:', sgd.normalized_yamada_polynomial())
+def pre_r2():
+    e0 = Edge('e0')
+    e1 = Edge('e1')
+    x0 = Crossing('x0')
+    e0[0] = x0[0]
+    e0[1] = x0[3]
+    e1[0] = x0[1]
+    e1[1] = x0[2]
+    sgd = SpatialGraphDiagram([e0, e1, x0])
+    return sgd
+
+def post_r2():
+    e0 = Edge('e0')
+    e1 = Edge('e1')
+    v0 = Vertex(2, 'v0')
+    v1 = Vertex(2, 'v1')
+
+    # e0[0] = e1[1]
+    # e0[1] = e1[0]
+
+    e0[0] = v0[0]
+    e0[1] = v1[0]
+    e1[0] = v0[1]
+    e1[1] = v1[1]
+
+    sgd = SpatialGraphDiagram([e0, e1, v0, v1])
+    return sgd
+
+sgd1 = pre_r2()
+sgd2 = post_r2()
 
 
-sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
-print('has r2?', sgd_has_r2)
 
-sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+yp_before = sgd1.normalized_yamada_polynomial()
 
-print('After R2:', sgd.normalized_yamada_polynomial())
+x0 = [crossing for crossing in sgd1.crossings if crossing.label == 'x0'][0]
+sgd1.remove_crossing_fuse_edges(x0)
 
-sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
-print('has r2?', sgd_has_r2)
+yp_after = sgd1.normalized_yamada_polynomial()
 
-sgd = r2(sgd, crossing_pairs[0], edge_pairs[0])
+# # Ensure
+# print('Has R2:', has_r2(sgd)[0])
 
-print('After R2:', sgd.normalized_yamada_polynomial())
+# sgd = r2(sgd)
+#
+# yp_after = sgd.normalized_yamada_polynomial()
+#
+# assert yp_before == yp_after
+#
+# assert yp_after == expected
 
 
 

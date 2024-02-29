@@ -244,7 +244,17 @@ class SpatialGraphDiagram:
     def fuse_edges(self, edge_index_tuple_1, edge_index_tuple_2):
         A, i = edge_index_tuple_1
         B, j = edge_index_tuple_2
-        A[i] = B[j]
+
+        # Define two new vertices
+        Va_label = 'v' + str(len(self.vertices) + 1)
+        Va = Vertex(2, Va_label)
+
+        # Add the vertex to the diagram
+        self.add_vertex(Va)
+
+        # Add the edges to the vertex
+        A[i] = Va[0]
+        B[j] = Va[1]
 
 
     def remove_edge(self, E):
@@ -354,11 +364,11 @@ class SpatialGraphDiagram:
         C, k = crossing.adjacent[2]
         D, l = crossing.adjacent[3]
 
-        A[i] = C[k]
-        B[j] = D[l]
-
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
+
+        self.fuse_edges((A, i), (C, k))
+        self.fuse_edges((B, j), (D, l))
 
 
     def remove_unnecessary_edges(self):

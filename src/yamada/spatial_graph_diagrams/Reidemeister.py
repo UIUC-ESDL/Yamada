@@ -1,6 +1,6 @@
 from itertools import combinations
 from .diagram_elements import Edge, Crossing
-
+from random import choice
 # TODO Do I Need to Return the sgd object?
 
 # %% Reidemeister 0
@@ -116,16 +116,19 @@ def r2(sgd, crossing_pair, edge_pair):
     # edge2_farsidevertex_2, edge2_farsidevertex_2_index = [adjacent for adjacent in edge2_flipside2.adjacent if adjacent[0] != crossing2][0]
 
     # Remove the crossings
-    sgd.remove_crossing(crossing1)
-    sgd.remove_crossing(crossing2)
+    # sgd.remove_crossing(crossing1)
+    # sgd.remove_crossing(crossing2)
 
     # Remove the edges
-    sgd.remove_edge(edge1)
-    sgd.remove_edge(edge2)
+    # sgd.remove_edge(edge1)
+    # sgd.remove_edge(edge2)
 
     # Fuse the flipside edges
-    sgd.fuse_edges((edge1_flipside1, edge1_flipside1_index), (edge1_flipside2, edge1_flipside2_index))
-    sgd.fuse_edges((edge2_flipside1, edge2_flipside1_index), (edge2_flipside2, edge2_flipside2_index))
+    # sgd.fuse_edges((edge1_flipside1, edge1_flipside1_index), (edge1_flipside2, edge1_flipside2_index))
+    # sgd.fuse_edges((edge2_flipside1, edge2_flipside1_index), (edge2_flipside2, edge2_flipside2_index))
+
+    sgd.remove_crossing_fuse_edges(crossing1)
+    sgd.remove_crossing_fuse_edges(crossing2)
 
     # sgd.remove_edge(edge1_flipside1)
     # sgd.remove_edge(edge1_flipside2)
@@ -395,3 +398,42 @@ def has_r6(sgd):
                 if A == B and (b + 1) % 4 == a:
                     return True
     return False
+
+
+
+# %% Reidemeister Simplification
+
+def reidemeister_simplify(sgd, num_trys=10):
+
+    # Make a copy of the sgd object
+    sgd = sgd.copy()
+
+    def r1_and_r2_simplify(sgd):
+        max_iter = 100
+        i=0
+        while has_r1(sgd) or has_r2(sgd)[0]:
+            if has_r1(sgd):
+                sgd = r1(sgd)
+            if has_r2(sgd)[0]:
+                sgd = r2(sgd, has_r2(sgd)[1][0], has_r2(sgd)[2][0])
+            if i > max_iter:
+                raise ValueError("R1 and R2 simplification did not converge")
+        return sgd
+
+    # Apply initial simplifications
+    sgd = r1_and_r2_simplify(sgd)
+
+    # Apply Reidemeister 3 moves
+    for i in range(num_trys):
+        sgd_has_r3, candidates = has_r3(sgd)
+        if sgd_has_r3:
+            # Pick a random candidate
+            candidate = choice(candidates)
+            sgd = r3(sgd, candidate['reidemeister crossing'], candidate['other crossing 1'],
+                     candidate['other crossing 2'], candidate['reidemeister edge'],
+                     candidate['other edge 1'], candidate['other edge 2'])
+            sgd = r1_and_r2_simplify(sgd)
+        else:
+            break
+
+    return sgd
