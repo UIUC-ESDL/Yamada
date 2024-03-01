@@ -205,6 +205,7 @@ class SpatialGraphDiagram:
         """
         Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
         calculations but do not add any information.
+        TODO Why doesn't it remove some 2-valent vertices?
         """
 
         degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]
@@ -221,13 +222,10 @@ class SpatialGraphDiagram:
                 self.vertices.remove(vertex)
                 self.data.pop(vertex.label)
 
-    def add_vertex(self, V):
-        """
-        Adds a vertex to the diagram.
-        """
-
-        self.vertices.append(V)
-        self.data[V.label] = V
+    def add_vertex(self, vertex):
+        """Adds a vertex to the diagram."""
+        self.vertices.append(vertex)
+        self.data[vertex.label] = vertex
 
 
     def add_edge(self, E, A, i, B, j):
@@ -241,101 +239,52 @@ class SpatialGraphDiagram:
         self.edges.append(E)
         self.data[E.label] = E
 
-    def connect_edges(self, edge_1, edge_1_index, edge_2, edge_2_index):
+    def remove_edge(self, edge):
+        """Removes an edge from the diagram."""
+        self.edges.remove(edge)
+        self.data.pop(edge.label)
+
+    def remove_crossing(self, crossing):
+        """Removes a crossing from the diagram."""
+        self.crossings.remove(crossing)
+        self.data.pop(crossing.label)
+
+    def connect_edges(self, edge_1, edge_1_index_1, edge_2, edge_2_index_1):
         """
-        Connects two edges together
-        """
-
-        # Initialize a new vertex to connect the two edges
-        new_vertex_number = len(self.vertices) + 1
-        new_vertex_label = 'v' + str(new_vertex_number)
-        new_vertex = Vertex(2, new_vertex_label)
-
-        # Add the vertex to the diagram
-        self.add_vertex(new_vertex)
-
-        # Assign the edges to the new vertex
-        edge_1[edge_1_index] = new_vertex[0]
-        edge_2[edge_2_index] = new_vertex[1]
-
-
-    def remove_edge(self, E):
-        """
-        Removes an edge from the diagram.
+        Connects two edges together. Replaces them with a single, new edge.
         """
 
-        self.edges.remove(E)
-        self.data.pop(E.label)
+        # Identify the objects at the other end of the edges
+        edge_1_index_2 = (edge_1_index_1 + 1) % 2
+        edge_2_index_2 = (edge_2_index_1 + 1) % 2
+        edge_1_adjacent, edge_1_adjacent_index = edge_1.adjacent[edge_1_index_2]
+        edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
 
-    def add_crossing(self, over_edge, under_edge):
-        """
-        Inserts a crossing into the diagram.
-        TODO Consolidate with other add crossing?
-        """
+        # Remove the edges from the diagram
+        self.remove_edge(edge_1)
+        self.remove_edge(edge_2)
 
-        # Create crossing
-        num_existing_crossings = len(self.crossings)
-        crossing_label = 'x' + str(num_existing_crossings + 1)
-        crossing = Crossing(crossing_label)
-        self.crossings.append(crossing)
-        self.data[crossing.label] = crossing
+        # Create a new edge
+        new_edge_label = edge_1.label + '_' + edge_2.label
+        new_edge = Edge(new_edge_label)
 
-        # Determine edge adjacents
-        A, j = over_edge.adjacent[0]
-        B, k = over_edge.adjacent[1]
-        C, l = under_edge.adjacent[0]
-        D, m = under_edge.adjacent[1]
+        # Add the new edge to the diagram
+        self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
 
-        # Remove edges
-        self.remove_edge(over_edge)
-        self.remove_edge(under_edge)
+        # # Initialize a new vertex to connect the two edges
+        # new_vertex_number = len(self.vertices) + 1
+        # new_vertex_label = 'v' + str(new_vertex_number)
+        # new_vertex = Vertex(2, new_vertex_label)
+        #
+        # # Add the vertex to the diagram
+        # self.add_vertex(new_vertex)
+        #
+        # # Assign the edges to the new vertex
+        # edge_1[edge_1_index_1] = new_vertex[0]
+        # edge_2[edge_2_index_1] = new_vertex[1]
 
-        # Insert the crossing
-        crossing[0] = (A, j)
-        crossing[2] = (B, k)
-        crossing[1] = (C, l)
-        crossing[3] = (D, m)
 
-    def remove_crossing(self, C):
-        """
-        Removes a crossing from the diagram.
-        TODO Consolidate with bypass crossing?
-        """
 
-        self.crossings.remove(C)
-        self.data.pop(C.label)
-
-    def bypass_crossing(self, C, i_e1, i_e2):
-        """
-        Splices two edges together by bypassing a crossing.
-        """
-
-        E1, i1 = C.adjacent[i_e1]
-        E2, i2 = C.adjacent[i_e2]
-
-        E1[i1] = E2[i2]
-
-        self.remove_crossing(C)
-
-    def add_crossing_by_indices(self, obj_index_tuple_0, obj_index_tuple_1, obj_index_tuple_2, obj_index_tuple_3):
-        """
-        Inserts a crossing into the diagram.
-        Indices follow standard order (0 & 2 under, 1 & 3 over)
-        """
-
-        # Create crossing
-        num_existing_crossings = len(self.crossings)
-        crossing_label = 'x' + str(num_existing_crossings + 1)
-        crossing = Crossing(crossing_label)
-        self.crossings.append(crossing)
-        self.data[crossing.label] = crossing
-
-        # Insert the crossing
-        # TODO Is there any way I could mess this up by flipping 0<-->2 or 1<-->3?
-        crossing[0] = obj_index_tuple_0
-        crossing[2] = obj_index_tuple_2
-        crossing[1] = obj_index_tuple_1
-        crossing[3] = obj_index_tuple_3
 
     def short_cut(self, crossing, i0):
         """
@@ -355,37 +304,27 @@ class SpatialGraphDiagram:
             E1.fuse()
             self.remove_edge(E1)
 
-    def remove_crossing_fuse_edges(self, crossing):
+        # Clean up the diagram
+        # self._merge_vertices()
+
+    def remove_crossing_connect_opposing_edges(self, crossing):
         """
         Removes a crossing from the diagram.
-        TODO Use fuse function above?? Redundant?
+        TODO Use fuse function above??
         """
 
-        A, i = crossing.adjacent[0]
-        B, j = crossing.adjacent[1]
-        C, k = crossing.adjacent[2]
-        D, l = crossing.adjacent[3]
+        # Identify the edges adjacent to the crossing
+        edge0, edge0_index = crossing.adjacent[0]
+        edge1, edge1_index = crossing.adjacent[1]
+        edge2, edge2_index = crossing.adjacent[2]
+        edge3, edge3_index = crossing.adjacent[3]
 
-        # self.crossings.remove(crossing)
-        # self.data.pop(crossing.label)
+        # Remove the crossing from the diagram
         self.remove_crossing(crossing)
 
-        self.connect_edges(A, i, C, k)
-        self.connect_edges(B, j, D, l)
-
-
-    def remove_unnecessary_edges(self):
-        """
-        Removes edges that connect two other edges.
-        """
-        uncessary_edges = [edge for edge in self.edges if isinstance(edge.adjacent[0][0], Edge) and isinstance(edge.adjacent[1][0], Edge)]
-        for edge in uncessary_edges:
-            A, i = edge.adjacent[0]
-            B, j = edge.adjacent[1]
-            A[i] = B[j]
-            self.remove_edge(edge)
-
-
+        # Connect the edges on opposing sides of the crossing
+        self.connect_edges(edge0, edge0_index, edge2, edge2_index)
+        self.connect_edges(edge1, edge1_index, edge3, edge3_index)
 
 
     def copy(self):
@@ -495,6 +434,9 @@ class SpatialGraphDiagram:
 
         V = Vertex(4, repr(C_0) + '_smushed')
         S_0.add_vertex(V)
+
+        # Clean up the diagram
+        # self._merge_vertices()
 
         for i in range(4):
             B, j = C_0.adjacent[i]

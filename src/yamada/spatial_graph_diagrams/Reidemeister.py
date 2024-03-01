@@ -1,5 +1,5 @@
 from itertools import combinations
-from .diagram_elements import Edge, Crossing
+from .diagram_elements import Vertex, Edge, Crossing
 from random import choice
 # TODO Do I Need to Return the sgd object?
 
@@ -10,34 +10,103 @@ from random import choice
 # %% Reidemeister 1
 
 def has_r1(sgd):
+    """
+    Criteria:
+    1. The diagram must have a crossing.
+    2. Two adjacent crossing corners must share an edge.
+    """
 
-    for C in sgd.crossings:
-        for i in range(4):
-            E, e = C.adjacent[i]
-            D, d = E.flow(e)
-            if D == C and (i + 1) % 4 == d:
-                return True
-    return False
+    # for C in sgd.crossings:
+    #     for i in range(4):
+    #         E, e = C.adjacent[i]
+    #         D, d = E.flow(e)
+    #         if D == C and (i + 1) % 4 == d:
+    #             return True
+    # return False
 
-def r1(sgd):
+    r1_crossings = []
+    r1_edges = []
+    r1_other_edges = []
+
+    for crossing in sgd.crossings:
+        (A, i), (B, j), (C, k), (D, l) = crossing.adjacent
+        if A == B:
+            r1_crossings.append(crossing.label)
+            r1_edges.append(A.label)
+            r1_other_edges.append([(C.label, k), (D.label, l)])
+        elif B == C:
+            r1_crossings.append(crossing.label)
+            r1_edges.append(B.label)
+            r1_other_edges.append([(A.label, i), (D.label, l)])
+        elif C == D:
+            r1_crossings.append(crossing.label)
+            r1_edges.append(C.label)
+            r1_other_edges.append([(A.label, i), (B.label, j)])
+        elif D == A:
+            r1_crossings.append(crossing.label)
+            r1_edges.append(D.label)
+            r1_other_edges.append([(B.label, j), (C.label, k)])
+
+    if len(r1_crossings) > 0:
+        return True, r1_crossings, r1_edges, r1_other_edges
+    else:
+        return False, None, None, None
+
+
+def r1(sgd, crossing_label, edge_label, other_edges):
+    """
+    1. Remove the crossing.
+    2. Remove the shared edge.
+    3. Connect the remaining edges.
+    """
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
-    for C in sgd.crossings:
-        for i in range(4):
-            E, e = C.adjacent[i]
-            D, d = E.flow(e)
-            if D == C and (i + 1) % 4 == d:
+    # Verify that the sgd object has an R1 move
+    sgd_has_r1, _, _, _ = has_r1(sgd)
+    if not sgd_has_r1:
+        raise ValueError("No R1 move")
 
-                # Remove crossing and merge edges
-                sgd.remove_crossing_fuse_edges(C)
+    # Find the objects given the labels
+    crossing = [crossing for crossing in sgd.crossings if crossing.label == crossing_label][0]
+    edge = [edge for edge, _ in sgd.edges if edge.label == edge_label][0]
+    other_edges = [(edge, i) for edge, i in sgd.edges if edge.label in other_edges]
 
-                sgd._merge_edges()
+    # Remove the crossing
+    sgd.remove_crossing(crossing)
 
-                return sgd
+    # Remove the shared edge
+    sgd.remove_edge(edge)
 
-    raise ValueError("No R1 move")
+    # Connect the remaining edges
+    v_label = 'v' + str(len(sgd.vertices) + 1)
+    v = Vertex(2, v_label)
+
+    # TODO Don't add new vertex...
+    (A, i), (B, j) = other_edges
+    A[i] = v[0]
+    B[j] = v[1]
+
+    # sgd.connect_edges(A, i, B, j)
+
+
+    # for C in sgd.crossings:
+    #     for i in range(4):
+    #         E, e = C.adjacent[i]
+    #         D, d = E.flow(e)
+    #         if D == C and (i + 1) % 4 == d:
+    #
+    #             # Remove crossing and merge edges
+    #             sgd.remove_crossing_connect_opposing_edges(C)
+    #
+    #             sgd._merge_edges()
+    #
+    #             return sgd
+
+    # raise ValueError("No R1 move")
+
+    return sgd
 
 # %% Reidemeister 2
 
@@ -101,8 +170,8 @@ def r2(sgd, crossing_pair):
     crossing1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[0]][0]
     crossing2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[1]][0]
 
-    sgd.remove_crossing_fuse_edges(crossing1)
-    sgd.remove_crossing_fuse_edges(crossing2)
+    sgd.remove_crossing_connect_opposing_edges(crossing1)
+    sgd.remove_crossing_connect_opposing_edges(crossing2)
 
     return sgd
 
@@ -283,6 +352,7 @@ def r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeis
                  reidemeister_crossing_2, rc2_common_flipside_edge_index,
                  keep_crossing, shifted_index2)
 
+
     return sgd
 
 
@@ -369,22 +439,32 @@ def reidemeister_simplify(sgd, num_trys=10):
     r2_count = 0
     r3_count = 0
 
-    def r1_and_r2_simplify(sgd, r1_count, r2_count):
+    def r1_and_r2_simplify(sgdi, r1_counti, r2_counti):
         max_iter = 100
         i=0
-        while has_r1(sgd) or has_r2(sgd)[0]:
-            if has_r1(sgd):
-                sgd = r1(sgd)
-                r1_count += 1
-            if has_r2(sgd)[0]:
-                sgd = r2(sgd, has_r2(sgd)[1][0])
-                r2_count += 1
+        sgd_has_r1 = True
+        sgd_has_r2 = True
+        while sgd_has_r1 and sgd_has_r2:
+
+            sgd_has_r1, r1_crossings, r1_edges, r1_other_edges = has_r1(sgdi)
+            if sgd_has_r1:
+                sgdi = r1(sgdi, r1_crossings[0], r1_edges[0], r1_other_edges[0])
+                r1_counti += 1
+
+            sgd_has_r2, r2_crossings, _ = has_r2(sgdi)
+            if sgd_has_r2:
+                sgdi = r2(sgdi, r2_crossings[0])
+                r2_counti += 1
+
             if i > max_iter:
                 raise ValueError("R1 and R2 simplification did not converge")
-        return sgd, r1_count, r2_count
+
+        return sgdi, r1_counti, r2_counti
 
     # Apply initial simplifications
-    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
+    sgd, r1_counta, r2_counta = r1_and_r2_simplify(sgd, r1_count, r2_count)
+    r1_count += r1_counta
+    r2_count += r2_counta
 
     # Apply Reidemeister 3 moves
     for i in range(num_trys):
@@ -396,11 +476,14 @@ def reidemeister_simplify(sgd, num_trys=10):
                      candidate['other crossing 2'], candidate['reidemeister edge'],
                      candidate['other edge 1'], candidate['other edge 2'])
             r3_count += 1
-            sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
+
+            sgd, r1_counta, r2_counta = r1_and_r2_simplify(sgd, r1_count, r2_count)
+            r1_count += r1_counta
+            r2_count += r2_counta
         else:
             break
 
-    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, r1_count, r2_count)
+
 
     # TODO NEED ONE MORE R1
     return sgd, r1_count, r2_count, r3_count
