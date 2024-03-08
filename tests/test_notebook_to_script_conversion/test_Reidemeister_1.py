@@ -5,7 +5,7 @@
 
 
 from cypari import pari
-from yamada import SpatialGraphDiagram, Crossing, Edge, has_r1, r1
+from yamada import SpatialGraphDiagram, Crossing, Edge, has_r1, apply_r1
 
 
 # ## Reidemeister 1
@@ -35,7 +35,7 @@ def test_r1_1():
 
     assert has_r1(sgd)
 
-    sgd = r1(sgd)
+    sgd = apply_r1(sgd)
 
     yp_after = sgd.normalized_yamada_polynomial()
 
@@ -64,7 +64,7 @@ def test_r1_2():
 
     assert has_r1(sgd)
 
-    sgd = r1(sgd)
+    sgd = apply_r1(sgd)
 
     yp_after = sgd.normalized_yamada_polynomial()
 

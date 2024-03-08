@@ -1,7 +1,7 @@
 from itertools import combinations
 from .diagram_elements import Vertex, Edge, Crossing
 from random import choice
-# TODO Do I Need to Return the sgd object?
+
 
 # %% Reidemeister 0
 
@@ -13,17 +13,11 @@ def has_r1(sgd):
     """
     Criteria:
     1. The diagram must have a crossing.
-    2. Two adjacent crossing corners must share an edge.
+    2. Two adjacent corners of the crossing must share the same exact edge
+       (i.e., the edge forms a loop and nothing is over-laying, under-laying, or poking through that loop).
     """
 
-    # for C in sgd.crossings:
-    #     for i in range(4):
-    #         E, e = C.adjacent[i]
-    #         D, d = E.flow(e)
-    #         if D == C and (i + 1) % 4 == d:
-    #             return True
-    # return False
-
+    sgd_has_r1 = False
     r1_crossings = []
     r1_edges = []
     r1_other_edges = []
@@ -31,44 +25,43 @@ def has_r1(sgd):
     for crossing in sgd.crossings:
         (A, i), (B, j), (C, k), (D, l) = crossing.adjacent
         if A == B:
+            sgd_has_r1 = True
             r1_crossings.append(crossing.label)
             r1_edges.append(A.label)
             r1_other_edges.append([(C.label, k), (D.label, l)])
         elif B == C:
+            sgd_has_r1 = True
             r1_crossings.append(crossing.label)
             r1_edges.append(B.label)
             r1_other_edges.append([(A.label, i), (D.label, l)])
         elif C == D:
+            sgd_has_r1 = True
             r1_crossings.append(crossing.label)
             r1_edges.append(C.label)
             r1_other_edges.append([(A.label, i), (B.label, j)])
         elif D == A:
+            sgd_has_r1 = True
             r1_crossings.append(crossing.label)
             r1_edges.append(D.label)
             r1_other_edges.append([(B.label, j), (C.label, k)])
 
-    if len(r1_crossings) > 0:
-        return True, r1_crossings, r1_edges, r1_other_edges
-    else:
-        return False, None, None, None
+    return sgd_has_r1, r1_crossings, r1_edges, r1_other_edges
 
 
-def r1(sgd, crossing_label, edge_label, other_edges):
+def apply_r1(sgd, crossing_label, edge_label, other_edges):
     """
     1. Remove the crossing.
-    2. Remove the shared edge.
-    3. Connect the remaining edges.
+    2. Remove the edge that two adjacent crossing corners share.
+    3. Connect the edges from the other two crossing corners.
     """
 
-    # Make a copy of the sgd object
+    # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
 
     # Verify that the sgd object has an R1 move
-    sgd_has_r1, _, _, _ = has_r1(sgd)
-    if not sgd_has_r1:
-        raise ValueError("No R1 move")
+    # Not Implemented for now, may consider this in the future
 
-    # Find the objects given the labels
+    # Find the SGD objects associated with the given labels
     crossing = [crossing for crossing in sgd.crossings if crossing.label == crossing_label][0]
     edge = [edge for edge, _ in sgd.edges if edge.label == edge_label][0]
     other_edges = [(edge, i) for edge, i in sgd.edges if edge.label in other_edges]
@@ -80,31 +73,8 @@ def r1(sgd, crossing_label, edge_label, other_edges):
     sgd.remove_edge(edge)
 
     # Connect the remaining edges
-    v_label = 'v' + str(len(sgd.vertices) + 1)
-    v = Vertex(2, v_label)
-
-    # TODO Don't add new vertex...
     (A, i), (B, j) = other_edges
-    A[i] = v[0]
-    B[j] = v[1]
-
-    # sgd.connect_edges(A, i, B, j)
-
-
-    # for C in sgd.crossings:
-    #     for i in range(4):
-    #         E, e = C.adjacent[i]
-    #         D, d = E.flow(e)
-    #         if D == C and (i + 1) % 4 == d:
-    #
-    #             # Remove crossing and merge edges
-    #             sgd.remove_crossing_connect_opposing_edges(C)
-    #
-    #             sgd._merge_edges()
-    #
-    #             return sgd
-
-    # raise ValueError("No R1 move")
+    sgd.connect_edges(A, i, B, j)
 
     return sgd
 
@@ -112,37 +82,40 @@ def r1(sgd, crossing_label, edge_label, other_edges):
 
 def has_r2(sgd):
     """
-    TODO Need to consult with Prof Dunfield how to handle an R2 that will result in unknots
-
     Criteria:
     1. There must exist a pair of crossings that share two common edges.
-    2. One edge must pass over both crossings, and the other edge must pass under both crossings.
+       (again, the edges form uninterrupted arcs and nothing is over-laying, under-laying, or poking through them).
+    2. One of these edges must pass over both crossings, and the other edge must pass under both crossings.
     """
 
     # Initialize the lists
+    sgd_has_r2 = False
     crossings_pairs = []
     edge_pairs = []
 
+    # Identify all possible pairs of crossings
     crossing_combinations = list(combinations(sgd.crossings, 2))
-    for crossing1, crossing2 in crossing_combinations:
-        common_edges = find_common_edges(crossing1, crossing2)
 
+    # Loop through each crossing pair
+    for crossing1, crossing2 in crossing_combinations:
+
+        # Does the crossing pair share at least two edges?
+        common_edges = find_common_edges(crossing1, crossing2)
         if len(common_edges) >= 2:
+
+            # We must evaluate the R2 for each pair of edges the crossings share (not just the first pair!)
             pairs_of_common_edges = list(combinations(common_edges, 2))
             for edge1, edge2 in pairs_of_common_edges:
-
                 if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
+                    sgd_has_r2 = True
                     crossings_pairs.append((crossing1.label, crossing2.label))
                     edge_pairs.append((edge1.label, edge2.label))
 
-
-    if len(crossings_pairs) > 0:
-        return True, crossings_pairs, edge_pairs
-    else:
-        return False, None, None
+    return sgd_has_r2, crossings_pairs, edge_pairs
 
 
-def r2(sgd, crossing_pair):
+
+def apply_r2(sgd, crossing_pair, edge_pair):
     """
     1. Find the edges that are on the flip side of the crossings of the common edges.
     2. Find the vertices/crossings that are on the far sides of those edges.
@@ -150,21 +123,13 @@ def r2(sgd, crossing_pair):
     4. Delete the crossings
     5. Create two new edges
     6. Connect the new edges to the far side vertices/crossings
-
-
-    sgd.remove_crossing_fuse_edges(crossing_a)
-    sgd.remove_crossing_fuse_edges(crossing_b)
-
-    sgd._merge_edges()
     """
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
     # Verify that the sgd object has an R2 move
-    sgd_has_r2, _, _ = has_r2(sgd)
-    if not sgd_has_r2:
-        raise ValueError("No R2 move")
+    # Not Implemented for now, may consider this in the future
 
     # Find the objects given the labels
     crossing1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_pair[0]][0]
@@ -448,12 +413,12 @@ def reidemeister_simplify(sgd, num_trys=10):
 
             sgd_has_r1, r1_crossings, r1_edges, r1_other_edges = has_r1(sgdi)
             if sgd_has_r1:
-                sgdi = r1(sgdi, r1_crossings[0], r1_edges[0], r1_other_edges[0])
+                sgdi = apply_r1(sgdi, r1_crossings[0], r1_edges[0], r1_other_edges[0])
                 r1_counti += 1
 
             sgd_has_r2, r2_crossings, _ = has_r2(sgdi)
             if sgd_has_r2:
-                sgdi = r2(sgdi, r2_crossings[0])
+                sgdi = apply_r2(sgdi, r2_crossings[0])
                 r2_counti += 1
 
             if i > max_iter:

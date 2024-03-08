@@ -113,7 +113,10 @@ sgd = pre_r3()
 
 print('Before R Simplify:', sgd.normalized_yamada_polynomial())
 
-sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
+sgd_has_r3, candidate_crossings, candidate_edges, candidate_other_edges = has_r1(sgd)
+sgd = apply_r1(sgd, candidate_crossings[0], candidate_edges[0], candidate_other_edges[0])
+
+# sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
 
 # sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
 # print('has r2?', sgd_has_r2)
@@ -122,9 +125,9 @@ sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
 #
 print('After R Simplify: ', sgd.normalized_yamada_polynomial())
 # TODO Problem: Added vertices, things don't appear adjacent.  Need to fix this.
-print('R1 count:', r1_count)
-print('R2 count:', r2_count)
-print('R3 count:', r3_count)
+# print('R1 count:', r1_count)
+# print('R2 count:', r2_count)
+# print('R3 count:', r3_count)
 #
 # sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
 # print('has r2?', sgd_has_r2)

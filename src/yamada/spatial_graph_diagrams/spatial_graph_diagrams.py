@@ -50,7 +50,7 @@ import matplotlib.pyplot as plt
 from ..H_polynomial import h_poly
 from ..utilities import get_coefficients_and_exponents
 from .diagram_elements import Vertex, Edge, Crossing, EntryPoint
-from .Reidemeister import has_r1, r1, has_r2, r2, has_r3, r3
+from .Reidemeister import has_r1, apply_r1, has_r2, apply_r2, has_r3, r3
 
 
 
@@ -270,21 +270,6 @@ class SpatialGraphDiagram:
 
         # Add the new edge to the diagram
         self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
-
-        # # Initialize a new vertex to connect the two edges
-        # new_vertex_number = len(self.vertices) + 1
-        # new_vertex_label = 'v' + str(new_vertex_number)
-        # new_vertex = Vertex(2, new_vertex_label)
-        #
-        # # Add the vertex to the diagram
-        # self.add_vertex(new_vertex)
-        #
-        # # Assign the edges to the new vertex
-        # edge_1[edge_1_index_1] = new_vertex[0]
-        # edge_2[edge_2_index_1] = new_vertex[1]
-
-
-
 
     def short_cut(self, crossing, i0):
         """

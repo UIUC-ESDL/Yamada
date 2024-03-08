@@ -5,7 +5,7 @@
 
 
 from cypari import pari
-from yamada import SpatialGraphDiagram, Vertex, Crossing, Edge, has_r2, r2
+from yamada import SpatialGraphDiagram, Vertex, Crossing, Edge, has_r2, apply_r2
 
 
 # ## Reidemeister 2
@@ -83,7 +83,7 @@ def test_r2():
     # Ensure 
     assert has_r2(sgd)[0]
 
-    sgd = r2(sgd)
+    sgd = apply_r2(sgd)
 
     yp_after = sgd.normalized_yamada_polynomial()
 
