@@ -91,7 +91,6 @@ def has_r2(sgd):
     # Initialize the lists
     sgd_has_r2 = False
     crossings_pairs = []
-    edge_pairs = []
 
     # Identify all possible pairs of crossings
     crossing_combinations = list(combinations(sgd.crossings, 2))
@@ -103,19 +102,19 @@ def has_r2(sgd):
         common_edges = find_common_edges(crossing1, crossing2)
         if len(common_edges) >= 2:
 
-            # We must evaluate the R2 for each pair of edges the crossings share (not just the first pair!)
+            # For good measure, we'll check all pairs of common edges
+            # However, we only need to find one pair that satisfies the R2 criteria. The R2 move will effect all edge
+            # pairs the same.
             pairs_of_common_edges = list(combinations(common_edges, 2))
             for edge1, edge2 in pairs_of_common_edges:
                 if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
                     sgd_has_r2 = True
                     crossings_pairs.append((crossing1.label, crossing2.label))
-                    edge_pairs.append((edge1.label, edge2.label))
 
-    return sgd_has_r2, crossings_pairs, edge_pairs
-
+    return sgd_has_r2, crossings_pairs
 
 
-def apply_r2(sgd, crossing_pair, edge_pair):
+def apply_r2(sgd, crossing_pair):
     """
     1. Find the edges that are on the flip side of the crossings of the common edges.
     2. Find the vertices/crossings that are on the far sides of those edges.
@@ -125,7 +124,7 @@ def apply_r2(sgd, crossing_pair, edge_pair):
     6. Connect the new edges to the far side vertices/crossings
     """
 
-    # Make a copy of the sgd object
+    # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
 
     # Verify that the sgd object has an R2 move
@@ -140,37 +139,44 @@ def apply_r2(sgd, crossing_pair, edge_pair):
 
     return sgd
 
-def find_flipside_edge(crossing, edge):
-    crossing_index_edge = get_index_of_crossing_corner(crossing, edge)
-    flipside_index = (crossing_index_edge + 2) % 4
-    return crossing.adjacent[flipside_index]
-
 
 # %% Reidemeister 3
 
 def has_r3(sgd):
     """
-    Determine if we can apply a Reidemeister 3 move to the given Spatial Graph Diagram (SGD).
+    Criteria:
+    1. There must exist a face with exactly three crossings.
+    2. One of the edges of the face must pass either fully under or fully over two crossings.
 
-    params: sgd: Spatial Graph Diagram
-
-    Prerequisite 1: The SGD has at least one face with 3 crossings
-    Prerequisite 2: At least one of the three edges of the face passes
-    over or under the other two edges
-
-    Returns: ...
+    Terminology:
+    - stationary_crossing: The crossing that is not being moved
+    - r3_edge: The edge that is being moved across the stationary crossing
+    - moving_crossings (1 & 2): The two crossings connected to the r3_edge and therefore move with it.
+    - moving_edges (1 & 2): The two edges that connect the moving_crossings to the stationary_crossing and therefore move with them.
     """
 
-    faces = sgd.faces()
-    candidates = []
+    # Initialize the lists
+    sgd_has_r3 = False
+    stationary_crossing = []
+    r3_edge  = []
+    moving_crossing_1 = []
+    moving_crossing_2 = []
+    moving_edge_1 = []
+    moving_edge_2 = []
 
-    for face in faces:
+    # Identify candidate faces
+    candidate_faces = []
+    for face in sgd.faces():
         prerequisite_1, crossings = face_has_3_crossings(face)
-        if not prerequisite_1:
-            break  # Prereq 2 can't be satisfied if prereq 1 is not satisfied
-        prerequisite_2, reidemeister_edges, other_edges = face_has_double_over_or_under_edge(face)
-        if prerequisite_1 and prerequisite_2:
-            for reidemeister_edge, other_two_edges in zip(reidemeister_edges, other_edges):
+        if prerequisite_1:
+            candidate_faces.append(face)
+
+    # Loop through each candidate face
+    for face in candidate_faces:
+        # TODO Revise
+        prerequisite_2, r3_edges, moving_edges = face_has_double_over_or_under_edge(face)
+        if prerequisite_2:
+            for reidemeister_edge, other_two_edges in zip(r3_edges, moving_edges):
                 reidemeister_crossing = find_opposite_crossing(face, reidemeister_edge)
                 other_two_crossings = [crossing for crossing in crossings if crossing != reidemeister_crossing]
                 other_crossing_1 = other_two_crossings[0]
@@ -178,18 +184,16 @@ def has_r3(sgd):
                 other_edge_1 = find_common_edge(reidemeister_crossing, other_crossing_1)
                 other_edge_2 = find_common_edge(reidemeister_crossing, other_crossing_2)
 
-                candidate = {'reidemeister crossing': reidemeister_crossing.label,
-                             'other crossing 1': other_crossing_1.label,
-                             'other crossing 2': other_crossing_2.label,
-                             'reidemeister edge': reidemeister_edge.label,
-                             'other edge 1': other_edge_1.label,
-                             'other edge 2': other_edge_2.label}
-                candidates.append(candidate)
+                sgd_has_r3 = True
+                stationary_crossing.append(reidemeister_crossing)
+                r3_edge.append(reidemeister_edge)
+                moving_crossing_1.append(other_crossing_1)
+                moving_crossing_2.append(other_crossing_2)
+                moving_edge_1.append(other_edge_1)
+                moving_edge_2.append(other_edge_2)
 
-    if len(candidates) > 0:
-        return True, candidates
-    else:
-        return False, None
+    return sgd_has_r3, stationary_crossing, moving_crossing_1, moving_crossing_2, r3_edge, moving_edge_1, moving_edge_2
+
 
 
 def face_has_3_crossings(face):
@@ -256,20 +260,18 @@ def find_opposite_crossing(face, edge):
                 return entrypoint.vertex
 
 
-# TODO VERIFY INPUT IS A VALID FACE
+def r3(sgd, stationary_crossing, moving_crossing_1, moving_crossing_2, r3_edge, moving_edge_1, moving_edge_2):
 
-def r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2):
-
-    # Make a copy of the sgd object
+    # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
 
     # Find the objects given the labels
-    keep_crossing = [crossing for crossing in sgd.crossings if crossing.label == reidemeister_crossing][0]
-    reidemeister_crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == other_crossing_1][0]
-    reidemeister_crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == other_crossing_2][0]
-    reidemeister_edge = [edge for edge in sgd.edges if edge.label == reidemeister_edge][0]
-    common_edge_1 = [edge for edge in sgd.edges if edge.label == other_edge_1][0]
-    common_edge_2 = [edge for edge in sgd.edges if edge.label == other_edge_2][0]
+    keep_crossing = [crossing for crossing in sgd.crossings if crossing.label == stationary_crossing][0]
+    reidemeister_crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == moving_crossing_1][0]
+    reidemeister_crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == moving_crossing_2][0]
+    r3_edge = [edge for edge in sgd.edges if edge.label == r3_edge][0]
+    common_edge_1 = [edge for edge in sgd.edges if edge.label == moving_edge_1][0]
+    common_edge_2 = [edge for edge in sgd.edges if edge.label == moving_edge_2][0]
 
 
     # Find the Reidemeister crossing indices of the common edges, and their continuations on the other sides
