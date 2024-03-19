@@ -113,9 +113,9 @@ sgd = pre_r3()
 
 print('Before R Simplify:', sgd.normalized_yamada_polynomial())
 
-sgd_has_r3, candidate_stationary_crossings, candidate_moving_crossings_1, candidate_moving_crossings_2, candidate_crossing_edges, candidate_moving_edges_1, candidate_moving_edges_2 = has_r3(sgd)
+sgd_has_r3, stationary_crossings, moving_crossings_1, moving_crossings_2, crossing_edges, stationary_edges_1, stationary_edges_2 = has_r3(sgd)
 
-# sgd = apply_r3(sgd, stationary_crossing, moving_crossing_1, moving_crossing_2, r3_edge, moving_edge_1, moving_edge_2)
+sgd = apply_r3(sgd, stationary_crossings[0], moving_crossings_1[0], moving_crossings_2[0], crossing_edges[0], stationary_edges_1[0], stationary_edges_2[0])
 
 # sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
 
