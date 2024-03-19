@@ -145,12 +145,14 @@ def apply_r2(sgd, crossing_pair):
 def has_r3(sgd):
     """
     Criteria:
-    1. There must exist a face with exactly three crossings.
+    1. There must be a face with exactly three crossings.
     2. At least one of the edges of the face must pass either fully under or fully over two crossings.
+
+    Note: A face can have more than one possible R3 move.
 
     Terminology:
     - stationary_crossing: The crossing that is not being moved
-    - r3_edge: The edge that is being moved across the stationary crossing
+    - crossing_edge: The edge that is crossing the stationary crossing
     - moving_crossings (1 & 2): The two crossings connected to the r3_edge and therefore move with it.
     - moving_edges (1 & 2): The two edges that connect the moving_crossings to the stationary_crossing and therefore move with them.
     """
@@ -158,61 +160,48 @@ def has_r3(sgd):
     # Initialize the lists
     sgd_has_r3 = False
     stationary_crossing = []
-    r3_edge  = []
+    crossing_edge  = []
     moving_crossing_1 = []
     moving_crossing_2 = []
     moving_edge_1 = []
     moving_edge_2 = []
 
-    # Criteria 1: There must exist a face with exactly three crossings.
+    # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
     candidate_faces = []
     for face in sgd.faces():
         if face_has_3_crossings(face):
             candidate_faces.append(face)
 
-    # FIXME Reminder: Currently refactoring criteria 2...
-
     # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
-    candidate_r3_edges = []
+    candidate_stationary_crossings = []
+    candidate_moving_crossings_1 = []
+    candidate_moving_crossings_2 = []
+    candidate_crossing_edges = []
+    candidate_moving_edges_1 = []
+    candidate_moving_edges_2 = []
+
     for face in candidate_faces:
-        edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
 
+        candidate_edges = double_over_or_under_edges(face)
+        for candidate_edge in candidate_edges:
 
+            crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
 
-        if face_has_double_over_or_under_edge(face):
+            stationary_crossing = find_opposite_crossing(face, candidate_edge)
+            moving_crossings = [crossing for crossing in crossings if crossing != stationary_crossing]
+            moving_edge_1 = find_opposite_edge(face, moving_crossings[0])
+            moving_edge_2 = find_opposite_edge(face, moving_crossings[1])
 
-            # Find the edges that satisfy the R3 criteria
-            edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-            r3_edges = []
-            moving_edge_1 = []
-            moving_edge_2 = []
-            for edge in edges:
-                is_double_over_or_under = edge_is_double_over_or_under(edge)
-                reidemeister_edge = edge
-                other_two_edges = [e for e in edges if e != edge]
-                if is_double_over_or_under:
-                    reidemeister_edges.append(reidemeister_edge)
-                    other_edges.append(other_two_edges)
+            candidate_crossing_edges.append(candidate_edge)
+            candidate_stationary_crossings.append(stationary_crossing)
+            candidate_moving_edges_1.append(moving_edge_1)
+            candidate_moving_edges_2.append(moving_edge_2)
+            candidate_moving_crossings_1.append(moving_crossings[0])
+            candidate_moving_crossings_2.append(moving_crossings[1])
 
-            for reidemeister_edge, other_two_edges in zip(r3_edges, moving_edges):
-                reidemeister_crossing = find_opposite_crossing(face, reidemeister_edge)
-                crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-                other_two_crossings = [crossing for crossing in crossings if crossing != reidemeister_crossing]
-                other_crossing_1 = other_two_crossings[0]
-                other_crossing_2 = other_two_crossings[1]
-                other_edge_1 = find_common_edge(reidemeister_crossing, other_crossing_1)
-                other_edge_2 = find_common_edge(reidemeister_crossing, other_crossing_2)
+            sgd_has_r3 = True
 
-                sgd_has_r3 = True
-                stationary_crossing.append(reidemeister_crossing)
-                r3_edge.append(reidemeister_edge)
-                moving_crossing_1.append(other_crossing_1)
-                moving_crossing_2.append(other_crossing_2)
-                moving_edge_1.append(other_edge_1)
-                moving_edge_2.append(other_edge_2)
-
-    return sgd_has_r3, stationary_crossing, moving_crossing_1, moving_crossing_2, r3_edge, moving_edge_1, moving_edge_2
-
+    return sgd_has_r3, candidate_stationary_crossings, candidate_moving_crossings_1, candidate_moving_crossings_2, candidate_crossing_edges, candidate_moving_edges_1, candidate_moving_edges_2
 
 
 def face_has_3_crossings(face):
@@ -221,17 +210,13 @@ def face_has_3_crossings(face):
     return has_3_crossings
 
 
-def face_has_double_over_or_under_edge(face):
-
-
-
-
+def double_over_or_under_edges(face):
     edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-    double_over_or_under_edges = 0
+    candidate_edges = []
     for edge in edges:
         if edge_is_double_over_or_under(edge):
-            double_over_or_under_edges += 1
-    return double_over_or_under_edges > 0
+            candidate_edges.append(edge)
+    return candidate_edges
 
 
 def edge_is_double_over_or_under(edge):
