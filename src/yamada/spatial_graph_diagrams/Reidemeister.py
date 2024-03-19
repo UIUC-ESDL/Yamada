@@ -146,7 +146,7 @@ def has_r3(sgd):
     """
     Criteria:
     1. There must exist a face with exactly three crossings.
-    2. One of the edges of the face must pass either fully under or fully over two crossings.
+    2. At least one of the edges of the face must pass either fully under or fully over two crossings.
 
     Terminology:
     - stationary_crossing: The crossing that is not being moved
@@ -164,20 +164,39 @@ def has_r3(sgd):
     moving_edge_1 = []
     moving_edge_2 = []
 
-    # Identify candidate faces
+    # Criteria 1: There must exist a face with exactly three crossings.
     candidate_faces = []
     for face in sgd.faces():
-        prerequisite_1, crossings = face_has_3_crossings(face)
-        if prerequisite_1:
+        if face_has_3_crossings(face):
             candidate_faces.append(face)
 
-    # Loop through each candidate face
+    # FIXME Reminder: Currently refactoring criteria 2...
+
+    # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
+    candidate_r3_edges = []
     for face in candidate_faces:
-        # TODO Revise
-        prerequisite_2, r3_edges, moving_edges = face_has_double_over_or_under_edge(face)
-        if prerequisite_2:
+        edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
+
+
+
+        if face_has_double_over_or_under_edge(face):
+
+            # Find the edges that satisfy the R3 criteria
+            edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
+            r3_edges = []
+            moving_edge_1 = []
+            moving_edge_2 = []
+            for edge in edges:
+                is_double_over_or_under = edge_is_double_over_or_under(edge)
+                reidemeister_edge = edge
+                other_two_edges = [e for e in edges if e != edge]
+                if is_double_over_or_under:
+                    reidemeister_edges.append(reidemeister_edge)
+                    other_edges.append(other_two_edges)
+
             for reidemeister_edge, other_two_edges in zip(r3_edges, moving_edges):
                 reidemeister_crossing = find_opposite_crossing(face, reidemeister_edge)
+                crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
                 other_two_crossings = [crossing for crossing in crossings if crossing != reidemeister_crossing]
                 other_crossing_1 = other_two_crossings[0]
                 other_crossing_2 = other_two_crossings[1]
@@ -199,25 +218,20 @@ def has_r3(sgd):
 def face_has_3_crossings(face):
     crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
     has_3_crossings = len(crossings) == 3
-    return has_3_crossings, crossings
+    return has_3_crossings
+
 
 def face_has_double_over_or_under_edge(face):
 
-    edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-    reidemeister_edges = []
-    other_edges = []
-    for edge in edges:
-        is_double_over_or_under, _ = edge_is_double_over_or_under(edge)
-        reidemeister_edge = edge
-        other_two_edges = [e for e in edges if e != edge]
-        if is_double_over_or_under:
-            reidemeister_edges.append(reidemeister_edge)
-            other_edges.append(other_two_edges)
 
-    if len(reidemeister_edges) > 0:
-        return True, reidemeister_edges, other_edges
-    else:
-        return False, None, None
+
+
+    edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
+    double_over_or_under_edges = 0
+    for edge in edges:
+        if edge_is_double_over_or_under(edge):
+            double_over_or_under_edges += 1
+    return double_over_or_under_edges > 0
 
 
 def edge_is_double_over_or_under(edge):
@@ -226,12 +240,17 @@ def edge_is_double_over_or_under(edge):
     edge_over_crossing_1 = edge_is_over(edge, crossing_1)
     edge_over_crossing_2 = edge_is_over(edge, crossing_2)
 
+    # Double over
     if edge_over_crossing_1 and edge_over_crossing_2:
-        return True, 'over'
+        return True
+
+    # Double under
     elif not edge_over_crossing_1 and not edge_over_crossing_2:
-        return True, 'under'
+        return True
+
+    # One over, one under
     else:
-        return False, 'mixed'
+        return False
 
 
 def edge_is_over(edge, crossing):
