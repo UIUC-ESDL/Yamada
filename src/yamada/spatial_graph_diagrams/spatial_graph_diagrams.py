@@ -254,28 +254,35 @@ class SpatialGraphDiagram:
         Connects two edges together. Replaces them with a single, new edge.
         """
 
+        # If connecting two ends of the same edge, add a vertex (?)
+        if edge_1 == edge_2:
+            V = Vertex(2, repr(edge_1) + '_stopper')
+            self.add_vertex(V)
+            V[0] = edge_1[edge_1_index_1]
+            V[1] = edge_2[edge_2_index_1]
 
+        else:
 
-        # Identify the objects at the other end of the edges
-        edge_1_index_2 = (edge_1_index_1 + 1) % 2
-        edge_2_index_2 = (edge_2_index_1 + 1) % 2
-        edge_1_adjacent, edge_1_adjacent_index = edge_1.adjacent[edge_1_index_2]
-        edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
+            # Identify the objects at the other end of the edges
+            edge_1_index_2 = (edge_1_index_1 + 1) % 2
+            edge_2_index_2 = (edge_2_index_1 + 1) % 2
+            edge_1_adjacent, edge_1_adjacent_index = edge_1.adjacent[edge_1_index_2]
+            edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
 
-        # Remove the edges from the diagram
-        if edge_1 not in self.edges:
-            print('edge_1 not in self.edges')
-        self.remove_edge(edge_1)
-        if edge_2 not in self.edges:
-            print('edge_2 not in self.edges')
-        self.remove_edge(edge_2)
+            # Remove the edges from the diagram
+            if edge_1 not in self.edges:
+                print('edge_1 not in self.edges')
+            self.remove_edge(edge_1)
+            if edge_2 not in self.edges:
+                print('edge_2 not in self.edges')
+            self.remove_edge(edge_2)
 
-        # Create a new edge
-        new_edge_label = edge_1.label + '_' + edge_2.label
-        new_edge = Edge(new_edge_label)
+            # Create a new edge
+            new_edge_label = edge_1.label + '_' + edge_2.label
+            new_edge = Edge(new_edge_label)
 
-        # Add the new edge to the diagram
-        self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
+            # Add the new edge to the diagram
+            self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
 
     def short_cut(self, crossing, i0):
         """
@@ -294,33 +301,6 @@ class SpatialGraphDiagram:
             E1[j1] = E0[j0]
             E1.fuse()
             self.remove_edge(E1)
-
-        # Clean up the diagram
-        # self._merge_vertices()
-
-    def remove_crossing_connect_opposing_edges(self, crossing):
-        """
-        Removes a crossing from the diagram.
-        TODO Use fuse function above??
-        """
-
-        # Identify the edges adjacent to the crossing
-        edge0, edge0_index = crossing.adjacent[0]
-
-        edge2, edge2_index = crossing.adjacent[2]
-
-
-        # Connect the edges on opposing sides of the crossing
-        self.connect_edges(edge0, edge0_index, edge2, edge2_index)
-
-        edge1, edge1_index = crossing.adjacent[1]
-        edge3, edge3_index = crossing.adjacent[3]
-        self.connect_edges(edge1, edge1_index, edge3, edge3_index)
-
-        # Remove the crossing from the diagram
-        self.remove_crossing(crossing)
-
-
 
 
     def copy(self):
