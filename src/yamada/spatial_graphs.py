@@ -1133,42 +1133,50 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
 
-        # Plot nodes
-        for pos in self.node_positions:
-            p.add_mesh(pv.Sphere(radius=1, center=pos), color='blue')
+        node_positions = self.node_positions
+        crossing_positions = self.crossing_positions
 
-        # Plot segments
+        # Center the positions
+        center = np.mean(node_positions, axis=0)
+        node_positions -= center
+
+        # Normalize the positions
+        max_position = np.max(np.abs(node_positions))
+        node_positions /= max_position
+
+        # Also do it for crossing positions if it's not empty
+        if crossing_positions is not None:
+            crossing_positions = np.array(crossing_positions)
+            z_coords = np.zeros((crossing_positions.shape[0], 1))
+            crossing_positions = np.hstack((crossing_positions, z_coords))
+            crossing_positions -= center
+            crossing_positions /= max_position
+
+        # Plot the nodes
+        for pos in node_positions:
+            p.add_mesh(pv.Sphere(radius=0.025, center=pos), color='blue')
+
+        # Plot the edges
         for edge in self.edges:
-            start = self.node_positions[self.nodes.index(edge[0])]
-            end = self.node_positions[self.nodes.index(edge[1])]
+            start = node_positions[self.nodes.index(edge[0])]
+            end = node_positions[self.nodes.index(edge[1])]
             line = pv.Line(start, end)
             p.add_mesh(line, color='black', line_width=5)
 
-        # # Plot 3D
-        # for edge in self.edges:
-        #     point_1 = self.node_positions[self.nodes.index(edge[0])]
-        #     point_2 = self.node_positions[self.nodes.index(edge[1])]
-        #     ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+        # Plot the projective plane (XY axis)
+        plane_size = 2.0
+        p.add_mesh(pv.Plane(center=(0, 0, 0), direction=(0, 0, 1), i_size=plane_size, j_size=plane_size), color='orange', opacity=0.5)
 
-        #
-        # # Add transparent red spheres for crossings
-        # for node, pos in zip(nodes, node_positions):
-        #     if '+' in node or '-' in node:  # Assuming '+' or '-' in node name indicates a crossing
-        #         plotter.add_mesh(pv.Sphere(radius=5, center=pos), color='red', opacity=0.5)
-
-
-            # Plot crossing positions
-        # if self.crossing_positions is not None:
-        #     for crossing_position in self.crossing_positions:
-        #         ax2.scatter(crossing_position[0], crossing_position[1],
-        #                     marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
-
-        # Show projective plan...
+        if self.crossing_positions is not None:
+            for crossing_position in crossing_positions:
+                p.add_mesh(pv.Sphere(radius=0.1, center=pos), color='red', opacity=0.25)
 
 
 
 
-
+        # p.view_isometric()
+        # p.view_xy()
+        p.show_axes()
 
 
         p.show()
