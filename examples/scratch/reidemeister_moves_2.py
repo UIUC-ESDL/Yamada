@@ -2,6 +2,10 @@ import numpy as np
 import networkx as nx
 import json
 from yamada import SpatialGraph
+from yamada.spatial_graph_diagrams.Reidemeister import *
+
+# set the random seed for reproducibility
+np.random.seed(0)
 
 
 # Read the graphs from the JSON file
@@ -21,7 +25,7 @@ sgs = []
 sgds = []
 yps = []
 
-max_crossings = 5
+max_crossings = 3
 
 for i, graph in enumerate(graphs):
 
@@ -46,6 +50,7 @@ for i, graph in enumerate(graphs):
         sg.plot()
 
         sgd = sg.create_spatial_graph_diagram()
+        # sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
 
         # Only calculate the Yamada polynomial for graphs with up to max # crossings
         if len(sgd.crossings) > max_crossings:

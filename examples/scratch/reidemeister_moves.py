@@ -117,39 +117,11 @@ def post_r3_corrected():
 
 
 
-# sgd = pre_r3()
-#
-# print('Before R Simplify:', sgd.normalized_yamada_polynomial())
-#
-# sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
-#
-# print('After R Simplify: ', sgd.normalized_yamada_polynomial())
+sgd = pre_r3()
 
-a = pari('A')
+print('Before R Simplify:', sgd.normalized_yamada_polynomial())
 
-expected = -a ** 2 - a - 1
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
 
-x1 = Crossing('x1')
-x2 = Crossing('x2')
-
-x1[0] = x2[2]
-x1[1] = x2[1]
-x1[2] = x1[3]
-x2[0] = x2[3]
-
-sgd = SpatialGraphDiagram([x1, x2])
-
-yp_before = sgd.normalized_yamada_polynomial()
-
-sgd_has_r2, r2_input = has_r2(sgd)
-
-# assert sgd_has_r2
-
-sgd = apply_r2(sgd, r2_input)
-
-yp_after = sgd.normalized_yamada_polynomial()
-#
-# assert yp_before == yp_after
-#
-# assert yp_after == expected
+print('After R Simplify: ', sgd.normalized_yamada_polynomial())
 
