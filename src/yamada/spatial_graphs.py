@@ -859,7 +859,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return crossings, crossing_positions, crossing_edge_pairs
 
-    def project(self, max_iter=25, predefined_rotation=None):
+    def project(self, max_iter=2, predefined_rotation=None):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -1169,7 +1169,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         if self.crossing_positions is not None:
             for crossing_position in crossing_positions:
-                p.add_mesh(pv.Sphere(radius=0.1, center=pos), color='red', opacity=0.25)
+                # Plot a red dashing line that is normal to the plane and goes in both directions
+                # p.add_mesh(pv.Line(crossing_position + np.array([0, 0, 0.1]), crossing_position - np.array([0, 0, 0.1])), color='red', line_width=5)
+                p.add_mesh(pv.Sphere(radius=0.1, center=crossing_position), color='red', opacity=0.25)
 
 
 

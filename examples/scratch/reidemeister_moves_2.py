@@ -50,15 +50,23 @@ for i, graph in enumerate(graphs):
         sg.plot_pyvista()
 
         sgd = sg.create_spatial_graph_diagram()
-        # sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
+
+        print(f"{len(sgd.crossings)} crossings")
+
+        sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
+
+
+        print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}")
+        yp = sgd.normalized_yamada_polynomial()
+        print(yp)
 
         # Only calculate the Yamada polynomial for graphs with up to max # crossings
-        if len(sgd.crossings) > max_crossings:
-            yp = f'skip: {len(sgd.crossings)} crossings'
-            print(yp)
-        else:
-            yp = sgd.normalized_yamada_polynomial()
-            print(yp)
+        # if len(sgd.crossings) > max_crossings:
+        #     yp = f'skip: {len(sgd.crossings)} crossings'
+        #     print(yp)
+        # else:
+        #     yp = sgd.normalized_yamada_polynomial()
+        #     print(yp)
 
         sgs.append(sg)
         sgds.append(sgd)
