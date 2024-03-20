@@ -48,7 +48,7 @@ from yamada import SpatialGraphDiagram, Crossing, Edge
 
 
 from cypari import pari
-from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing, has_r3, r3
+from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing, has_r3, apply_r3
 
 
 # ![R3 Move](./images/r3_before_move.png)
@@ -174,22 +174,32 @@ def test_r3():
 
     yp1 = sgd.normalized_yamada_polynomial()
 
-    pre_r3_has_r3, candidates = has_r3(sgd)
+    pre_r3_has_r3, _ = has_r3(sgd)
     assert pre_r3_has_r3
 
     # Hard-coded demo
-    reidemeister_crossing = 'x0'
-    other_crossing_1 = 'x3'
-    other_crossing_2 = 'x2'
-    reidemeister_edge = 'e6'
-    other_edge_1 = 'e2'
-    other_edge_2 = 'e1'
+    stationary_crossing = 'x0'
+    moving_crossing_1 = 'x3'
+    moving_crossing_2 = 'x2'
+    crossing_edge = 'e6'
+    stationary_edge_1 = 'e2'
+    stationary_edge_2 = 'e1'
+    r3_input = {
+        'stationary_crossing': stationary_crossing,
+        'moving_crossing_1': moving_crossing_1,
+        'moving_crossing_2': moving_crossing_2,
+        'crossing_edge': crossing_edge,
+        'stationary_edge_1': stationary_edge_1,
+        'stationary_edge_2': stationary_edge_2
+    }
 
-    sgd_r3 = r3(sgd, reidemeister_crossing, other_crossing_1, other_crossing_2, reidemeister_edge, other_edge_1, other_edge_2)
+    sgd_r3 = apply_r3(sgd, r3_input)
 
     yp2 = sgd_r3.normalized_yamada_polynomial()
     
     assert yp1 == yp2
     
-    assert has_r3(sgd_r3)[0]
+    post_r3_has_r3, _ = has_r3(sgd_r3)
+    assert post_r3_has_r3
+    
 

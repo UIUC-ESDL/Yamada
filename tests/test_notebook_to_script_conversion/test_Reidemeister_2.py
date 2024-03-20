@@ -19,39 +19,39 @@ from yamada import SpatialGraphDiagram, Vertex, Crossing, Edge, has_r2, apply_r2
 # In[6]:
 
 
-def pre_remove_crossing_fuse_edges():
-    e0 = Edge('e0')
-    e1 = Edge('e1')
-    x0 = Crossing('x0')
-    e0[0] = x0[0]
-    e0[1] = x0[3]
-    e1[0] = x0[1]
-    e1[1] = x0[2]
-    sgd = SpatialGraphDiagram([e0, e1, x0])
-    return sgd
+# def pre_remove_crossing_fuse_edges():
+#     e0 = Edge('e0')
+#     e1 = Edge('e1')
+#     x0 = Crossing('x0')
+#     e0[0] = x0[0]
+#     e0[1] = x0[3]
+#     e1[0] = x0[1]
+#     e1[1] = x0[2]
+#     sgd = SpatialGraphDiagram([e0, e1, x0])
+#     return sgd
+# 
+# def post_remove_crossing_fuse_edges():
+#     e0 = Edge('e0')
+#     e1 = Edge('e1')
+#     v0 = Vertex(2, 'v0')
+#     v1 = Vertex(2, 'v1')
+# 
+#     e0[0] = v0[0]
+#     e0[1] = v1[0]
+#     e1[0] = v0[1]
+#     e1[1] = v1[1]
+# 
+#     sgd = SpatialGraphDiagram([e0, e1, v0, v1])
+#     return sgd
 
-def post_remove_crossing_fuse_edges():
-    e0 = Edge('e0')
-    e1 = Edge('e1')
-    v0 = Vertex(2, 'v0')
-    v1 = Vertex(2, 'v1')
-
-    e0[0] = v0[0]
-    e0[1] = v1[0]
-    e1[0] = v0[1]
-    e1[1] = v1[1]
-
-    sgd = SpatialGraphDiagram([e0, e1, v0, v1])
-    return sgd
-
-def test_remove_crossing_fuse_edges():
-    # TODO Implement for remove crossing fuse edges directly, not the R2 move
-    # TODO Also visualize the Vertices...
-    pass
-    # sgd = pre_remove_crossing_fuse_edges()
-    # sgd = r2(sgd)
-    # expected = post_remove_crossing_fuse_edges()
-    # assert sgd == expected
+# def test_remove_crossing_fuse_edges():
+#     # TODO Implement for remove crossing fuse edges directly, not the R2 move
+#     # TODO Also visualize the Vertices...
+#     pass
+#     # sgd = pre_remove_crossing_fuse_edges()
+#     # sgd = r2(sgd)
+#     # expected = post_remove_crossing_fuse_edges()
+#     # assert sgd == expected
 
 
 # ## Reidemeister 2
@@ -80,10 +80,11 @@ def test_r2():
 
     yp_before = sgd.normalized_yamada_polynomial()
 
-    # Ensure 
-    assert has_r2(sgd)[0]
+    sgd_has_r2, r2_input = has_r2(sgd)
+    
+    assert sgd_has_r2
 
-    sgd = apply_r2(sgd)
+    sgd = apply_r2(sgd, r2_input)
 
     yp_after = sgd.normalized_yamada_polynomial()
 

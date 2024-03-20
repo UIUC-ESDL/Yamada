@@ -33,9 +33,11 @@ def test_r1_1():
 
     yp_before = sgd.normalized_yamada_polynomial()
 
-    assert has_r1(sgd)
+    sgd_has_r1, r1_input = has_r1(sgd)
 
-    sgd = apply_r1(sgd)
+    assert sgd_has_r1
+
+    sgd = apply_r1(sgd, r1_input)
 
     yp_after = sgd.normalized_yamada_polynomial()
 
@@ -62,9 +64,11 @@ def test_r1_2():
 
     yp_before = sgd.normalized_yamada_polynomial()
 
-    assert has_r1(sgd)
+    sgd_has_r1, r1_input = has_r1(sgd)
 
-    sgd = apply_r1(sgd)
+    assert sgd_has_r1
+
+    sgd = apply_r1(sgd, r1_input)
 
     yp_after = sgd.normalized_yamada_polynomial()
 
