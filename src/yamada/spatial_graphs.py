@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from itertools import combinations
 from numba import njit
 import math
+import pyvista as pv
 
 from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
 from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
@@ -1126,3 +1127,49 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                             marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
 
         plt.show()
+
+    def plot_pyvista(self):
+
+        # plotter = pv.Plotter()
+        p = pv.Plotter(window_size=[1000, 1000])
+
+        # Plot nodes
+        for pos in self.node_positions:
+            p.add_mesh(pv.Sphere(radius=1, center=pos), color='blue')
+
+        # Plot segments
+        for edge in self.edges:
+            start = self.node_positions[self.nodes.index(edge[0])]
+            end = self.node_positions[self.nodes.index(edge[1])]
+            line = pv.Line(start, end)
+            p.add_mesh(line, color='black', line_width=5)
+
+        # # Plot 3D
+        # for edge in self.edges:
+        #     point_1 = self.node_positions[self.nodes.index(edge[0])]
+        #     point_2 = self.node_positions[self.nodes.index(edge[1])]
+        #     ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
+
+        #
+        # # Add transparent red spheres for crossings
+        # for node, pos in zip(nodes, node_positions):
+        #     if '+' in node or '-' in node:  # Assuming '+' or '-' in node name indicates a crossing
+        #         plotter.add_mesh(pv.Sphere(radius=5, center=pos), color='red', opacity=0.5)
+
+
+            # Plot crossing positions
+        # if self.crossing_positions is not None:
+        #     for crossing_position in self.crossing_positions:
+        #         ax2.scatter(crossing_position[0], crossing_position[1],
+        #                     marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
+
+        # Show projective plan...
+
+
+
+
+
+
+
+        p.show()
+

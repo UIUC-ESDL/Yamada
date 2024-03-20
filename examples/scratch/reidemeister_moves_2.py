@@ -47,7 +47,7 @@ for i, graph in enumerate(graphs):
         node_xyz = np.array([pos[v] for v in g])
 
         sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_xyz)
-        sg.plot()
+        sg.plot_pyvista()
 
         sgd = sg.create_spatial_graph_diagram()
         # sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)

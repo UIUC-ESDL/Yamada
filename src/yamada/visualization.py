@@ -5,7 +5,8 @@ from networkx.algorithms.planar_drawing import triangulate_embedding
 import numpy as np
 from collections import Counter
 from .enumeration import split_edges
-# from sage.all import sphere, line3d, polygon3d, colormaps, bezier3d
+import pyvista as pv
+
 
 def choose_outer_face(planar_graph):
     G = planar_graph
@@ -160,42 +161,26 @@ def position_spatial_graphs_in_3D(ust_dict, z_height=20):
 
     return sg_inputs
 
-# TODO Implement graphing with labels
-    
-# def draw_spatial_graph_in_3D(G, add_disks=False, z_height=20):
-#     main_nodes, other_nodes, segs = position_spatial_graph_in_3D(G, z_height)
-#     other_nodes.update(main_nodes)
-#     nodes = other_nodes
-#     scene = None
-#     cmap = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-#             '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-#
-#
-#     for i, (L, center) in enumerate(main_nodes.items()):
-#         S = sphere(center, size=8, color=cmap[i % len(cmap)])
-#         if scene is None:
-#             scene = S
-#         else:
-#             scene += S
-#
-#         for i, one_seg in enumerate(segs):
-#             scene += line3d([nodes[L] for L in one_seg],
-#                         thickness=4, color=cmap[i % len(cmap)])
-#
-#     if add_disks:
-#         for L, center in other_nodes.items():
-#             if L.endswith('+'):
-#                 x, y, z = center
-#                 s = 6
-#                 z = -0.5*z_height
-#                 scene += polygon3d([(x - s, y - s, z), (x + s, y - s, z),
-#                                     (x + s, y + s, z), (x - s, y + s, z)], color='white')
-#
-#     return scene
 
-  
-        
-                
+def draw_spatial_graph_in_pyvista(nodes, node_positions, segments):
+    plotter = pv.Plotter()
 
-# G = nx.check_planarity(nx.complete_graph(4))[1]
-    
+    # Plot nodes
+    for pos in node_positions:
+        plotter.add_mesh(pv.Sphere(radius=2, center=pos), color='blue')
+
+    # Plot segments
+    for segment in segments:
+        for i in range(len(segment) - 1):
+            start = node_positions[nodes.index(segment[i])]
+            end = node_positions[nodes.index(segment[i + 1])]
+            line = pv.Line(start, end)
+            plotter.add_mesh(line, color='black')
+
+    # Add transparent red spheres for crossings
+    for node, pos in zip(nodes, node_positions):
+        if '+' in node or '-' in node:  # Assuming '+' or '-' in node name indicates a crossing
+            plotter.add_mesh(pv.Sphere(radius=5, center=pos), color='red', opacity=0.5)
+
+    plotter.show()
+

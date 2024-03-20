@@ -28,6 +28,7 @@ dependencies = [
     "nbconvert",
     "numba",
     "nbmake",
+    "pyvisa",
 ]
 
 [project.optional-dependencies]
