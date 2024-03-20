@@ -24,41 +24,39 @@ def has_r1(sgd):
     """
 
     sgd_has_r1 = False
-    r1_crossing = []
-    r1_edge = []
-    r1_other_edges = []
+    r1_inputs = {}
 
     for crossing in sgd.crossings:
         (A, i), (B, j), (C, k), (D, l) = crossing.adjacent
         if A == B:
             sgd_has_r1 = True
-            r1_crossing.append(crossing.label)
-            r1_edge.append(A.label)
-            r1_other_edges.append([(C.label, k), (D.label, l)])
+            r1_inputs['crossing'] = crossing.label
+            r1_inputs['edge'] = A.label
+            r1_inputs['other_edges'] = [(C.label, k), (D.label, l)]
             break
         elif B == C:
             sgd_has_r1 = True
-            r1_crossing.append(crossing.label)
-            r1_edge.append(B.label)
-            r1_other_edges.append([(A.label, i), (D.label, l)])
+            r1_inputs['crossing'] = crossing.label
+            r1_inputs['edge'] = B.label
+            r1_inputs['other_edges'] = [(A.label, i), (D.label, l)]
             break
         elif C == D:
             sgd_has_r1 = True
-            r1_crossing.append(crossing.label)
-            r1_edge.append(C.label)
-            r1_other_edges.append([(A.label, i), (B.label, j)])
+            r1_inputs['crossing'] = crossing.label
+            r1_inputs['edge'] = C.label
+            r1_inputs['other_edges'] = [(A.label, i), (B.label, j)]
             break
         elif D == A:
             sgd_has_r1 = True
-            r1_crossing.append(crossing.label)
-            r1_edge.append(D.label)
-            r1_other_edges.append([(B.label, j), (C.label, k)])
+            r1_inputs['crossing'] = crossing.label
+            r1_inputs['edge'] = D.label
+            r1_inputs['other_edges'] = [(B.label, j), (C.label, k)]
             break
 
-    return sgd_has_r1, r1_crossing, r1_edge, r1_other_edges
+    return sgd_has_r1, r1_inputs
 
 
-def apply_r1(sgd, crossing_label, edge_label, other_edge_labels_and_indices):
+def apply_r1(sgd, r1_inputs):
     """
     1. Remove the crossing.
     2. Remove the edge that two adjacent crossing corners share.
@@ -67,6 +65,11 @@ def apply_r1(sgd, crossing_label, edge_label, other_edge_labels_and_indices):
 
     # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
+
+    # Get the inputs
+    crossing_label = r1_inputs['crossing']
+    edge_label = r1_inputs['edge']
+    other_edge_labels_and_indices = r1_inputs['other_edges']
 
     # Find the SGD objects associated with the given labels
     crossing = [crossing for crossing in sgd.crossings if crossing.label == crossing_label][0]
@@ -102,6 +105,7 @@ def has_r2(sgd):
 
     # Initialize the lists
     sgd_has_r2 = False
+    r2_inputs = {}
 
     # Identify all possible pairs of crossings
     crossing_combinations = list(combinations(sgd.crossings, 2))
@@ -130,17 +134,21 @@ def has_r2(sgd):
                     common_edge_2_continuation_2_index = get_index_of_crossing_corner(crossing2, edge2, opposite_side=True)
                     common_edge_2_continuation_2 = crossing2.adjacent[common_edge_2_continuation_2_index][0].label
 
-                    # If the two edges are the same, do nothing
-                    # TODO ...
+                    r2_inputs['crossing_1'] = crossing_1
+                    r2_inputs['crossing_2'] = crossing_2
+                    r2_inputs['common_edge_1'] = common_edge_1
+                    r2_inputs['common_edge_2'] = common_edge_2
+                    r2_inputs['common_edge_1_continuation_1'] = common_edge_1_continuation_1
+                    r2_inputs['common_edge_1_continuation_2'] = common_edge_1_continuation_2
+                    r2_inputs['common_edge_2_continuation_1'] = common_edge_2_continuation_1
+                    r2_inputs['common_edge_2_continuation_2'] = common_edge_2_continuation_2
 
-                    return sgd_has_r2, crossing_1, crossing_2, common_edge_1, common_edge_2, common_edge_1_continuation_1, common_edge_1_continuation_2, common_edge_2_continuation_1, common_edge_2_continuation_2
+                    return sgd_has_r2, r2_inputs
 
-    return sgd_has_r2, [], [], [], [], [], [], [], []
+    return sgd_has_r2, r2_inputs
 
 
-def apply_r2(sgd, crossing_1, crossing_2, common_edge_1, common_edge_2,
-             common_edge_1_continuation_1, common_edge_1_continuation_2,
-             common_edge_2_continuation_1, common_edge_2_continuation_2):
+def apply_r2(sgd, r2_inputs):
     """
     0. Get the indices
     1. Remove the two crossings
@@ -150,6 +158,16 @@ def apply_r2(sgd, crossing_1, crossing_2, common_edge_1, common_edge_2,
 
     # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
+
+    # Get the inputs
+    crossing_1 = r2_inputs['crossing_1']
+    crossing_2 = r2_inputs['crossing_2']
+    common_edge_1 = r2_inputs['common_edge_1']
+    common_edge_2 = r2_inputs['common_edge_2']
+    common_edge_1_continuation_1 = r2_inputs['common_edge_1_continuation_1']
+    common_edge_1_continuation_2 = r2_inputs['common_edge_1_continuation_2']
+    common_edge_2_continuation_1 = r2_inputs['common_edge_2_continuation_1']
+    common_edge_2_continuation_2 = r2_inputs['common_edge_2_continuation_2']
 
     # Find the objects given the labels
     crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_1][0]
@@ -446,43 +464,40 @@ def has_r6(sgd):
 
 # %% Reidemeister Simplification
 
-def reidemeister_simplify(sgd, n_tries=10):
 
-    # TODO Undo
-    n_tries=1
+def r1_and_r2_simplify(sgd, r1_count, r2_count):
+    max_iter = 100
+    i = 0
+    sgd_has_r1 = True
+    sgd_has_r2 = True
+    while sgd_has_r1 and sgd_has_r2:
+
+        sgd_has_r1, r1_inputs = has_r1(sgd)
+        if sgd_has_r1:
+            sgd = apply_r1(sgd, r1_inputs)
+            r1_count += 1
+
+        sgd_has_r2, r2_inputs = has_r2(sgd)
+        if sgd_has_r2:
+            sgd = apply_r2(sgd, r2_inputs)
+            r2_count += 1
+
+        if i > max_iter:
+            raise ValueError(f"R1 and R2 simplification has been looping for {i} times. This is likely an error.")
+
+        i += 1
+
+    return sgd, r1_count, r2_count
+
+def reidemeister_simplify(sgd, n_tries=10):
 
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
+    # Initialize the counts
     r1_count = 0
     r2_count = 0
     r3_count = 0
-
-    def r1_and_r2_simplify(sgdi, r1_counti, r2_counti):
-        max_iter = 100
-        i=0
-        sgd_has_r1 = True
-        sgd_has_r2 = True
-        while sgd_has_r1 and sgd_has_r2:
-
-            sgd_has_r1, r1_crossing, r1_edge, r1_other_edges = has_r1(sgdi)
-            if sgd_has_r1:
-                sgdi = apply_r1(sgdi, r1_crossing[0], r1_edge[0], r1_other_edges[0])
-                r1_counti += 1
-
-            (sgd_has_r2, crossing_1, crossing_2, common_edge_1, common_edge_2, common_edge_1_continuation_1,
-             common_edge_1_continuation_2, common_edge_2_continuation_1, common_edge_2_continuation_2) = has_r2(sgdi)
-            if sgd_has_r2:
-                sgdi = apply_r2(sgdi, crossing_1, crossing_2, common_edge_1, common_edge_2,
-                                common_edge_1_continuation_1, common_edge_1_continuation_2,
-                                common_edge_2_continuation_1, common_edge_2_continuation_2)
-
-                r2_counti += 1
-
-            if i > max_iter:
-                raise ValueError("R1 and R2 simplification did not converge")
-
-        return sgdi, r1_counti, r2_counti
 
     # Apply initial simplifications
     sgd, r1_counta, r2_counta = r1_and_r2_simplify(sgd, r1_count, r2_count)
