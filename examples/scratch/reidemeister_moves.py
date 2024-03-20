@@ -109,18 +109,21 @@ def post_r3_corrected():
 
     return sgd
 
+import numpy as np
+np.random.seed(0)
+import random
+random.seed(0)
+
 sgd = pre_r3()
 
 print('Before R Simplify:', sgd.normalized_yamada_polynomial())
 
 
-sgd_has_r3, stationary_crossings, moving_crossings_1, moving_crossings_2, crossing_edges, stationary_edges_1, stationary_edges_2 = has_r3(sgd)
+# sgd_has_r3, stationary_crossings, moving_crossings_1, moving_crossings_2, crossing_edges, stationary_edges_1, stationary_edges_2 = has_r3(sgd)
+# ir3 = crossing_edges.index('e6')
+# sgd = apply_r3(sgd, stationary_crossings[ir3], moving_crossings_1[ir3], moving_crossings_2[ir3], stationary_edges_1[ir3], stationary_edges_2[ir3])
 
-ir3 = crossing_edges.index('e6')
-
-sgd = apply_r3(sgd, stationary_crossings[ir3], moving_crossings_1[ir3], moving_crossings_2[ir3], stationary_edges_1[ir3], stationary_edges_2[ir3])
-
-# sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd)
 
 # sgd_has_r2, crossing_pairs, edge_pairs = has_r2(sgd)
 # print('has r2?', sgd_has_r2)

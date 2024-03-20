@@ -254,6 +254,8 @@ class SpatialGraphDiagram:
         Connects two edges together. Replaces them with a single, new edge.
         """
 
+
+
         # Identify the objects at the other end of the edges
         edge_1_index_2 = (edge_1_index_1 + 1) % 2
         edge_2_index_2 = (edge_2_index_1 + 1) % 2
@@ -261,7 +263,11 @@ class SpatialGraphDiagram:
         edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
 
         # Remove the edges from the diagram
+        if edge_1 not in self.edges:
+            print('edge_1 not in self.edges')
         self.remove_edge(edge_1)
+        if edge_2 not in self.edges:
+            print('edge_2 not in self.edges')
         self.remove_edge(edge_2)
 
         # Create a new edge
@@ -300,16 +306,21 @@ class SpatialGraphDiagram:
 
         # Identify the edges adjacent to the crossing
         edge0, edge0_index = crossing.adjacent[0]
-        edge1, edge1_index = crossing.adjacent[1]
+
         edge2, edge2_index = crossing.adjacent[2]
+
+
+        # Connect the edges on opposing sides of the crossing
+        self.connect_edges(edge0, edge0_index, edge2, edge2_index)
+
+        edge1, edge1_index = crossing.adjacent[1]
         edge3, edge3_index = crossing.adjacent[3]
+        self.connect_edges(edge1, edge1_index, edge3, edge3_index)
 
         # Remove the crossing from the diagram
         self.remove_crossing(crossing)
 
-        # Connect the edges on opposing sides of the crossing
-        self.connect_edges(edge0, edge0_index, edge2, edge2_index)
-        self.connect_edges(edge1, edge1_index, edge3, edge3_index)
+
 
 
     def copy(self):
