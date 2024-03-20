@@ -221,12 +221,7 @@ def has_r3(sgd):
 
     # Initialize the lists
     sgd_has_r3 = False
-    stationary_crossings = []
-    crossing_edges  = []
-    moving_crossings_1 = []
-    moving_crossings_2 = []
-    stationary_edges_1 = []
-    stationary_edges_2 = []
+    r3_inputs = []
 
     # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
     candidate_faces = []
@@ -238,7 +233,7 @@ def has_r3(sgd):
     for face in candidate_faces:
         candidate_edges = double_over_or_under_edges(face)
         for candidate_edge in candidate_edges:
-
+            r3_input = {}
             crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
 
             stationary_crossing = find_opposite_crossing(face, candidate_edge)
@@ -246,16 +241,16 @@ def has_r3(sgd):
             stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
             stationary_edge_2 = find_common_edge(stationary_crossing, moving_crossings[1])
 
-            crossing_edges.append(candidate_edge.label)
-            stationary_crossings.append(stationary_crossing.label)
-            stationary_edges_1.append(stationary_edge_1.label)
-            stationary_edges_2.append(stationary_edge_2.label)
-            moving_crossings_1.append(moving_crossings[0].label)
-            moving_crossings_2.append(moving_crossings[1].label)
-
             sgd_has_r3 = True
+            r3_input['stationary_crossing'] = stationary_crossing.label
+            r3_input['moving_crossing_1'] = moving_crossings[0].label
+            r3_input['moving_crossing_2'] = moving_crossings[1].label
+            r3_input['crossing_edge'] = candidate_edge.label
+            r3_input['stationary_edge_1'] = stationary_edge_1.label
+            r3_input['stationary_edge_2'] = stationary_edge_2.label
+            r3_inputs.append(r3_input)
 
-    return sgd_has_r3, stationary_crossings, moving_crossings_1, moving_crossings_2, crossing_edges, stationary_edges_1, stationary_edges_2
+    return sgd_has_r3, r3_inputs
 
 
 def face_has_3_crossings(face):
@@ -318,7 +313,7 @@ def find_opposite_crossing(face, edge):
                 return entrypoint.vertex
 
 
-def apply_r3(sgd, stationary_crossing_label, moving_crossing_1_label, moving_crossing_2_label, stationary_edge_1_label, stationary_edge_2_label):
+def apply_r3(sgd, r3_input):
     """
     We apply the R3 move by sliding the moving crossings along the moving edges, though the stationary crossing,
     and over/under an adjacent stationary crossing edge. Doing so requires us to
@@ -329,6 +324,14 @@ def apply_r3(sgd, stationary_crossing_label, moving_crossing_1_label, moving_cro
 
     # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
+
+    # Get the inputs
+    stationary_crossing_label = r3_input['stationary_crossing']
+    moving_crossing_1_label = r3_input['moving_crossing_1']
+    moving_crossing_2_label = r3_input['moving_crossing_2']
+    crossing_edge_label = r3_input['crossing_edge']
+    stationary_edge_1_label = r3_input['stationary_edge_1']
+    stationary_edge_2_label = r3_input['stationary_edge_2']
 
     # Find the objects given the labels
     stationary_crossing = [crossing for crossing in sgd.crossings if crossing.label == stationary_crossing_label][0]
@@ -495,36 +498,30 @@ def reidemeister_simplify(sgd, n_tries=10):
     sgd = sgd.copy()
 
     # Initialize the counts
-    r1_count = 0
-    r2_count = 0
-    r3_count = 0
+    total_r1_count = 0
+    total_r2_count = 0
+    total_r3_count = 0
 
-    # Apply initial simplifications
-    sgd, r1_counta, r2_counta = r1_and_r2_simplify(sgd, r1_count, r2_count)
-    r1_count += r1_counta
-    r2_count += r2_counta
+    # Check for any initial moves that will monotonically simplify the diagram
+    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
+    total_r1_count += r1_count
+    total_r2_count += r2_count
 
-    # Apply Reidemeister 3 moves
+    # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
-        sgd_has_r3, stationary_crossings, moving_crossings_1, moving_crossings_2, crossing_edges, stationary_edges_1, stationary_edges_2 = has_r3(sgd)
+        sgd_has_r3, r3_inputs = has_r3(sgd)
         if sgd_has_r3:
             # Pick a random candidate
-            len_candidates = len(stationary_crossings)
-            i_candidate = choice(range(len_candidates))
-            sgd = apply_r3(sgd,
-                           stationary_crossings[i_candidate],
-                           moving_crossings_1[i_candidate],
-                           moving_crossings_2[i_candidate],
-                           stationary_edges_1[i_candidate],
-                           stationary_edges_2[i_candidate])
+            r3_input = choice(r3_inputs)
+            sgd = apply_r3(sgd, r3_input)
+            total_r3_count += 1
 
-            r3_count += 1
-
-            sgd, r1_counta, r2_counta = r1_and_r2_simplify(sgd, r1_count, r2_count)
-            r1_count += r1_counta
-            r2_count += r2_counta
+            # Check for any R1 or R2 moves that will monotonically simplify the diagram
+            sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
+            total_r1_count += r1_count
+            total_r2_count += r2_count
         else:
             break
 
     # TODO NEED ONE MORE R1
-    return sgd, r1_count, r2_count, r3_count
+    return sgd, total_r1_count, total_r2_count, total_r3_count
