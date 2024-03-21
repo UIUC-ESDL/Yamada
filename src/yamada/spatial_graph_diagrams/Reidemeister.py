@@ -232,7 +232,7 @@ def has_r3(sgd):
     # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
     candidate_faces = []
     for face in sgd.faces():
-        if face_has_3_crossings(face):
+        if face_has_exactly_3_crossings_and_3_edges(face):
             candidate_faces.append(face)
 
     # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
@@ -340,10 +340,16 @@ def apply_r3(sgd, r3_input):
     return sgd
 
 
-def face_has_3_crossings(face):
+def face_has_exactly_3_crossings_and_3_edges(face):
+    edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
     crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
+    vertices = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Vertex)]
+
+    has_3_edges = len(edges) == 3
     has_3_crossings = len(crossings) == 3
-    return has_3_crossings
+    has_no_vertices = len(vertices) == 0
+    has_exactly_3_crossings_and_3_edges = has_3_edges and has_3_crossings and has_no_vertices
+    return has_exactly_3_crossings_and_3_edges
 
 
 def double_over_or_under_edges(face):
@@ -407,6 +413,7 @@ def find_common_edge(crossing1, crossing2):
         for adjacent2 in crossing2.adjacent:
             if adjacent1[0] == adjacent2[0]:
                 return adjacent1[0]
+    raise Exception('Common edge not found in crossings')
 
 def find_common_edges(crossing1, crossing2):
     common_edges = []

@@ -610,6 +610,91 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return sub_edges
 
+    def get_contiguous_sub_edges(self):
+        sub_edges = self.get_sub_edges()
+        nodes = []
+        for node_a, node_b in sub_edges:
+            if node_a not in nodes:
+                nodes.append(node_a)
+            if node_b not in nodes:
+                nodes.append(node_b)
+
+        nodes_dict = {node:{'valency':0, 'adjacent':[]} for node in nodes}
+        for sub_edge in sub_edges:
+            a, b = sub_edge
+            if a in nodes:
+                nodes_dict[a]['valency'] += 1
+                nodes_dict[a]['adjacent'].append(b)
+            if b in nodes:
+                nodes_dict[b]['valency'] += 1
+                nodes_dict[b]['adjacent'].append(a)
+
+        two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
+        other_nodes_and_crossings = [node for node in nodes if node not in two_valent_nodes]
+
+        # Start with a non-two-valent node or crossing, and then accumulate the sub-edges until another
+        # non-two-valent node or crossing is reached. These are contiguous sub-edges.
+        entry_points = []
+        for node in other_nodes_and_crossings:
+            node_entry_points = [(node, i) for i in range(nodes_dict[node]['valency'])]
+            entry_points += node_entry_points
+
+        unvisited_entry_points = entry_points.copy()
+
+        max_iter = 1000
+        iter_count = 0
+        contiguous_sub_edges = []
+        while len(unvisited_entry_points) > 0:
+
+            contiguous_sub_edge = []
+
+            # Entry point
+            entry_point = unvisited_entry_points[0]
+            entry_node, entry_node_index = entry_point
+            unvisited_entry_points.remove(entry_point)
+            contiguous_sub_edge.append(entry_node)
+
+            # Intermediate points
+            previous_node = entry_node
+            current_node = nodes_dict[entry_node]['adjacent'][entry_node_index]
+            contiguous_sub_edge.append(current_node)
+
+            while nodes_dict[current_node]['valency'] == 2:
+                if nodes_dict[current_node]['adjacent'][0] == previous_node:
+                    previous_node = current_node
+                    current_node = nodes_dict[previous_node]['adjacent'][1]
+                    contiguous_sub_edge.append(current_node)
+                elif nodes_dict[current_node]['adjacent'][1] == previous_node:
+                    previous_node = current_node
+                    current_node = nodes_dict[previous_node]['adjacent'][0]
+                    contiguous_sub_edge.append(current_node)
+                else:
+                    raise ValueError("Error in adjacent nodes.")
+
+            # Exit point
+            exit_node = current_node
+            exit_node_index = nodes_dict[exit_node]['adjacent'].index(previous_node)
+            unvisited_entry_points.remove((exit_node, exit_node_index))
+
+            contiguous_sub_edges.append(contiguous_sub_edge)
+
+            iter_count += 1
+            if iter_count > max_iter:
+                raise ValueError("Max iteration count reached.")
+
+        return contiguous_sub_edges
+
+
+
+
+
+    # def get_sub_edge_positions(self):
+        #
+        # sub_edge_positions = []
+        # for sub_edge in self.get_sub_edges():
+        #     sub_edge_positions.append([self.projected_node_positions[self.nodes.index(node)] for node in sub_edge])
+        # return sub_edge_positions
+
 
     def get_node_or_crossing_projected_position(self, reference_node: str) -> np.ndarray:
 
@@ -993,6 +1078,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossing_ordering_dict = self.cyclic_order_crossings()
 
         cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
+
+        self.sub_edges = self.get_sub_edges()
+        # self.sub_edge_positions = self.get_sub_edge_positions()
+        self.contiguous_sub_edges = self.get_contiguous_sub_edges()
 
         for sub_edge in self.get_sub_edges():
             node_a, node_b = sub_edge

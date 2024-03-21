@@ -3,6 +3,7 @@ import networkx as nx
 import json
 from yamada import SpatialGraph
 from yamada.spatial_graph_diagrams.Reidemeister import *
+import time as time_ns
 
 # set the random seed for reproducibility
 np.random.seed(0)
@@ -18,14 +19,14 @@ graphs = list(graph_data.values())
 
 # Truncate list if wanting to evaluate a small subset of the graphs
 # [0:1] has an R2
-graphs = graphs[0:2]
+graphs = graphs[0:1]
 
 # Initialize lists to store outputs
 sgs = []
 sgds = []
 yps = []
 
-max_crossings = 5
+max_crossings = 3
 
 for i, graph in enumerate(graphs):
 
@@ -53,8 +54,10 @@ for i, graph in enumerate(graphs):
     sgd = sg.create_spatial_graph_diagram()
 
     print(f"{len(sgd.crossings)} crossings")
-
+    t_1 = time_ns.time_ns()
     sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
+    t_2 = time_ns.time_ns()
+    print(f"Time: {(t_2 - t_1) / 1e9:.2f} seconds")
 
 
     print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}")
