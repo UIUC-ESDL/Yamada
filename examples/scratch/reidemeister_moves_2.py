@@ -18,65 +18,65 @@ graphs = list(graph_data.values())
 
 # Truncate list if wanting to evaluate a small subset of the graphs
 # [0:1] has an R2
-graphs = graphs[0:1]
+graphs = graphs[0:2]
 
 # Initialize lists to store outputs
 sgs = []
 sgds = []
 yps = []
 
-max_crossings = 3
+max_crossings = 4
 
 for i, graph in enumerate(graphs):
 
-    try:
+    # try:
 
-        edges, nodes, node_positions = graph
+    edges, nodes, node_positions = graph
 
-        # Reformat edges
-        edges = [(a, b) for a, b in edges]
+    # Reformat edges
+    edges = [(a, b) for a, b in edges]
 
-        # Reformat positions as a dict
-        pos = {node: np.array(position) for node, position in zip(nodes, node_positions)}
+    # Reformat positions as a dict
+    pos = {node: np.array(position) for node, position in zip(nodes, node_positions)}
 
-        g = nx.Graph()
-        g.add_nodes_from(nodes)
-        g.add_edges_from(edges)
+    g = nx.Graph()
+    g.add_nodes_from(nodes)
+    g.add_edges_from(edges)
 
-        # Plot the networkx graph in 3d
-        node_xyz = np.array([pos[v] for v in g])
+    # Plot the networkx graph in 3d
+    node_xyz = np.array([pos[v] for v in g])
 
-        sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_xyz)
-        # sg.plot()
-        sg.plot_pyvista()
+    sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_xyz)
+    # sg.plot()
+    # sg.plot_pyvista()
 
-        sgd = sg.create_spatial_graph_diagram()
+    sgd = sg.create_spatial_graph_diagram()
 
-        print(f"{len(sgd.crossings)} crossings")
+    print(f"{len(sgd.crossings)} crossings")
 
-        sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
+    sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
 
 
-        print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}")
-        yp = sgd.normalized_yamada_polynomial()
-        print(yp)
+    print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}")
+    yp = sgd.normalized_yamada_polynomial()
+    print(yp)
 
-        # Only calculate the Yamada polynomial for graphs with up to max # crossings
-        # if len(sgd.crossings) > max_crossings:
-        #     yp = f'skip: {len(sgd.crossings)} crossings'
-        #     print(yp)
-        # else:
-        #     yp = sgd.normalized_yamada_polynomial()
-        #     print(yp)
+    # Only calculate the Yamada polynomial for graphs with up to max # crossings
+    # if len(sgd.crossings) > max_crossings:
+    #     yp = f'skip: {len(sgd.crossings)} crossings'
+    #     print(yp)
+    # else:
+    #     yp = sgd.normalized_yamada_polynomial()
+    #     print(yp)
 
-        sgs.append(sg)
-        sgds.append(sgd)
-        yps.append(yp)
+    sgs.append(sg)
+    sgds.append(sgd)
+    yps.append(yp)
 
-    except:
-        # If there is an error create the spatial graph or calculating the Yamada polynomial, skip for now
-        # Further work will need to investigate what is raising errors.
-        print('Error')
-        continue
+    # except:
+    #     # If there is an error create the spatial graph or calculating the Yamada polynomial, skip for now
+    #     # Further work will need to investigate what is raising errors.
+    #     print('Error. There was an issue with the graph. Skipping.')
+    #     continue
 
 

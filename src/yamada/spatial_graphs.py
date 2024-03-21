@@ -1167,18 +1167,15 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
                 center = crossing_position + np.array([0,height / 2,0])
                 direction = [0, 1, 0]
-                cylinder = pv.Cylinder(center=center, direction=direction, radius=3, height=height)
+                cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
                 p.add_mesh(cylinder, color='red', opacity=0.25)
-
-
-                # p.add_mesh(pv.Line(crossing_position + np.array([0, 0, 0.1]), crossing_position - np.array([0, 0, 0.1])), color='red', line_width=5)
-                # p.add_mesh(pv.Sphere(radius=0.1, center=crossing_position), color='red', opacity=0.25)
 
 
 
 
         # p.view_isometric()
         # p.view_xy()
+        p.view_xz()
         p.show_axes()
         # p.show_bounds()
 
