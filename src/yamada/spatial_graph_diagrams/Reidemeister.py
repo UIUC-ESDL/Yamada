@@ -356,8 +356,15 @@ def double_over_or_under_edges(face):
 
 
 def edge_is_double_over_or_under(edge):
-    crossing_1 = edge.adjacent[0][0]
-    crossing_2 = edge.adjacent[1][0]
+    edge_adjacent_1 = edge.adjacent[0][0]
+    edge_adjacent_2 = edge.adjacent[1][0]
+
+    if not isinstance(edge_adjacent_1, Crossing) or not isinstance(edge_adjacent_2, Crossing):
+        return False
+
+    crossing_1 = edge_adjacent_1
+    crossing_2 = edge_adjacent_2
+
     edge_over_crossing_1 = edge_is_over(edge, crossing_1)
     edge_over_crossing_2 = edge_is_over(edge, crossing_2)
 
@@ -468,7 +475,6 @@ def has_r6(sgd):
 
 
 # %% Reidemeister Simplification
-
 
 def r1_and_r2_simplify(sgd, r1_count, r2_count):
     max_iter = 100

@@ -25,7 +25,7 @@ sgs = []
 sgds = []
 yps = []
 
-max_crossings = 4
+max_crossings = 5
 
 for i, graph in enumerate(graphs):
 
