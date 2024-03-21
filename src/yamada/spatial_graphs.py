@@ -684,16 +684,17 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return contiguous_sub_edges
 
+    def get_contiguous_sub_edges_positions(self):
+        contiguous_sub_edges = self.get_contiguous_sub_edges()
 
+        nodes = self.nodes
+        node_positions = self.node_positions
+        crosings = self.crossings
+        crossing_positions = self.crossing_positions
 
+        nodes_and_crossings = nodes + crosings
+        nodeS_and_crossings_positions = np.vstack((node_positions, crossing_positions))
 
-
-    # def get_sub_edge_positions(self):
-        #
-        # sub_edge_positions = []
-        # for sub_edge in self.get_sub_edges():
-        #     sub_edge_positions.append([self.projected_node_positions[self.nodes.index(node)] for node in sub_edge])
-        # return sub_edge_positions
 
 
     def get_node_or_crossing_projected_position(self, reference_node: str) -> np.ndarray:
@@ -914,9 +915,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # TODO Modify nonadjacent edge pairs that are within some axis aligned bounding box
 
-
-
-
         for line_1, line_2 in self.nonadjacent_edge_pairs:
 
             a = self.projected_node_positions[self.nodes.index(line_1[0])]
@@ -943,6 +941,13 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                 crossing_edge_pairs.append(crossing_edge_pair)
 
         return crossings, crossing_positions, crossing_edge_pairs
+
+    def get_crossing_positions_3D(self, crossing):
+        """
+        Get the 3D position of a crossing.
+        """
+        crossing_position_2D = self.crossing_positions[self.crossings.index(crossing)]
+        # TODO Implementl
 
     def project(self, max_iter=2, predefined_rotation=None):
         """
@@ -1081,7 +1086,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         self.sub_edges = self.get_sub_edges()
         # self.sub_edge_positions = self.get_sub_edge_positions()
-        self.contiguous_sub_edges = self.get_contiguous_sub_edges()
+        # self.contiguous_sub_edges = self.get_contiguous_sub_edges()
 
         for sub_edge in self.get_sub_edges():
             node_a, node_b = sub_edge
@@ -1216,6 +1221,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         plt.show()
 
     def plot_pyvista(self):
+        """
+        TODO, replace cylinder with circle and dashed line
+        """
 
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
@@ -1254,10 +1262,20 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         if self.crossing_positions is not None:
             for crossing_position in crossing_positions:
                 height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
-                center = crossing_position + np.array([0,height / 2,0])
+                crossing_center = crossing_position #+ np.array([0, height / 2, 0])
+                crossing_center[1] = center[1]
                 direction = [0, 1, 0]
-                cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
-                p.add_mesh(cylinder, color='red', opacity=0.25)
+                # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
+                # p.add_mesh(cylinder, color='red', opacity=0.25)
+                circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
+                p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
+
+                min_y = np.min(node_positions[:, 1])
+                max_y = np.max(node_positions[:, 1])
+                start = np.array([crossing_center[0], min_y, crossing_center[2]])
+                end = np.array([crossing_center[0], max_y, crossing_center[2]])
+                dashed_line = pv.Line(start, end)
+                p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
 
 
 

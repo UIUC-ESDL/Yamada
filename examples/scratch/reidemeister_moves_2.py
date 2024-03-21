@@ -49,7 +49,7 @@ for i, graph in enumerate(graphs):
 
     sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_xyz)
     # sg.plot()
-    # sg.plot_pyvista()
+    sg.plot_pyvista()
 
     sgd = sg.create_spatial_graph_diagram()
 
