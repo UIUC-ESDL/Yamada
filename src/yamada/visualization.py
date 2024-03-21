@@ -162,25 +162,3 @@ def position_spatial_graphs_in_3D(ust_dict, z_height=20):
     return sg_inputs
 
 
-def draw_spatial_graph_in_pyvista(nodes, node_positions, segments):
-    plotter = pv.Plotter()
-
-    # Plot nodes
-    for pos in node_positions:
-        plotter.add_mesh(pv.Sphere(radius=2, center=pos), color='blue')
-
-    # Plot segments
-    for segment in segments:
-        for i in range(len(segment) - 1):
-            start = node_positions[nodes.index(segment[i])]
-            end = node_positions[nodes.index(segment[i + 1])]
-            line = pv.Line(start, end)
-            plotter.add_mesh(line, color='black')
-
-    # Add transparent red spheres for crossings
-    for node, pos in zip(nodes, node_positions):
-        if '+' in node or '-' in node:  # Assuming '+' or '-' in node name indicates a crossing
-            plotter.add_mesh(pv.Sphere(radius=5, center=pos), color='red', opacity=0.5)
-
-    plotter.show()
-

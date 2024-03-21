@@ -47,6 +47,7 @@ for i, graph in enumerate(graphs):
         node_xyz = np.array([pos[v] for v in g])
 
         sg = SpatialGraph(nodes=nodes, edges=edges, node_positions=node_xyz)
+        # sg.plot()
         sg.plot_pyvista()
 
         sgd = sg.create_spatial_graph_diagram()

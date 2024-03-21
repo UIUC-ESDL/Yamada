@@ -51,6 +51,7 @@ from ..H_polynomial import h_poly
 from ..utilities import get_coefficients_and_exponents
 from .diagram_elements import Vertex, Edge, Crossing, EntryPoint
 from .Reidemeister import has_r1, apply_r1, has_r2, apply_r2, has_r3, apply_r3
+import pyvista as pv
 
 
 
@@ -479,3 +480,5 @@ def reverse_poly(poly):
         ans += c * A ** (-e)
 
     return ans
+
+

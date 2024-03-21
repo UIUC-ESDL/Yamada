@@ -945,8 +945,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             self.rotation = self.random_rotation()
             self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
 
-
-
         if len(rotations) == 0:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
         else:
@@ -1133,28 +1131,24 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
 
-        node_positions = self.node_positions
+        node_positions = self.rotated_node_positions
         crossing_positions = self.crossing_positions
 
         # Center the positions
         center = np.mean(node_positions, axis=0)
-        node_positions -= center
 
-        # Normalize the positions
-        max_position = np.max(np.abs(node_positions))
-        node_positions /= max_position
-
+        # TODO Y COORDS...
         # Also do it for crossing positions if it's not empty
         if crossing_positions is not None:
-            crossing_positions = np.array(crossing_positions)
-            z_coords = np.zeros((crossing_positions.shape[0], 1))
-            crossing_positions = np.hstack((crossing_positions, z_coords))
-            crossing_positions -= center
-            crossing_positions /= max_position
+            xz_coords = np.array(crossing_positions)
+            y_coords = np.zeros((xz_coords.shape[0], 1))
+            crossing_positions = np.hstack((xz_coords, y_coords))
+            crossing_positions = crossing_positions[:, [0, 2, 1]]
+
 
         # Plot the nodes
         for pos in node_positions:
-            p.add_mesh(pv.Sphere(radius=0.025, center=pos), color='blue')
+            p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='blue')
 
         # Plot the edges
         for edge in self.edges:
@@ -1164,14 +1158,21 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             p.add_mesh(line, color='black', line_width=5)
 
         # Plot the projective plane (XY axis)
-        plane_size = 2.0
-        p.add_mesh(pv.Plane(center=(0, 0, 0), direction=(0, 0, 1), i_size=plane_size, j_size=plane_size), color='orange', opacity=0.5)
+        plane_size = 150.0
+        p.add_mesh(pv.Plane(center=center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
+        # Plot the crossing positions
         if self.crossing_positions is not None:
             for crossing_position in crossing_positions:
-                # Plot a red dashing line that is normal to the plane and goes in both directions
+                height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
+                center = crossing_position + np.array([0,height / 2,0])
+                direction = [0, 1, 0]
+                cylinder = pv.Cylinder(center=center, direction=direction, radius=3, height=height)
+                p.add_mesh(cylinder, color='red', opacity=0.25)
+
+
                 # p.add_mesh(pv.Line(crossing_position + np.array([0, 0, 0.1]), crossing_position - np.array([0, 0, 0.1])), color='red', line_width=5)
-                p.add_mesh(pv.Sphere(radius=0.1, center=crossing_position), color='red', opacity=0.25)
+                # p.add_mesh(pv.Sphere(radius=0.1, center=crossing_position), color='red', opacity=0.25)
 
 
 
@@ -1179,6 +1180,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # p.view_isometric()
         # p.view_xy()
         p.show_axes()
+        # p.show_bounds()
 
 
         p.show()
