@@ -335,6 +335,8 @@ class LinearAlgebra:
         # min_dist_position = np.array([a + d1 * t]).reshape(-1)
         min_dist_position = a + d1 * t
 
+        # Calculate the 3
+
         return min_dist, min_dist_position
 
 
@@ -944,6 +946,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossing_edge_pairs = []
         crossing_positions = []
 
+
         # TODO Modify nonadjacent edge pairs that are within some axis aligned bounding box
 
         for line_1, line_2 in self.nonadjacent_edge_pairs:
@@ -1030,7 +1033,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                     b = self.projected_node_positions[self.nodes.index(line_1[1])]
                     c = self.projected_node_positions[self.nodes.index(line_2[0])]
                     d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    min_dist, crossing_position = self.get_line_segment_intersection(a, b, c, d)
+                    min_dist, crossing_position, = self.get_line_segment_intersection(a, b, c, d)
 
                     if min_dist > 0.0001:
                         crossing_position = None
@@ -1285,6 +1288,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
         other_nodes = [node for node in nodes if node not in two_valent_nodes]
 
+
+
+
         # Center the positions
         center = np.mean(node_positions, axis=0)
 
@@ -1316,21 +1322,14 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
 
 
-        # pl.set_color_cycler(None)
 
-
-        # # Plot the edges
-        # for edge in self.edges:
-        #     start = node_positions[self.nodes.index(edge[0])]
-        #     end = node_positions[self.nodes.index(edge[1])]
-        #     line = pv.Line(start, end)
-        #     p.add_mesh(line, color='black', line_width=5)
 
         # Plot the projective plane (XY axis)
         plane_size = 150.0
         p.add_mesh(pv.Plane(center=center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
         # Plot the crossing positions
+        # TODO, the out of plane as transparent red spheres, connected by a line...
         if self.crossing_positions is not None:
             for crossing_position in crossing_positions:
                 height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
