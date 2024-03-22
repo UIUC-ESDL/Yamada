@@ -10,6 +10,8 @@ from itertools import combinations
 from numba import njit
 import math
 import pyvista as pv
+import matplotlib.colors as mcolors
+import random
 
 from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
 from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
@@ -610,7 +612,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return sub_edges
 
-    def get_contiguous_sub_edges(self):
+    def get_contiguous_edges(self):
         sub_edges = self.get_sub_edges()
         nodes = []
         for node_a, node_b in sub_edges:
@@ -684,16 +686,45 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return contiguous_sub_edges
 
-    def get_contiguous_sub_edges_positions(self):
-        contiguous_sub_edges = self.get_contiguous_sub_edges()
+    def get_contiguous_edge_positions(self):
 
         nodes = self.nodes
-        node_positions = self.node_positions
         crosings = self.crossings
-        crossing_positions = self.crossing_positions
+        contiguous_edges = self.get_contiguous_edges()
 
-        nodes_and_crossings = nodes + crosings
-        nodeS_and_crossings_positions = np.vstack((node_positions, crossing_positions))
+        node_positions_dict = {node: self.rotated_node_positions[nodes.index(node)] for node in nodes}
+
+        if self.crossing_positions is not None:
+            xz_coords = np.array(self.crossing_positions)
+            y_coords = np.zeros((xz_coords.shape[0], 1))
+            crossing_positions = np.hstack((xz_coords, y_coords))
+            crossing_positions = crossing_positions[:, [0, 2, 1]]
+
+            crossing_positions_dict = {}
+            for crossing, position in zip(self.crossings, crossing_positions):
+                crossing_positions_dict[crossing] = position
+
+        else:
+            crossing_positions_dict = {}
+
+        combined_positions_dict = {**node_positions_dict, **crossing_positions_dict}
+
+        contiguous_edge_positions = []
+        for contiguous_edge in contiguous_edges:
+
+            contiguous_edge_positions_i = []
+            for i in range(len(contiguous_edge) - 1):
+                node_a = contiguous_edge[i]
+                node_b = contiguous_edge[i + 1]
+
+                position_a = combined_positions_dict[node_a]
+                position_b = combined_positions_dict[node_b]
+
+                contiguous_edge_positions_i.append((position_a, position_b))
+
+            contiguous_edge_positions.append(contiguous_edge_positions_i)
+
+        return contiguous_edge_positions
 
 
 
@@ -1228,8 +1259,31 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
 
+        nodes = self.nodes
+        crossings = self.crossings
+        contiguous_edges = self.get_contiguous_edges()
+        sub_edges = self.get_sub_edges()
+
         node_positions = self.rotated_node_positions
         crossing_positions = self.crossing_positions
+        contiguous_edge_positions = self.get_contiguous_edge_positions()
+        edge_labels = ['edge_' + str(i) for i in range(len(contiguous_edges))]
+
+        node_positions_dict = {node: node_positions[nodes.index(node)] for node in nodes}
+
+        # Get the non-two-valent nodes
+        nodes_dict = {node: {'valency': 0, 'adjacent': []} for node in nodes}
+        for sub_edge in sub_edges:
+            a, b = sub_edge
+            if a in nodes:
+                nodes_dict[a]['valency'] += 1
+                nodes_dict[a]['adjacent'].append(b)
+            if b in nodes:
+                nodes_dict[b]['valency'] += 1
+                nodes_dict[b]['adjacent'].append(a)
+
+        two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
+        other_nodes = [node for node in nodes if node not in two_valent_nodes]
 
         # Center the positions
         center = np.mean(node_positions, axis=0)
@@ -1244,15 +1298,33 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
 
         # Plot the nodes
-        for pos in node_positions:
-            p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='blue')
+        for node in other_nodes:
+            pos = node_positions_dict[node]
+            p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='black')
 
-        # Plot the edges
-        for edge in self.edges:
-            start = node_positions[self.nodes.index(edge[0])]
-            end = node_positions[self.nodes.index(edge[1])]
-            line = pv.Line(start, end)
-            p.add_mesh(line, color='black', line_width=5)
+        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_edges))]
+
+        for i, contiguous_edge_positions_i in enumerate(contiguous_edge_positions):
+            lines = []
+            for sub_edge_position_1, sub_edge_position_2 in contiguous_edge_positions_i:
+                start = sub_edge_position_1
+                end = sub_edge_position_2
+                line = pv.Line(start, end)
+                lines.append(line)
+            linear_spline = pv.MultiBlock(lines)
+            p.add_mesh(linear_spline, line_width=5, color=colors[i])
+
+
+
+        # pl.set_color_cycler(None)
+
+
+        # # Plot the edges
+        # for edge in self.edges:
+        #     start = node_positions[self.nodes.index(edge[0])]
+        #     end = node_positions[self.nodes.index(edge[1])]
+        #     line = pv.Line(start, end)
+        #     p.add_mesh(line, color='black', line_width=5)
 
         # Plot the projective plane (XY axis)
         plane_size = 150.0

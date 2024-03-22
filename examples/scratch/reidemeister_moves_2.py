@@ -3,7 +3,7 @@ import networkx as nx
 import json
 from yamada import SpatialGraph
 from yamada.spatial_graph_diagrams.Reidemeister import *
-import time as time_ns
+import time as time
 
 # set the random seed for reproducibility
 np.random.seed(0)
@@ -54,13 +54,13 @@ for i, graph in enumerate(graphs):
     sgd = sg.create_spatial_graph_diagram()
 
     print(f"{len(sgd.crossings)} crossings")
-    t_1 = time_ns.time_ns()
+    # t_1 = time.time_ns()
     sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=10)
-    t_2 = time_ns.time_ns()
-    print(f"Time: {(t_2 - t_1) / 1e9:.2f} seconds")
+    # t_2 = time.time_ns()
+    # print(f"Time: {(t_2 - t_1) / 1e9:.9f} seconds")
 
 
-    print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}")
+    print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
     yp = sgd.normalized_yamada_polynomial()
     print(yp)
 
