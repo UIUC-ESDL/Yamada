@@ -614,7 +614,44 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return sub_edges
 
+    @staticmethod
+    def get_crossing_3D_position(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+        """
+        If two 3D lines are projected onto the XZ plane and their projections intersect, then
+        calculate the correspond 3D coordinates of that intersection point for the two lines.
+        """
+
+        # Unpack the coordinates
+        x0, y0, z0 = a0_position
+        x1, y1, z1 = a1_position
+        x2, y2, z2 = a2_position
+        x3, y3, z3 = a3_position
+        xc, yc, zc = x0z_coords
+
+        # Changes in position
+        dx02 = x2 - x0
+        dy02 = y2 - y0
+        dz02 = z2 - z0
+        dx13 = x3 - x1
+        dy13 = y3 - y1
+        dz13 = z3 - z1
+
+        # Relative position of the crossing
+        percent_0c2 = (xc - x0)/dx02
+        percent_1c3 = (xc - x1)/dx13
+
+        # Calculate the 3D position of the crossing
+        y_c_02 = y0 + percent_0c2 * dy02
+        y_c_13 = y1 + percent_1c3 * dy13
+
+        position_c_02 = np.array([xc, y_c_02, zc])
+        position_c_13 = np.array([xc, y_c_13, zc])
+
+        return position_c_02, position_c_13
+
+
     def get_contiguous_edges(self):
+
         sub_edges = self.get_sub_edges()
         nodes = []
         for node_a, node_b in sub_edges:
