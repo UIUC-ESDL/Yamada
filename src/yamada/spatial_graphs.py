@@ -607,15 +607,26 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             edge_positions = []
             for vertex in edge:
                 if "crossing" in vertex:
-
                     edge_positions.append(crossing_positions_3D_dict[vertex][edge[0]])
                 else:
                     edge_positions.append(node_positions_dict[vertex])
             edge_node_and_or_crossing_positions.append(edge_positions)
 
+        # Flatten the list of nodes and positions into lists of two
+        subdivided_edges = []
+        subdivided_edge_positions = []
+        for edge_nodes_i, edge_node_positions_i in zip(edge_nodes_and_or_crossings, edge_node_and_or_crossing_positions):
+
+            if len(edge_nodes_i) == 2:
+                subdivided_edges.append(edge_nodes_i)
+                subdivided_edge_positions.append(edge_node_positions_i)
+            else:
+                for i in range(len(edge_nodes_i) - 1):
+                    subdivided_edges.append([edge_nodes_i[i], edge_nodes_i[i + 1]])
+                    subdivided_edge_positions.append([edge_node_positions_i[i], edge_node_positions_i[i + 1]])
 
 
-        return edge_nodes_and_or_crossings, edge_node_and_or_crossing_positions
+        return subdivided_edges, subdivided_edge_positions
 
 
 
@@ -711,10 +722,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
     def get_contiguous_edges(self):
 
-        # extended_sub_edges, extended_sub_edge_positions = self.get_extended_sub_edges_and_positions()
+        # Get the sub-edges and their positions
+        sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
 
-
-        sub_edges = self.get_sub_edges()
+        # Get the nodes and crossings
         nodes = []
         for node_a, node_b in sub_edges:
             if node_a not in nodes:
@@ -747,6 +758,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         max_iter = 1000
         iter_count = 0
         contiguous_sub_edges = []
+        contiguous_sub_edge_positions = []
         while len(unvisited_entry_points) > 0:
 
             contiguous_sub_edge = []
@@ -785,73 +797,94 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             if iter_count > max_iter:
                 raise ValueError("Max iteration count reached.")
 
-        return contiguous_sub_edges
-
-    def get_contiguous_edge_positions(self):
-
-        nodes = self.nodes
-        crosings = self.crossings
-        contiguous_edges = self.get_contiguous_edges()
-        extended_sub_edges = self.get_extended_sub_edges()
-
-        node_positions_dict = {node: self.rotated_node_positions[nodes.index(node)] for node in nodes}
-
-        if self.crossing_positions is not None:
-            crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs = self.get_crossings_3D()
-            crossing_positions_2D_dict = {crossing: position for crossing, position in zip(crossings, crossing_positions_2D)}
-            crossing_positions_3D_dict = {}
-            for crossing, crossing_position_2D, crossing_position_3D, crossing_edge_pair in zip(crossings,
-                                                                                                crossing_positions_2D,
-                                                                                                crossing_positions_3D,
-                                                                                                crossing_edge_pairs):
-                edge_pair_1, edge_pair_2 = crossing_edge_pair
-                node_a, node_c = edge_pair_1
-                node_b, node_d = edge_pair_2
-
-                crossing_position_3D_ac, crossing_position_3D_bd = crossing_position_3D
-                crossing_positions_3D_dict[crossing] = {'projection': crossing_position_2D,
-                                                       node_a: crossing_position_3D_ac,
-                                                       node_b: crossing_position_3D_bd,
-                                                       node_c: crossing_position_3D_ac,
-                                                       node_d: crossing_position_3D_bd}
-
-        else:
-            crossing_positions_dict = {}
-
-        combined_positions_dict = {**node_positions_dict, **crossing_positions_2D_dict}
-
-        contiguous_edge_positions = []
-        for contiguous_edge in contiguous_edges:
-
-            contiguous_edge_positions_i = []
-            for i in range(len(contiguous_edge) - 1):
-                node_a = contiguous_edge[i]
-                node_b = contiguous_edge[i + 1]
-
-                if 'crossing' in node_a and 'crossing' in node_b:
-                    # Assume that two crossings cannot share more than one straight line
-                    # Find a node that the two crossings share from the extended sub-edges
-                    extended_sub_edge_index = [i for i, sub_edge in enumerate(extended_sub_edges) if node_a in sub_edge and node_b in sub_edge][0]
-                    shared_nodes = [node for node in extended_sub_edges[extended_sub_edge_index] if node not in [node_a, node_b]]
-                    shared_node = shared_nodes[0]
-
-                    position_a = crossing_positions_3D_dict[node_a][shared_node]
-                    position_b = crossing_positions_3D_dict[node_b][shared_node]
-                elif 'crossing' in node_a:
-                    position_a = crossing_positions_3D_dict[node_a][node_b]
-                    position_b = combined_positions_dict[node_b]
-                elif 'crossing' in node_b:
-                    position_a = combined_positions_dict[node_a]
-                    position_b = crossing_positions_3D_dict[node_b][node_a]
+        # Now we will have the contiguous sub-edges, we can get their positions
+        for contiguous_sub_edge in contiguous_sub_edges:
+            contiguous_sub_edge_positions_i = []
+            for i in range(len(contiguous_sub_edge) - 1):
+                node_a = contiguous_sub_edge[i]
+                node_b = contiguous_sub_edge[i + 1]
+                edge = [node_a, node_b]
+                edge_reversed = [node_b, node_a]
+                if edge in sub_edges:
+                    edge_index = sub_edges.index(edge)
+                    contiguous_sub_edge_positions_i.append(sub_edge_positions[edge_index])
+                elif edge_reversed in sub_edges:
+                    edge_index = sub_edges.index(edge_reversed)
+                    positions = sub_edge_positions[edge_index]
+                    positions_reversed = [positions[1], positions[0]]
+                    contiguous_sub_edge_positions_i.append(positions_reversed)
                 else:
-                    position_a = combined_positions_dict[node_a]
-                    position_b = combined_positions_dict[node_b]
+                    raise ValueError("Edge not found.")
 
-                contiguous_edge_positions_i.append((position_a, position_b))
+            contiguous_sub_edge_positions.append(contiguous_sub_edge_positions_i)
 
-            contiguous_edge_positions.append(contiguous_edge_positions_i)
+        return contiguous_sub_edges, contiguous_sub_edge_positions
 
-        return contiguous_edge_positions
+    # def get_contiguous_edge_positions(self):
+    #
+    #     nodes = self.nodes
+    #     crosings = self.crossings
+    #     contiguous_edges = self.get_contiguous_edges()
+    #
+    #
+    #     node_positions_dict = {node: self.rotated_node_positions[nodes.index(node)] for node in nodes}
+    #
+    #     if self.crossing_positions is not None:
+    #         crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs = self.get_crossings_3D()
+    #         crossing_positions_2D_dict = {crossing: position for crossing, position in zip(crossings, crossing_positions_2D)}
+    #         crossing_positions_3D_dict = {}
+    #         for crossing, crossing_position_2D, crossing_position_3D, crossing_edge_pair in zip(crossings,
+    #                                                                                             crossing_positions_2D,
+    #                                                                                             crossing_positions_3D,
+    #                                                                                             crossing_edge_pairs):
+    #             edge_pair_1, edge_pair_2 = crossing_edge_pair
+    #             node_a, node_c = edge_pair_1
+    #             node_b, node_d = edge_pair_2
+    #
+    #             crossing_position_3D_ac, crossing_position_3D_bd = crossing_position_3D
+    #             crossing_positions_3D_dict[crossing] = {'projection': crossing_position_2D,
+    #                                                    node_a: crossing_position_3D_ac,
+    #                                                    node_b: crossing_position_3D_bd,
+    #                                                    node_c: crossing_position_3D_ac,
+    #                                                    node_d: crossing_position_3D_bd}
+    #
+    #     else:
+    #         crossing_positions_dict = {}
+    #
+    #     combined_positions_dict = {**node_positions_dict, **crossing_positions_2D_dict}
+    #
+    #     contiguous_edge_positions = []
+    #     for contiguous_edge in contiguous_edges:
+    #
+    #         contiguous_edge_positions_i = []
+    #         for i in range(len(contiguous_edge) - 1):
+    #             node_a = contiguous_edge[i]
+    #             node_b = contiguous_edge[i + 1]
+    #
+    #             if 'crossing' in node_a and 'crossing' in node_b:
+    #                 # Assume that two crossings cannot share more than one straight line
+    #                 # Find a node that the two crossings share from the extended sub-edges
+    #                 extended_sub_edge_index = [i for i, sub_edge in enumerate(extended_sub_edges) if node_a in sub_edge and node_b in sub_edge][0]
+    #                 shared_nodes = [node for node in extended_sub_edges[extended_sub_edge_index] if node not in [node_a, node_b]]
+    #                 shared_node = shared_nodes[0]
+    #
+    #                 position_a = crossing_positions_3D_dict[node_a][shared_node]
+    #                 position_b = crossing_positions_3D_dict[node_b][shared_node]
+    #             elif 'crossing' in node_a:
+    #                 position_a = crossing_positions_3D_dict[node_a][node_b]
+    #                 position_b = combined_positions_dict[node_b]
+    #             elif 'crossing' in node_b:
+    #                 position_a = combined_positions_dict[node_a]
+    #                 position_b = crossing_positions_3D_dict[node_b][node_a]
+    #             else:
+    #                 position_a = combined_positions_dict[node_a]
+    #                 position_b = combined_positions_dict[node_b]
+    #
+    #             contiguous_edge_positions_i.append((position_a, position_b))
+    #
+    #         contiguous_edge_positions.append(contiguous_edge_positions_i)
+    #
+    #     return contiguous_edge_positions
 
 
 
@@ -1431,16 +1464,16 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         nodes = self.nodes
         crossings = self.crossings
-        contiguous_edges = self.get_contiguous_edges()
-        sub_edges = self.get_sub_edges()
-        extended_sub_edges, edge_node_and_or_crossing_positions = self.subdivide_edges_with_crossings()
+        contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
+        # sub_edges = self.get_sub_edges()
+        sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
 
         node_positions = self.rotated_node_positions
         crossing_positions = self.crossing_positions
 
 
-        contiguous_edge_positions = self.get_contiguous_edge_positions()
-        edge_labels = ['edge_' + str(i) for i in range(len(contiguous_edges))]
+        # contiguous_edge_positions = self.get_contiguous_edge_positions()
+        edge_labels = ['edge_' + str(i) for i in range(len(contiguous_sub_edges))]
 
         node_positions_dict = {node: node_positions[nodes.index(node)] for node in nodes}
 
@@ -1478,9 +1511,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             pos = node_positions_dict[node]
             p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='black')
 
-        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_edges))]
+        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
 
-        for i, contiguous_edge_positions_i in enumerate(contiguous_edge_positions):
+        for i, contiguous_edge_positions_i in enumerate(contiguous_sub_edge_positions):
             lines = []
             for sub_edge_position_1, sub_edge_position_2 in contiguous_edge_positions_i:
                 start = sub_edge_position_1
