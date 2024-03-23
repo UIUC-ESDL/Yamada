@@ -684,8 +684,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return sub_edges
 
-    def get_extended_sub_edge_positions(self):
-        pass
 
     def get_sub_edges(self):
         """
@@ -1315,11 +1313,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
 
-        self.sub_edges = self.get_sub_edges()
-        # self.sub_edge_positions = self.get_sub_edge_positions()
-        # self.contiguous_sub_edges = self.get_contiguous_sub_edges()
+        sub_edges, _ = self.subdivide_edges_with_crossings()
 
-        for sub_edge in self.get_sub_edges():
+        for sub_edge in sub_edges:
             node_a, node_b = sub_edge
 
             node_a_index = nodes_and_crossings.index(node_a)
@@ -1354,33 +1350,10 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Get the necessary values
         nodes = self.nodes
-        crossings = self.crossings
-        sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
-        contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
-
-
-
-
-
         node_positions = self.rotated_node_positions
+        crossings = self.crossings
         crossing_positions = self.crossing_positions
-
-
-        # contiguous_edge_positions = self.get_contiguous_edge_positions()
-        edge_labels = ['edge_' + str(i) for i in range(len(contiguous_sub_edges))]
-
-        node_positions_dict = {node: node_positions[nodes.index(node)] for node in nodes}
-
-
-        # Center the positions
-        center = np.mean(node_positions, axis=0)
-
-        # # Plot the nodes
-        # for node in other_nodes:
-        #     pos = node_positions_dict[node]
-        #     p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='black')
-
-        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
+        contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
 
         # Plot the vertices and crossings
         for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
@@ -1390,16 +1363,17 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             end_position = contiguous_edge_positions_i[-1][1]
 
             if 'crossing' in start_node:
-                p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='red', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=1, center=start_position), color='red', opacity=0.35)
             else:
                 p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='black')
 
             if 'crossing' in end_node:
-                p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='red', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=1, center=end_position), color='red', opacity=0.35)
             else:
                 p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
 
         # Plot the lines
+        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
         for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
             lines = []
             for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
@@ -1412,30 +1386,30 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             p.add_mesh(linear_spline, line_width=5, color=colors[i])
 
 
-
         # Plot the projective plane (XY axis)
+        center = np.mean(node_positions, axis=0)
         plane_size = 150.0
         p.add_mesh(pv.Plane(center=center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
-        # # Plot the crossing positions
-        # # TODO, the out of plane as transparent red spheres, connected by a line...
-        # if self.crossing_positions is not None:
-        #     for crossing_position in crossing_positions:
-        #         height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
-        #         crossing_center = crossing_position #+ np.array([0, height / 2, 0])
-        #         crossing_center[1] = center[1]
-        #         direction = [0, 1, 0]
-        #         # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
-        #         # p.add_mesh(cylinder, color='red', opacity=0.25)
-        #         circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
-        #         p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
-        #
-        #         min_y = np.min(node_positions[:, 1])
-        #         max_y = np.max(node_positions[:, 1])
-        #         start = np.array([crossing_center[0], min_y, crossing_center[2]])
-        #         end = np.array([crossing_center[0], max_y, crossing_center[2]])
-        #         dashed_line = pv.Line(start, end)
-        #         # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
+        # Plot the crossing positions
+        # TODO, the out of plane as transparent red spheres, connected by a line...
+        if self.crossing_positions is not None:
+            for crossing_position in crossing_positions:
+                height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
+                crossing_center = crossing_position #+ np.array([0, height / 2, 0])
+                crossing_center[1] = center[1]
+                direction = [0, 1, 0]
+                # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
+                # p.add_mesh(cylinder, color='red', opacity=0.25)
+                circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
+                p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
+
+                min_y = np.min(node_positions[:, 1])
+                max_y = np.max(node_positions[:, 1])
+                start = np.array([crossing_center[0], min_y, crossing_center[2]])
+                end = np.array([crossing_center[0], max_y, crossing_center[2]])
+                dashed_line = pv.Line(start, end)
+                # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
 
 
 
