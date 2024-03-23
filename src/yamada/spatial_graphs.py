@@ -365,6 +365,56 @@ class LinearAlgebra:
 
         return y_int
 
+    @staticmethod
+    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+        """
+        If two 3D lines are projected onto the XZ plane and their projections intersect, then
+        calculate the correspond 3D coordinates of that intersection point for the two lines.
+        """
+
+        # Unpack the coordinates
+        x0, y0, z0 = a0_position
+        x1, y1, z1 = a1_position
+        x2, y2, z2 = a2_position
+        x3, y3, z3 = a3_position
+        xc, yc, zc = x0z_coords
+
+        # Changes in position
+        dx02 = x2 - x0
+        dy02 = y2 - y0
+        dz02 = z2 - z0
+        dx13 = x3 - x1
+        dy13 = y3 - y1
+        dz13 = z3 - z1
+
+        # Relative position of the crossing
+        if dx02 != 0:
+            t02 = (xc - x0) / dx02
+        elif dy02 != 0:
+            t02 = (yc - y0) / dy02
+        elif dz02 != 0:
+            t02 = (zc - z0) / dz02
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        if dx13 != 0:
+            t13 = (xc - x1) / dx13
+        elif dy13 != 0:
+            t13 = (yc - y1) / dy13
+        elif dz13 != 0:
+            t13 = (zc - z1) / dz13
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        # Calculate the 3D position of the crossing
+        y_c_02 = y0 + t02 * dy02
+        y_c_13 = y1 + t13 * dy13
+
+        position_c_02 = np.array([xc, y_c_02, zc])
+        position_c_13 = np.array([xc, y_c_13, zc])
+
+        return position_c_02, position_c_13
+
     @property
     def projected_node_positions(self):
         return self.rotated_node_positions[:, [0, 2]]
@@ -665,59 +715,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                               range(len(nodes_and_crossings) - 1)]
 
         return sub_edges
-
-    def get_sub_edge_positions(self):
-        pass
-
-    @staticmethod
-    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
-        """
-        If two 3D lines are projected onto the XZ plane and their projections intersect, then
-        calculate the correspond 3D coordinates of that intersection point for the two lines.
-        """
-
-        # Unpack the coordinates
-        x0, y0, z0 = a0_position
-        x1, y1, z1 = a1_position
-        x2, y2, z2 = a2_position
-        x3, y3, z3 = a3_position
-        xc, yc, zc = x0z_coords
-
-        # Changes in position
-        dx02 = x2 - x0
-        dy02 = y2 - y0
-        dz02 = z2 - z0
-        dx13 = x3 - x1
-        dy13 = y3 - y1
-        dz13 = z3 - z1
-
-        # Relative position of the crossing
-        if dx02 != 0:
-            t02 = (xc - x0) / dx02
-        elif dy02 != 0:
-            t02 = (yc - y0) / dy02
-        elif dz02 != 0:
-            t02 = (zc - z0) / dz02
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        if dx13 != 0:
-            t13 = (xc - x1) / dx13
-        elif dy13 != 0:
-            t13 = (yc - y1) / dy13
-        elif dz13 != 0:
-            t13 = (zc - z1) / dz13
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        # Calculate the 3D position of the crossing
-        y_c_02 = y0 + t02 * dy02
-        y_c_13 = y1 + t13 * dy13
-
-        position_c_02 = np.array([xc, y_c_02, zc])
-        position_c_13 = np.array([xc, y_c_13, zc])
-
-        return position_c_02, position_c_13
 
 
     def get_contiguous_edges(self):
@@ -1349,124 +1346,21 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
     def plot(self):
         """
-        Plot the spatial graph and spatial graph diagram.
-        """
-
-        fig = plt.figure()
-        # ax2 = plt.subplot()
-
-        ax1 = plt.subplot(221, projection='3d')
-        ax2 = plt.subplot(222)
-        # ax3 = plt.subplot(223, projection='3d')
-        #
-        # # Axis 1
-        #
-        # # ax1.set_xlim(-1.5, 2)
-        # # ax1.set_ylim(-1.5, 2)
-        # # ax1.set_zlim(-1.5, 2)
-        #
-        # ax1.title.set_text('Spatial Graph')
-        # ax1.xaxis.label.set_text('x')
-        # ax1.yaxis.label.set_text('y')
-        # ax1.zaxis.label.set_text('z')
-        #
-        ax1.set_zticklabels([])
-        ax1.set_yticklabels([])
-        ax1.set_xticklabels([])
-        ax1.grid(False)
-        #
-        # # Axis 2
-        #
-        # ax2.title.set_text('Spatial Graph Diagram 1 \n (XZ Plane Projection)')
-        # ax2.xaxis.label.set_text('x')
-        # ax2.yaxis.label.set_text('z')
-        #
-        ax2.set_yticklabels([])
-        ax2.set_xticklabels([])
-        #
-        # # ax2.set_xlim(-0.5, 1.5)
-        # # ax2.set_ylim(-0.5, 1.5)
-        #
-        # # Axis 3
-        #
-        # # ax3.set_xlim(-1.25, 2)
-        # # ax3.set_ylim(-1.25, 2)
-        # # ax3.set_zlim(-1.25, 2)
-        #
-        # ax3.title.set_text('Spatial Graph Rotated')
-        # ax3.xaxis.label.set_text('x')
-        # ax3.yaxis.label.set_text('y')
-        # ax3.zaxis.label.set_text('z')
-        #
-        # # Figure layout
-        # # plt.tight_layout(pad=2, w_pad=7, h_pad=0)
-        #
-        # Plot 3D
-        for edge in self.edges:
-            point_1 = self.node_positions[self.nodes.index(edge[0])]
-            point_2 = self.node_positions[self.nodes.index(edge[1])]
-            ax1.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-        #
-        # # Shrink current axis by 40%
-        # box = ax1.get_position()
-        # ax1.set_position([box.x0, box.y0, box.width * 0.75, box.height])
-        #
-        # # Put a legend to the right of the current axis
-        # # ax1.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
-        #
-        # # Plot 3D
-        # for edge in self.edges:
-        #     point_1 = self.rotated_node_positions[self.nodes.index(edge[0])]
-        #     point_2 = self.rotated_node_positions[self.nodes.index(edge[1])]
-        #     ax3.plot3D([point_1[0], point_2[0]], [point_1[1], point_2[1]], [point_1[2], point_2[2]])
-        # # ax3.legend(self.edges)
-        #
-        # # Shrink current axis by 40%
-        # box = ax3.get_position()
-        # ax3.set_position([box.x0, box.y0, box.width * 0.75, box.height])
-
-        # Put a legend to the right of the current axis
-        # ax3.legend(self.edges, loc='center left', bbox_to_anchor=(1.5, 0.5))
-        # ax3.legend(self.edges)
-
-        # Plot 2D
-        for edge in self.edges:
-            point_1 = self.projected_node_positions[self.nodes.index(edge[0])]
-            point_2 = self.projected_node_positions[self.nodes.index(edge[1])]
-            ax2.plot([point_1[0], point_2[0]], [point_1[1], point_2[1]])
-        # ax2.legend(self.edges)
-
-        # Shrink current axis by 40%
-        box = ax2.get_position()
-        # ax2.set_position([box.x0, box.y0, box.width * 0.6, box.height])
-
-        # Put a legend to the right of the current axis
-        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(1, -0.25))
-        # ax2.legend(self.edges, loc='center left', bbox_to_anchor=(0.75, 0.5), fontsize=9)
-        # ax2.legend(self.edges)
-
-
-        # Plot crossing positions
-        if self.crossing_positions is not None:
-            for crossing_position in self.crossing_positions:
-                ax2.scatter(crossing_position[0], crossing_position[1],
-                            marker='o', s=500, facecolors='none', edgecolors='r', linewidths=2)
-
-        plt.show()
-
-    def plot_pyvista(self):
-        """
         TODO, replace cylinder with circle and dashed line
         """
 
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
 
+        # Get the necessary values
         nodes = self.nodes
         crossings = self.crossings
-        contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
-        # sub_edges = self.get_sub_edges()
         sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
+        contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
+
+
+
+
 
         node_positions = self.rotated_node_positions
         crossing_positions = self.crossing_positions
@@ -1477,53 +1371,45 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         node_positions_dict = {node: node_positions[nodes.index(node)] for node in nodes}
 
-        # Get the non-two-valent nodes
-        nodes_dict = {node: {'valency': 0, 'adjacent': []} for node in nodes}
-        for sub_edge in sub_edges:
-            a, b = sub_edge
-            if a in nodes:
-                nodes_dict[a]['valency'] += 1
-                nodes_dict[a]['adjacent'].append(b)
-            if b in nodes:
-                nodes_dict[b]['valency'] += 1
-                nodes_dict[b]['adjacent'].append(a)
-
-        two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
-        other_nodes = [node for node in nodes if node not in two_valent_nodes]
-
-
-
 
         # Center the positions
         center = np.mean(node_positions, axis=0)
 
-        # TODO Y COORDS...
-        # Also do it for crossing positions if it's not empty
-        if crossing_positions is not None:
-            xz_coords = np.array(crossing_positions)
-            y_coords = np.zeros((xz_coords.shape[0], 1))
-            crossing_positions = np.hstack((xz_coords, y_coords))
-            crossing_positions = crossing_positions[:, [0, 2, 1]]
-
-
-        # Plot the nodes
-        for node in other_nodes:
-            pos = node_positions_dict[node]
-            p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='black')
+        # # Plot the nodes
+        # for node in other_nodes:
+        #     pos = node_positions_dict[node]
+        #     p.add_mesh(pv.Sphere(radius=2.5, center=pos), color='black')
 
         colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
 
-        for i, contiguous_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+        # Plot the vertices and crossings
+        for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
+            start_node = contiguous_edge[0]
+            end_node = contiguous_edge[-1]
+            start_position = contiguous_edge_positions_i[0][0]
+            end_position = contiguous_edge_positions_i[-1][1]
+
+            if 'crossing' in start_node:
+                p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='red', opacity=0.5)
+            else:
+                p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='black')
+
+            if 'crossing' in end_node:
+                p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='red', opacity=0.5)
+            else:
+                p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
+
+        # Plot the lines
+        for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
             lines = []
-            for sub_edge_position_1, sub_edge_position_2 in contiguous_edge_positions_i:
+            for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
                 start = sub_edge_position_1
                 end = sub_edge_position_2
                 line = pv.Line(start, end)
                 lines.append(line)
+
             linear_spline = pv.MultiBlock(lines)
             p.add_mesh(linear_spline, line_width=5, color=colors[i])
-
-
 
 
 
@@ -1531,25 +1417,25 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         plane_size = 150.0
         p.add_mesh(pv.Plane(center=center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
-        # Plot the crossing positions
-        # TODO, the out of plane as transparent red spheres, connected by a line...
-        if self.crossing_positions is not None:
-            for crossing_position in crossing_positions:
-                height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
-                crossing_center = crossing_position #+ np.array([0, height / 2, 0])
-                crossing_center[1] = center[1]
-                direction = [0, 1, 0]
-                # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
-                # p.add_mesh(cylinder, color='red', opacity=0.25)
-                circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
-                p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
-
-                min_y = np.min(node_positions[:, 1])
-                max_y = np.max(node_positions[:, 1])
-                start = np.array([crossing_center[0], min_y, crossing_center[2]])
-                end = np.array([crossing_center[0], max_y, crossing_center[2]])
-                dashed_line = pv.Line(start, end)
-                # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
+        # # Plot the crossing positions
+        # # TODO, the out of plane as transparent red spheres, connected by a line...
+        # if self.crossing_positions is not None:
+        #     for crossing_position in crossing_positions:
+        #         height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
+        #         crossing_center = crossing_position #+ np.array([0, height / 2, 0])
+        #         crossing_center[1] = center[1]
+        #         direction = [0, 1, 0]
+        #         # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
+        #         # p.add_mesh(cylinder, color='red', opacity=0.25)
+        #         circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
+        #         p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
+        #
+        #         min_y = np.min(node_positions[:, 1])
+        #         max_y = np.max(node_positions[:, 1])
+        #         start = np.array([crossing_center[0], min_y, crossing_center[2]])
+        #         end = np.array([crossing_center[0], max_y, crossing_center[2]])
+        #         dashed_line = pv.Line(start, end)
+        #         # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
 
 
 
@@ -1558,7 +1444,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # p.view_xy()
         p.view_xz()
         p.show_axes()
-        # p.show_bounds()
+        p.show_bounds()
 
 
         p.show()
