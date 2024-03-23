@@ -477,21 +477,21 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         return node_positions
 
-    def get_vertices_and_crossings_of_edge(self, reference_edge: tuple[str, str]):
+    def get_edge_vertices_and_or_crossings(self, edge):
         """
-        Returns the vertices and crossings of an edge, ordered from left to right.
+        Returns a list of the vertices and crossings along a give edge, specifically ordered from -x to +x.
+        FIXME What if the edge is perfectly vertical?
         """
 
         # Get edge nodes and positions
-        edge_nodes = [node for node in reference_edge]
+        edge_nodes = [node for node in edge]
         edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
         edge_crossing_positions = []
-
         for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
-            if reference_edge in edge_pair:
+            if edge in edge_pair:
                 edge_crossings.append(crossing)
                 edge_crossing_positions.append(position)
 
@@ -585,31 +585,46 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             node_ordering_dict = self.cyclic_order_vertex(node, node_ordering_dict)
         return node_ordering_dict
 
-    def get_extended_sub_edges(self):
+    def subdivide_edges_with_crossings(self):
 
-        # Get the nodes and crossings of each edge, ordered from left to right
-        edge_nodes_and_crossings = {}
-        for edge in self.edges:
-            edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge(edge)
+        # Initialize the values
+        edges = self.edges
+        nodes = self.nodes
+        node_positions = self.node_positions
+        node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
 
-        # Subdivide each edge if necessary.
-        # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
+        crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict = self.get_crossings_3D()
 
-        sub_edges = []
+        # Get the nodes and crossings
+        edge_nodes_and_or_crossings = []
+        for edge in edges:
+            edge_nodes_and_or_crossings_i = self.get_edge_vertices_and_or_crossings(edge)
+            edge_nodes_and_or_crossings.append(edge_nodes_and_or_crossings_i)
 
-        for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
-            sub_edge = []
-            if len(nodes_and_crossings) == 2:
-                sub_edge.append(edge[0])
-                sub_edge.append(edge[1])
+        # Now get their positions
+        edge_node_and_or_crossing_positions = []
+        for edge in edge_nodes_and_or_crossings:
+            edge_positions = []
+            for vertex in edge:
+                if "crossing" in vertex:
 
-            else:
-                for i in range(len(nodes_and_crossings)):
-                    sub_edge.append(nodes_and_crossings[i])
+                    edge_positions.append(crossing_positions_3D_dict[vertex][edge[0]])
+                else:
+                    edge_positions.append(node_positions_dict[vertex])
+            edge_node_and_or_crossing_positions.append(edge_positions)
 
-            sub_edges.append(sub_edge)
+
+
+        return edge_nodes_and_or_crossings, edge_node_and_or_crossing_positions
+
+
+
+
 
         return sub_edges
+
+    def get_extended_sub_edge_positions(self):
+        pass
 
     def get_sub_edges(self):
         """
@@ -622,7 +637,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Get the nodes and crossings of each edge, ordered from left to right
         edge_nodes_and_crossings = {}
         for edge in self.edges:
-            edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge(edge)
+            edge_nodes_and_crossings[edge] = self.get_edge_vertices_and_or_crossings(edge)
 
         # Subdivide each edge if necessary.
         # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
@@ -644,7 +659,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         pass
 
     @staticmethod
-    def get_crossing_3D_position(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
         """
         If two 3D lines are projected onto the XZ plane and their projections intersect, then
         calculate the correspond 3D coordinates of that intersection point for the two lines.
@@ -695,6 +710,9 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
 
     def get_contiguous_edges(self):
+
+        # extended_sub_edges, extended_sub_edge_positions = self.get_extended_sub_edges_and_positions()
+
 
         sub_edges = self.get_sub_edges()
         nodes = []
@@ -869,8 +887,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Get the edges that are connected to the crossing
         # Assumption: get_edges_of_crossing returns the edges in the order of the nodes
         edge_1, edge_2 = self.crossing_edge_pairs[self.crossings.index(crossing)]
-        edge_1_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_1)
-        edge_2_nodes_and_crossings = self.get_vertices_and_crossings_of_edge(edge_2)
+        edge_1_nodes_and_crossings = self.get_edge_vertices_and_or_crossings(edge_1)
+        edge_2_nodes_and_crossings = self.get_edge_vertices_and_or_crossings(edge_2)
 
         # Get the nodes that are adjacent to the crossing (whether a vertex or another crossing)
         # Assumption: The crossing is not the first or last node of the edge
@@ -1107,10 +1125,30 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             node_1_position = nodes_dict[node_1]
             node_2_position = nodes_dict[node_2]
             node_3_position = nodes_dict[node_3]
-            crossing_position_3D_02, crossing_position_3D_13 = self.get_crossing_3D_position(node_0_position, node_1_position, node_2_position, node_3_position, crossing_position_2D)
+            crossing_position_3D_02, crossing_position_3D_13 = self.get_crossing_3D_positions(node_0_position, node_1_position, node_2_position, node_3_position, crossing_position_2D)
             crossing_positions_3D.append((crossing_position_3D_02, crossing_position_3D_13))
 
-        return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs
+
+        crossing_positions_2D_dict = {crossing: position for crossing, position in zip(crossings, crossing_positions_2D)}
+
+        crossing_positions_3D_dict = {}
+        for crossing, crossing_position_2D, crossing_position_3D, crossing_edge_pair in zip(crossings,
+                                                                                            crossing_positions_2D,
+                                                                                            crossing_positions_3D,
+                                                                                            crossing_edge_pairs):
+            edge_pair_1, edge_pair_2 = crossing_edge_pair
+            node_a, node_c = edge_pair_1
+            node_b, node_d = edge_pair_2
+
+            crossing_position_3D_ac, crossing_position_3D_bd = crossing_position_3D
+            crossing_positions_3D_dict[crossing] = {'projection': crossing_position_2D,
+                                                    node_a: crossing_position_3D_ac,
+                                                    node_b: crossing_position_3D_bd,
+                                                    node_c: crossing_position_3D_ac,
+                                                    node_d: crossing_position_3D_bd}
+
+
+        return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict
 
     def project(self, max_iter=2, predefined_rotation=None):
         """
@@ -1395,7 +1433,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossings = self.crossings
         contiguous_edges = self.get_contiguous_edges()
         sub_edges = self.get_sub_edges()
-        extended_sub_edges = self.get_extended_sub_edges()
+        extended_sub_edges, edge_node_and_or_crossing_positions = self.subdivide_edges_with_crossings()
 
         node_positions = self.rotated_node_positions
         crossing_positions = self.crossing_positions
