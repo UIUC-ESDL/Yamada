@@ -32,6 +32,8 @@ class AbstractGraph:
         self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
         self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
 
+
+
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
         """
@@ -526,6 +528,19 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             raise ValueError('All nodes must have a position.')
 
         return node_positions
+
+    def get_nonadjacent_edge_pairs_with_a_possible_crossing(self):
+
+        edges = self.edges
+        nodes = self.nodes
+        node_positions = self.node_positions
+        node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
+        edge_positions = [[node_positions_dict[node] for node in edge] for edge in edges]
+
+
+        nonadjacent_edge_pairs_with_a_possible_crossing = []
+
+
 
     def get_edge_vertices_and_or_crossings(self, edge):
         """
@@ -1100,6 +1115,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         crossing_positions = []
 
 
+
         # TODO Modify nonadjacent edge pairs that are within some axis aligned bounding box
 
         for line_1, line_2 in self.nonadjacent_edge_pairs:
@@ -1393,7 +1409,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Plot the crossing positions
         # TODO, the out of plane as transparent red spheres, connected by a line...
-        if self.crossing_positions is not None:
+        if crossing_positions is not None:
             for crossing_position in crossing_positions:
                 height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
                 crossing_center = crossing_position #+ np.array([0, height / 2, 0])
