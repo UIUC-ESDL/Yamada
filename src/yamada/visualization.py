@@ -1,38 +1,12 @@
-# TODO Implement
-
 import networkx as nx
 from networkx.algorithms.planar_drawing import triangulate_embedding
 import numpy as np
-from collections import Counter
 from .enumeration import split_edges
-import pyvista as pv
-
-
-def choose_outer_face(planar_graph):
-    G = planar_graph
-    half_edges = set(G.edges)
-    faces = []
-    while len(half_edges):
-        a, b = half_edges.pop()
-        face_edges = set()
-        face_verts = G.traverse_face(a, b, face_edges)
-        half_edges.difference_update(face_edges)
-        faces.append(face_verts)
-
-    print(len(faces))
-    def score_face(face):
-        counts = Counter(G.degree[v] for v in face)
-        return counts[8]
-
-    # return [(score_face(face), face) for face in faces]
-    return min(faces, key=score_face)
 
 
 def tutte_system(planar_graph):
     G, outer = triangulate_embedding(planar_graph, fully_triangulate=False)
-    #G = planar_graph
-    node_to_index = {node:index for index, node in enumerate(G.nodes())}
-    #outer = choose_outer_face(planar_graph)
+    node_to_index = {node: index for index, node in enumerate(G.nodes())}
     n = G.number_of_nodes()
     assert n == planar_graph.number_of_nodes()
     inner_indices = np.array([node not in outer for node in G.nodes()])
@@ -51,6 +25,7 @@ def tutte_system(planar_graph):
     b = np.hstack([zeros, x, zeros, y])
     return G, B, b
 
+
 def tutte_embedding_positions(planar_graph):
     n = planar_graph.number_of_nodes()
     G, A, b = tutte_system(planar_graph)
@@ -63,7 +38,7 @@ def tutte_embedding_positions(planar_graph):
     return ans
 
 
-def _position_spatial_graph_in_3D(G, z_height=20):
+def _position_spatial_graph_in_3d(G, z_height=20):
     def norm_label(X):
         L = X.label
         return repr(L) if not isinstance(L, str) else L
@@ -123,9 +98,9 @@ def _position_spatial_graph_in_3D(G, z_height=20):
 
     return system_node_pos, other_node_pos, segments
         
-def position_spatial_graph_in_3D(G, z_height=20):
+def position_spatial_graph_in_3d(G, z_height=20):
 
-    system_node_pos, other_node_pos, segments = _position_spatial_graph_in_3D(G, z_height)
+    system_node_pos, other_node_pos, segments = _position_spatial_graph_in_3d(G, z_height)
 
     nodes = list(system_node_pos.keys())
     node_positions = list(system_node_pos.values())
@@ -142,7 +117,6 @@ def position_spatial_graph_in_3D(G, z_height=20):
     nodes.extend(noncrossings)
     node_positions.extend(noncrossing_positions)
 
-
     segments = split_edges(segments)
 
     # Convert segments from lists to tuples
@@ -150,13 +124,13 @@ def position_spatial_graph_in_3D(G, z_height=20):
     return nodes, node_positions, segments
 
 
-def position_spatial_graphs_in_3D(ust_dict, z_height=20):
+def position_spatial_graphs_in_3d(ust_dict, z_height=20):
 
     sg_inputs = []
 
     for ust in list(ust_dict.values()):
 
-        nodes, node_positions, edges = position_spatial_graph_in_3D(ust, z_height)
+        nodes, node_positions, edges = position_spatial_graph_in_3d(ust, z_height)
         sg_inputs.append((nodes, node_positions, edges))
 
     return sg_inputs

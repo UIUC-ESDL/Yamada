@@ -9,4 +9,3 @@ from .spatial_graphs import SpatialGraph, LinearAlgebra
 
 from .enumeration import extract_graph_from_json_file, enumerate_yamada_classes
 
-from .utilities import generate_isomorphism

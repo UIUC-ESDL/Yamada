@@ -1405,30 +1405,30 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Plot the projective plane (XY axis)
         center = np.mean(node_positions, axis=0)
         plane_size = 150.0
-        p.add_mesh(pv.Plane(center=center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
+        p.add_mesh(pv.Plane(center=center, direction=(0, 0, 1), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
-        # Plot the crossing positions
-        # TODO, the out of plane as transparent red spheres, connected by a line...
-        if crossing_positions is not None:
-            for crossing_position in crossing_positions:
-                height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
-                crossing_center = crossing_position #+ np.array([0, height / 2, 0])
-                crossing_center[1] = center[1]
-                direction = [0, 1, 0]
-                # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
-                # p.add_mesh(cylinder, color='red', opacity=0.25)
-                circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
-                p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
-
-                min_y = np.min(node_positions[:, 1])
-                max_y = np.max(node_positions[:, 1])
-                start = np.array([crossing_center[0], min_y, crossing_center[2]])
-                end = np.array([crossing_center[0], max_y, crossing_center[2]])
-                dashed_line = pv.Line(start, end)
-                # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
-
-
-
+        # # Plot the crossing positions
+        # # TODO, the out of plane as transparent red spheres, connected by a line...
+        # if crossing_positions is not None:
+        #     for crossing_position in crossing_positions:
+        #         height = np.max(node_positions[:, 1]) - np.min(node_positions[:, 1])
+        #         crossing_center = crossing_position #+ np.array([0, height / 2, 0])
+        #         crossing_center[1] = center[1]
+        #         direction = [0, 1, 0]
+        #         # cylinder = pv.Cylinder(center=center, direction=direction, radius=5, height=height)
+        #         # p.add_mesh(cylinder, color='red', opacity=0.25)
+        #         circle = pv.Cylinder(center=crossing_center, direction=direction, radius=5, height=0.01)
+        #         p.add_mesh(circle, color='red', line_width=5, opacity=0.25)
+        #
+        #         min_y = np.min(node_positions[:, 1])
+        #         max_y = np.max(node_positions[:, 1])
+        #         start = np.array([crossing_center[0], min_y, crossing_center[2]])
+        #         end = np.array([crossing_center[0], max_y, crossing_center[2]])
+        #         dashed_line = pv.Line(start, end)
+        #         # p.add_mesh(dashed_line, color='red', line_width=5, opacity=0.25)
+        #
+        #
+        #
 
         # p.view_isometric()
         # p.view_xy()

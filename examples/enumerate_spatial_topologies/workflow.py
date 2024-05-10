@@ -13,7 +13,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 from yamada import SpatialGraph, enumerate_yamada_classes
-from yamada.visualization import position_spatial_graphs_in_3D
+from yamada.visualization import position_spatial_graphs_in_3d
 
 
 # %% Define the System Architecture and Component Geometries
