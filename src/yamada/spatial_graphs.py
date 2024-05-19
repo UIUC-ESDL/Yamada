@@ -21,98 +21,7 @@ from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 
 
 
-class LinearAlgebra:
-    """
-    A class that contains static methods for necessary linear algebra calculations.
-    """
-
-    def __init__(self):
-        self.rotated_node_positions = None
-        self.rotation_generator_object = self.rotation_generator()
-        self.rotation = self.random_rotation()
-
-    @staticmethod
-    def rotation_generator():
-        """
-        A generator to generate random rotations for projecting a spatial graph onto a 2D plane. Angles in radians.
-        """
-
-        # Set the initial generator state to zero.
-        rotation = np.zeros(3)
-
-        while True:
-            yield rotation
-            rotation = np.random.rand(3) * 2 * np.pi
-
-    def random_rotation(self):
-        """
-        Query the rotation generator for a new rotation.
-        """
-        return next(self.rotation_generator_object)
-
-
-
-
-
-
-    @staticmethod
-    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
-        """
-        If two 3D lines are projected onto the XZ plane and their projections intersect, then
-        calculate the correspond 3D coordinates of that intersection point for the two lines.
-        """
-
-        # Unpack the coordinates
-        x0, y0, z0 = a0_position
-        x1, y1, z1 = a1_position
-        x2, y2, z2 = a2_position
-        x3, y3, z3 = a3_position
-        xc, yc, zc = x0z_coords
-
-        # Changes in position
-        dx02 = x2 - x0
-        dy02 = y2 - y0
-        dz02 = z2 - z0
-        dx13 = x3 - x1
-        dy13 = y3 - y1
-        dz13 = z3 - z1
-
-        # Relative position of the crossing
-        if dx02 != 0:
-            t02 = (xc - x0) / dx02
-        elif dy02 != 0:
-            t02 = (yc - y0) / dy02
-        elif dz02 != 0:
-            t02 = (zc - z0) / dz02
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        if dx13 != 0:
-            t13 = (xc - x1) / dx13
-        elif dy13 != 0:
-            t13 = (yc - y1) / dy13
-        elif dz13 != 0:
-            t13 = (zc - z1) / dz13
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        # Calculate the 3D position of the crossing
-        y_c_02 = y0 + t02 * dy02
-        y_c_13 = y1 + t13 * dy13
-
-        position_c_02 = np.array([xc, y_c_02, zc])
-        position_c_13 = np.array([xc, y_c_13, zc])
-
-        return position_c_02, position_c_13
-
-    @property
-    def projected_node_positions(self):
-        return self.rotated_node_positions[:, [0, 2]]
-
-
-
-
-class SpatialGraph(LinearAlgebra):
+class SpatialGraph:
     """
     A class to represent a spatial graph.
 
@@ -127,28 +36,18 @@ class SpatialGraph(LinearAlgebra):
                  edges: list[tuple[str, str]]):
 
         self.nodes = self._validate_nodes(nodes)
+        node_positions = self._validate_node_positions(node_positions)
         self.edges = self._validate_edges(edges)
+
 
         self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
         self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
                                        edge_pair not in self.adjacent_edge_pairs]
 
-        # Initialize Node positions
-        self.node_positions = self._validate_node_positions(node_positions)
-
-        # Initialize attributes necessary for geometric calculations
-        LinearAlgebra.__init__(self)
-
-        # Initialize a first rotation
-        self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-
-        # Initialize attributes that are calculated later
-        self.crossings = None
-        self.crossing_positions = None
-        self.crossing_edge_pairs = None
-
         # Project the spatial graph onto a random the xz-plane
-        self.project()
+        self.node_positions_dict_3d, self.node_positions_dict_2d = self.project(node_positions)
+
+        self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -182,6 +81,44 @@ class SpatialGraph(LinearAlgebra):
         #         raise ValueError('Nodes must be alphanumeric.')
 
         return nodes
+
+    def _validate_node_positions(self,
+                                 node_positions: np.ndarray) -> np.ndarray:
+        """
+        Validates the user's input and returns an array of node positions.
+
+        Checks:
+        1. The input is a np.ndarray
+        2. The array size matches the number of nodes
+        3. Each row contains 3 real numbers
+        4. Each row is unique
+        """
+
+        if type(node_positions) != np.ndarray:
+
+            # TODO Check for if elements in list are not numbers, etc.
+            if type(node_positions) == list:
+                node_positions = np.array(node_positions)
+
+            else:
+                raise TypeError('Node positions must be a numpy array.')
+
+        if node_positions.shape[0] != len(self.nodes):
+            raise ValueError('Node positions must contain a position for each node.')
+
+        if node_positions.shape[1] != 3:
+            raise ValueError('Node positions must contain 3D coordinates.')
+
+        valid_types = [float, int, np.float32, np.int32, np.float64, np.int64]
+        for row in node_positions:
+            for element in row:
+                if type(element) not in valid_types:
+                    raise TypeError('Node positions must contain real numbers.')
+
+        if node_positions.shape[0] != np.unique(node_positions, axis=0).shape[0]:
+            raise ValueError('All nodes must have a position.')
+
+        return node_positions
 
     def _validate_edges(self, edges: list[tuple[str, str]]) -> list[tuple[str, str]]:
         """
@@ -257,43 +194,7 @@ class SpatialGraph(LinearAlgebra):
 
         return adjacent_edge_pairs
 
-    def _validate_node_positions(self,
-                                 node_positions: np.ndarray) -> np.ndarray:
-        """
-        Validates the user's input and returns an array of node positions.
 
-        Checks:
-        1. The input is a np.ndarray
-        2. The array size matches the number of nodes
-        3. Each row contains 3 real numbers
-        4. Each row is unique
-        """
-
-        if type(node_positions) != np.ndarray:
-
-            # TODO Check for if elements in list are not numbers, etc.
-            if type(node_positions) == list:
-                node_positions = np.array(node_positions)
-
-            else:
-                raise TypeError('Node positions must be a numpy array.')
-
-        if node_positions.shape[0] != len(self.nodes):
-            raise ValueError('Node positions must contain a position for each node.')
-
-        if node_positions.shape[1] != 3:
-            raise ValueError('Node positions must contain 3D coordinates.')
-
-        valid_types = [float, int, np.float32, np.int32, np.float64, np.int64]
-        for row in node_positions:
-            for element in row:
-                if type(element) not in valid_types:
-                    raise TypeError('Node positions must contain real numbers.')
-
-        if node_positions.shape[0] != np.unique(node_positions, axis=0).shape[0]:
-            raise ValueError('All nodes must have a position.')
-
-        return node_positions
 
 
     def get_vertices_and_crossings_of_edge(self, reference_edge: tuple[str, str]):
@@ -303,7 +204,10 @@ class SpatialGraph(LinearAlgebra):
 
         # Get edge nodes and positions
         edge_nodes = [node for node in reference_edge]
-        edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
+        edge_node_positions = []
+        for node in edge_nodes:
+            edge_node_position = self.node_positions_dict_2d[node]
+            edge_node_positions.append(edge_node_position)
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
@@ -514,7 +418,9 @@ class SpatialGraph(LinearAlgebra):
 
         node_indices = [self.nodes.index(node) for node in adjacent_nodes]
 
-        return self.projected_node_positions[node_indices]
+        projected_node_positions = [self.node_positions_dict_2d[node] for node in adjacent_nodes]
+
+        return np.array(projected_node_positions)
 
     def cyclic_order_vertex(self,
                             reference_node:     str,
@@ -535,7 +441,7 @@ class SpatialGraph(LinearAlgebra):
             node_ordering_dict = {}
 
         # Get the projected node positions
-        reference_node_position = self.projected_node_positions[self.nodes.index(reference_node)]
+        reference_node_position = self.node_positions_dict_2d[reference_node]
 
         # Initialize lists to store the adjacent node and edge information
         # Crossings are not relevant for this calculation since they exist along edges
@@ -894,18 +800,17 @@ class SpatialGraph(LinearAlgebra):
         crossing_edge_pairs = []
         crossing_positions = []
 
-
-
-        # TODO Modify nonadjacent edge pairs that are within some axis aligned bounding box
-
         for line_1, line_2 in self.nonadjacent_edge_pairs:
 
-            a = self.projected_node_positions[self.nodes.index(line_1[0])]
-            b = self.projected_node_positions[self.nodes.index(line_1[1])]
-            c = self.projected_node_positions[self.nodes.index(line_2[0])]
-            d = self.projected_node_positions[self.nodes.index(line_2[1])]
+            node_a, node_b = line_1
+            node_c, node_d = line_2
 
-            min_dist, crossing_position = get_line_segment_intersection(a, b, c, d)
+            pos_a = self.node_positions_dict_3d[node_a]
+            pos_b = self.node_positions_dict_3d[node_b]
+            pos_c = self.node_positions_dict_3d[node_c]
+            pos_d = self.node_positions_dict_3d[node_d]
+
+            min_dist, crossing_position = get_line_segment_intersection(pos_a, pos_b, pos_c, pos_d)
 
             if min_dist > 0.0001:
                 crossing_position = None
@@ -938,17 +843,17 @@ class SpatialGraph(LinearAlgebra):
         crossing_positions_2D = np.hstack((xz_coords, y_coords))
         crossing_positions_2D = crossing_positions_2D[:, [0, 2, 1]]
 
-        nodes_dict = {node: self.node_positions[self.nodes.index(node)] for node in self.nodes}
+        # nodes_dict = {node: self.node_positions[self.nodes.index(node)] for node in self.nodes}
 
         crossing_positions_3D = []
         for crossing, crossing_position_2D,crossing_edge_pair in zip(crossings, crossing_positions_2D, crossing_edge_pairs):
             edge_1, edge_2 = crossing_edge_pair
             node_0, node_2 = edge_1
             node_1, node_3 = edge_2
-            node_0_position = nodes_dict[node_0]
-            node_1_position = nodes_dict[node_1]
-            node_2_position = nodes_dict[node_2]
-            node_3_position = nodes_dict[node_3]
+            node_0_position = self.node_positions_dict[node_0]
+            node_1_position = self.node_positions_dict[node_1]
+            node_2_position = self.node_positions_dict[node_2]
+            node_3_position = self.node_positions_dict[node_3]
             crossing_position_3D_02, crossing_position_3D_13 = self.get_crossing_3D_positions(node_0_position, node_1_position, node_2_position, node_3_position, crossing_position_2D)
             crossing_positions_3D.append((crossing_position_3D_02, crossing_position_3D_13))
 
@@ -974,7 +879,57 @@ class SpatialGraph(LinearAlgebra):
 
         return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict
 
-    def project(self, max_iter=2, predefined_rotation=None):
+    @staticmethod
+    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+        """
+        If two 3D lines are projected onto the XZ plane and their projections intersect, then
+        calculate the correspond 3D coordinates of that intersection point for the two lines.
+        """
+
+        # Unpack the coordinates
+        x0, y0, z0 = a0_position
+        x1, y1, z1 = a1_position
+        x2, y2, z2 = a2_position
+        x3, y3, z3 = a3_position
+        xc, yc, zc = x0z_coords
+
+        # Changes in position
+        dx02 = x2 - x0
+        dy02 = y2 - y0
+        dz02 = z2 - z0
+        dx13 = x3 - x1
+        dy13 = y3 - y1
+        dz13 = z3 - z1
+
+        # Relative position of the crossing
+        if dx02 != 0:
+            t02 = (xc - x0) / dx02
+        elif dy02 != 0:
+            t02 = (yc - y0) / dy02
+        elif dz02 != 0:
+            t02 = (zc - z0) / dz02
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        if dx13 != 0:
+            t13 = (xc - x1) / dx13
+        elif dy13 != 0:
+            t13 = (yc - y1) / dy13
+        elif dz13 != 0:
+            t13 = (zc - z1) / dz13
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        # Calculate the 3D position of the crossing
+        y_c_02 = y0 + t02 * dy02
+        y_c_13 = y1 + t13 * dy13
+
+        position_c_02 = np.array([xc, y_c_02, zc])
+        position_c_13 = np.array([xc, y_c_13, zc])
+
+        return position_c_02, position_c_13
+
+    def project(self, node_positions, max_iter=3, initial_rotation=[0,0,0]):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -990,84 +945,68 @@ class SpatialGraph(LinearAlgebra):
 
         """
 
-        if predefined_rotation is not None:
-            self.rotation = predefined_rotation
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-            self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
-            return
+        # Define the random rotations
+        random_rotations = 2 * np.pi * np.random.rand(max_iter-1, 3)
+        rotations = np.vstack((initial_rotation, random_rotations))
 
+        for rotation in rotations:
 
-        rotations = []
-        num_crossings = []
+            # First, check that no edges are perfectly vertical or perfectly horizontal.
+            # While neither of these cases technically incorrect, it's easier to implement looping through rotations
+            # rather than add edge cases for each 2D and 3D line equation.
 
-        for _ in range(max_iter):
+            for edge in self.edges:
+                x1, z1 = node_positions[self.nodes.index(edge[0]),[0,2]]
+                x2, z2 = node_positions[self.nodes.index(edge[1]),[0,2]]
 
-            try:
+                if x1 == x2 or z1 == z2:
+                    print('Projection Attempted: An edge is either perfectly vertical or horizontal. Trying a different rotation to avoid edge and corner cases')
+                    continue
 
-                # First, check that no edges are perfectly vertical or perfectly horizontal.
-                # While neither of these cases technically incorrect, it's easier to implement looping through rotations
-                # rather than add edge cases for each 2D and 3D line equation.
+            # Second, check adjacent edge pairs for validity.
+            # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
+            # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
-                for edge in self.edges:
-                    x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
-                    x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
+            for line_1, line_2 in self.adjacent_edge_pairs:
+                a = node_positions[self.nodes.index(line_1[0]),[0,2]]
+                b = node_positions[self.nodes.index(line_1[1]),[0,2]]
+                c = node_positions[self.nodes.index(line_2[0]),[0,2]]
+                d = node_positions[self.nodes.index(line_2[1]),[0,2]]
+                min_dist, crossing_position, = get_line_segment_intersection(a, b, c, d)
 
-                    if x1 == x2 or z1 == z2:
-                        raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
+                if min_dist > 0.0001:
+                    crossing_position = None
 
-                # Second, check adjacent edge pairs for validity.
-                # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
-                # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
+                if crossing_position is not None and crossing_position is not np.inf:
+                    assertion_1 = all((crossing_position - a) < 0.0001)
+                    assertion_2 = all((crossing_position - b) < 0.0001)
+                    assertion_3 = all((crossing_position - c) < 0.0001)
+                    assertion_4 = all((crossing_position - d) < 0.0001)
+                    if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
+                        print('Projection Attempted: Adjacent edges must intersect at the endpoints.')
+                        continue
 
-                for line_1, line_2 in self.adjacent_edge_pairs:
-                    a = self.projected_node_positions[self.nodes.index(line_1[0])]
-                    b = self.projected_node_positions[self.nodes.index(line_1[1])]
-                    c = self.projected_node_positions[self.nodes.index(line_2[0])]
-                    d = self.projected_node_positions[self.nodes.index(line_2[1])]
-                    min_dist, crossing_position, = get_line_segment_intersection(a, b, c, d)
+                elif crossing_position is np.inf:
+                    print('Projection Attempted: The edges are overlapping. This is not a valid spatial graph.')
+                    continue
 
-                    if min_dist > 0.0001:
-                        crossing_position = None
+            # Third, Check nonadjacent edge pairs for validity.
+            # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
+            # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
+            # between endpoints.
+            # TODO Implement
+            # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
-                    if crossing_position is not None and crossing_position is not np.inf:
-                        assertion_1 = all((crossing_position - a) < 0.0001)
-                        assertion_2 = all((crossing_position - b) < 0.0001)
-                        assertion_3 = all((crossing_position - c) < 0.0001)
-                        assertion_4 = all((crossing_position - d) < 0.0001)
-                        if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
-                            raise ValueError('Adjacent edges must intersect at the endpoints.')
+            # If all conditions are satisfied
+            node_positions_3d = rotate(node_positions, rotation)
+            node_positions_2d = node_positions_3d[:, [0, 2]]
+            node_positions_dict_3d = {node: position for node, position in zip(self.nodes, node_positions_3d)}
+            node_positions_dict_2d = {node: position for node, position in zip(self.nodes, node_positions_2d)}
 
-                    elif crossing_position is np.inf:
-                        raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
+            return node_positions_dict_3d, node_positions_dict_2d
 
+        raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
 
-                # Third, Check nonadjacent edge pairs for validity.
-                # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
-                # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
-                # between endpoints.
-                # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-
-                self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
-
-                rotations.append(self.rotation)
-                num_crossings.append(len(self.crossings))
-
-            except ValueError:
-                self.rotation = self.random_rotation()
-                self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-
-            # If there is no error in the projection rotate anyways
-            self.rotation = self.random_rotation()
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-
-        if len(rotations) == 0:
-            raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
-        else:
-            min_crossings = min(num_crossings)
-            min_crossings_index = num_crossings.index(min_crossings)
-            self.rotation = rotations[min_crossings_index]
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-            self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
     def create_spatial_graph_diagram(self):
         """
