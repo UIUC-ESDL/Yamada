@@ -8,6 +8,9 @@ Extract spatial graphs from jsons and calculate their Yamada polynomials.
 import os
 from yamada import extract_graph_from_json_file, SpatialGraph
 
+# Set the random seed for reproducibility
+import numpy as np
+np.random.seed(0)
 
 # %% Define the JSON file location
 

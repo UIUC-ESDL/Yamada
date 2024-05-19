@@ -743,7 +743,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             if node_b not in nodes:
                 nodes.append(node_b)
 
-        nodes_dict = {node:{'valency':0, 'adjacent':[]} for node in nodes}
+        nodes_dict = {node:{'valency': 0, 'adjacent': []} for node in nodes}
         for sub_edge in sub_edges:
             a, b = sub_edge
             if a in nodes:
@@ -833,7 +833,7 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
     # def get_contiguous_edge_positions(self):
     #
     #     nodes = self.nodes
-    #     crosings = self.crossings
+    #     crossings = self.crossings
     #     contiguous_edges = self.get_contiguous_edges()
     #
     #
@@ -1388,18 +1388,19 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             else:
                 p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
 
-        # Plot the lines
-        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
-        for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-            lines = []
-            for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-                start = sub_edge_position_1
-                end = sub_edge_position_2
-                line = pv.Line(start, end)
-                lines.append(line)
 
-            linear_spline = pv.MultiBlock(lines)
-            p.add_mesh(linear_spline, line_width=5, color=colors[i])
+        # Plot the lines
+        # colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
+        # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+        #     lines = []
+        #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
+        #         start = sub_edge_position_1
+        #         end = sub_edge_position_2
+        #         line = pv.Line(start, end)
+        #         lines.append(line)
+        #
+        #     linear_spline = pv.MultiBlock(lines)
+        #     p.add_mesh(linear_spline, line_width=5, color=colors[i])
 
 
         # Plot the projective plane (XY axis)
