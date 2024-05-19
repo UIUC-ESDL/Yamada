@@ -359,6 +359,107 @@ class SpatialGraph(LinearAlgebra):
 
         return sub_edges
 
+    def get_contiguous_edges(self):
+
+        # Get the sub-edges and their positions
+        sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
+
+        # Get the nodes and crossings
+        nodes = []
+        for node_a, node_b in sub_edges:
+            if node_a not in nodes:
+                nodes.append(node_a)
+            if node_b not in nodes:
+                nodes.append(node_b)
+
+        nodes_dict = {node: {'valency': 0, 'adjacent': []} for node in nodes}
+        for sub_edge in sub_edges:
+            a, b = sub_edge
+            if a in nodes:
+                nodes_dict[a]['valency'] += 1
+                nodes_dict[a]['adjacent'].append(b)
+            if b in nodes:
+                nodes_dict[b]['valency'] += 1
+                nodes_dict[b]['adjacent'].append(a)
+
+        two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
+        other_nodes_and_crossings = [node for node in nodes if node not in two_valent_nodes]
+
+        # Start with a non-two-valent node or crossing, and then accumulate the sub-edges until another
+        # non-two-valent node or crossing is reached. These are contiguous sub-edges.
+        entry_points = []
+        for node in other_nodes_and_crossings:
+            node_entry_points = [(node, i) for i in range(nodes_dict[node]['valency'])]
+            entry_points += node_entry_points
+
+        unvisited_entry_points = entry_points.copy()
+
+        max_iter = 1000
+        iter_count = 0
+        contiguous_sub_edges = []
+        contiguous_sub_edge_positions = []
+        while len(unvisited_entry_points) > 0:
+
+            contiguous_sub_edge = []
+
+            # Entry point
+            entry_point = unvisited_entry_points[0]
+            entry_node, entry_node_index = entry_point
+            unvisited_entry_points.remove(entry_point)
+            contiguous_sub_edge.append(entry_node)
+
+            # Intermediate points
+            previous_node = entry_node
+            current_node = nodes_dict[entry_node]['adjacent'][entry_node_index]
+            contiguous_sub_edge.append(current_node)
+
+            while nodes_dict[current_node]['valency'] == 2:
+                if nodes_dict[current_node]['adjacent'][0] == previous_node:
+                    previous_node = current_node
+                    current_node = nodes_dict[previous_node]['adjacent'][1]
+                    contiguous_sub_edge.append(current_node)
+                elif nodes_dict[current_node]['adjacent'][1] == previous_node:
+                    previous_node = current_node
+                    current_node = nodes_dict[previous_node]['adjacent'][0]
+                    contiguous_sub_edge.append(current_node)
+                else:
+                    raise ValueError("Error in adjacent nodes.")
+
+            # Exit point
+            exit_node = current_node
+            exit_node_index = nodes_dict[exit_node]['adjacent'].index(previous_node)
+            unvisited_entry_points.remove((exit_node, exit_node_index))
+
+            contiguous_sub_edges.append(contiguous_sub_edge)
+
+            iter_count += 1
+            if iter_count > max_iter:
+                raise ValueError("Max iteration count reached.")
+
+        # Now we will have the contiguous sub-edges, we can get their positions
+        for contiguous_sub_edge in contiguous_sub_edges:
+            contiguous_sub_edge_positions_i = []
+            for i in range(len(contiguous_sub_edge) - 1):
+                node_a = contiguous_sub_edge[i]
+                node_b = contiguous_sub_edge[i + 1]
+                edge = [node_a, node_b]
+                edge_reversed = [node_b, node_a]
+                if edge in sub_edges:
+                    edge_index = sub_edges.index(edge)
+                    contiguous_sub_edge_positions_i.append(sub_edge_positions[edge_index])
+                elif edge_reversed in sub_edges:
+                    edge_index = sub_edges.index(edge_reversed)
+                    positions = sub_edge_positions[edge_index]
+                    positions_reversed = [positions[1], positions[0]]
+                    contiguous_sub_edge_positions_i.append(positions_reversed)
+                else:
+                    raise ValueError("Edge not found.")
+
+            contiguous_sub_edge_positions.append(contiguous_sub_edge_positions_i)
+
+        return contiguous_sub_edges,  contiguous_sub_edge_positions
+
+
     def get_edge_vertices_and_or_crossings(self, edge):
         """
         Returns a list of the vertices and crossings along a give edge, specifically ordered from -x to +x.
@@ -511,136 +612,6 @@ class SpatialGraph(LinearAlgebra):
         return subdivided_edges, subdivided_edge_positions
 
 
-
-    def get_sub_edges(self):
-        """
-        Sub-edges constitute:
-        1. Edges that are not incident of a crossing (i.e., the edge is the sub-edge)
-        2. When an edge is incident to a crossing(s), the edge is divided into one or more sub-edges depending on the
-        number of crossings that the edge is incident to.
-        """
-
-        # Get the nodes and crossings of each edge, ordered from left to right
-        edge_nodes_and_crossings = {}
-        for edge in self.edges:
-            edge_nodes_and_crossings[edge] = self.get_edge_vertices_and_or_crossings(edge)
-
-        # Subdivide each edge if necessary.
-        # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
-
-        sub_edges = []
-
-        for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
-
-            if len(nodes_and_crossings) == 2:
-                sub_edges.append(edge)
-
-            else:
-                sub_edges += [(nodes_and_crossings[i], nodes_and_crossings[i + 1]) for i in
-                              range(len(nodes_and_crossings) - 1)]
-
-        return sub_edges
-
-
-    def get_contiguous_edges(self):
-
-        # Get the sub-edges and their positions
-        sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
-
-        # Get the nodes and crossings
-        nodes = []
-        for node_a, node_b in sub_edges:
-            if node_a not in nodes:
-                nodes.append(node_a)
-            if node_b not in nodes:
-                nodes.append(node_b)
-
-        nodes_dict = {node:{'valency': 0, 'adjacent': []} for node in nodes}
-        for sub_edge in sub_edges:
-            a, b = sub_edge
-            if a in nodes:
-                nodes_dict[a]['valency'] += 1
-                nodes_dict[a]['adjacent'].append(b)
-            if b in nodes:
-                nodes_dict[b]['valency'] += 1
-                nodes_dict[b]['adjacent'].append(a)
-
-        two_valent_nodes = [node for node in nodes if nodes_dict[node]['valency'] == 2]
-        other_nodes_and_crossings = [node for node in nodes if node not in two_valent_nodes]
-
-        # Start with a non-two-valent node or crossing, and then accumulate the sub-edges until another
-        # non-two-valent node or crossing is reached. These are contiguous sub-edges.
-        entry_points = []
-        for node in other_nodes_and_crossings:
-            node_entry_points = [(node, i) for i in range(nodes_dict[node]['valency'])]
-            entry_points += node_entry_points
-
-        unvisited_entry_points = entry_points.copy()
-
-        max_iter = 1000
-        iter_count = 0
-        contiguous_sub_edges = []
-        contiguous_sub_edge_positions = []
-        while len(unvisited_entry_points) > 0:
-
-            contiguous_sub_edge = []
-
-            # Entry point
-            entry_point = unvisited_entry_points[0]
-            entry_node, entry_node_index = entry_point
-            unvisited_entry_points.remove(entry_point)
-            contiguous_sub_edge.append(entry_node)
-
-            # Intermediate points
-            previous_node = entry_node
-            current_node = nodes_dict[entry_node]['adjacent'][entry_node_index]
-            contiguous_sub_edge.append(current_node)
-
-            while nodes_dict[current_node]['valency'] == 2:
-                if nodes_dict[current_node]['adjacent'][0] == previous_node:
-                    previous_node = current_node
-                    current_node = nodes_dict[previous_node]['adjacent'][1]
-                    contiguous_sub_edge.append(current_node)
-                elif nodes_dict[current_node]['adjacent'][1] == previous_node:
-                    previous_node = current_node
-                    current_node = nodes_dict[previous_node]['adjacent'][0]
-                    contiguous_sub_edge.append(current_node)
-                else:
-                    raise ValueError("Error in adjacent nodes.")
-
-            # Exit point
-            exit_node = current_node
-            exit_node_index = nodes_dict[exit_node]['adjacent'].index(previous_node)
-            unvisited_entry_points.remove((exit_node, exit_node_index))
-
-            contiguous_sub_edges.append(contiguous_sub_edge)
-
-            iter_count += 1
-            if iter_count > max_iter:
-                raise ValueError("Max iteration count reached.")
-
-        # Now we will have the contiguous sub-edges, we can get their positions
-        for contiguous_sub_edge in contiguous_sub_edges:
-            contiguous_sub_edge_positions_i = []
-            for i in range(len(contiguous_sub_edge) - 1):
-                node_a = contiguous_sub_edge[i]
-                node_b = contiguous_sub_edge[i + 1]
-                edge = [node_a, node_b]
-                edge_reversed = [node_b, node_a]
-                if edge in sub_edges:
-                    edge_index = sub_edges.index(edge)
-                    contiguous_sub_edge_positions_i.append(sub_edge_positions[edge_index])
-                elif edge_reversed in sub_edges:
-                    edge_index = sub_edges.index(edge_reversed)
-                    positions = sub_edge_positions[edge_index]
-                    positions_reversed = [positions[1], positions[0]]
-                    contiguous_sub_edge_positions_i.append(positions_reversed)
-                else:
-                    raise ValueError("Edge not found.")
-
-            contiguous_sub_edge_positions.append(contiguous_sub_edge_positions_i)
-
-        return contiguous_sub_edges, contiguous_sub_edge_positions
 
     # def get_contiguous_edge_positions(self):
     #
@@ -1154,48 +1125,70 @@ class SpatialGraph(LinearAlgebra):
 
         # Get the necessary values
         nodes = self.nodes
-        node_positions = self.rotated_node_positions
-        # crossings = self.crossings
-        # crossing_positions = self.crossing_positions
+        # node_positions = self.rotated_node_positions
+        node_positions = self.node_positions
+        crossings = self.crossings
+        crossing_positions = self.crossing_positions
 
-        crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict = self.get_crossings_3D()
+        # crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict = self.get_crossings_3D()
 
+        node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
 
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
+        # contiguous_sub_edges = self.get_contiguous_edges()
 
         # Plot the vertices and crossings
-        # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
-        #     start_node = contiguous_edge[0]
-        #     end_node = contiguous_edge[-1]
-        #     start_position = contiguous_edge_positions_i[0][0]
-        #     end_position = contiguous_edge_positions_i[-1][1]
-        #
-        #     if 'crossing' in start_node:
-        #         p.add_mesh(pv.Sphere(radius=1, center=start_position), color='red', opacity=0.35)
-        #     else:
-        #         p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='black')
-        #
-        #     if 'crossing' in end_node:
-        #         p.add_mesh(pv.Sphere(radius=1, center=end_position), color='red', opacity=0.35)
-        #     else:
-        #         p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
+        for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
+            start_node = contiguous_edge[0]
+            end_node = contiguous_edge[-1]
+            start_position = contiguous_edge_positions_i[0][0]
+            end_position = contiguous_edge_positions_i[-1][1]
 
-        # Plot the nodes
+            if 'crossing' in start_node:
+                p.add_mesh(pv.Sphere(radius=4, center=start_position), color='red', opacity=0.5)
+            else:
+                p.add_mesh(pv.Sphere(radius=4, center=start_position), color='green', opacity=0.5)
+
+            if 'crossing' in end_node:
+                p.add_mesh(pv.Sphere(radius=4, center=end_position), color='red', opacity=0.5)
+            else:
+                p.add_mesh(pv.Sphere(radius=4, center=end_position), color='green', opacity=0.5)
+
+        # Plot the 3D Nodes
         for node, node_position in zip(nodes, node_positions):
             p.add_mesh(pv.Sphere(radius=2.5, center=node_position), color='black')
 
+        # Plot the 3D Lines
+        for sub_edge in self.edges:
+            node_a = sub_edge[0]
+            node_b = sub_edge[1]
+
+            node_a_position = node_positions_dict[node_a]
+            node_b_position = node_positions_dict[node_b]
+
+            line = pv.Line(node_a_position, node_b_position)
+            p.add_mesh(line, color='black', line_width=5)
+
+        # for contiguous_sub_edge in contiguous_sub_edges:
+        #     for i in range(len(contiguous_sub_edge) - 1):
+        #         node_a = contiguous_sub_edge[i]
+        #         node_b = contiguous_sub_edge[i + 1]
+
+
+
         # Plot the lines
         # colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
-        # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-        #     lines = []
-        #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-        #         start = sub_edge_position_1
-        #         end = sub_edge_position_2
-        #         line = pv.Line(start, end)
-        #         lines.append(line)
-        #
-        #     linear_spline = pv.MultiBlock(lines)
-        #     p.add_mesh(linear_spline, line_width=5, color=colors[i])
+        for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+            lines = []
+            for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
+                start = sub_edge_position_1
+                end = sub_edge_position_2
+                line = pv.Line(start, end)
+                lines.append(line)
+
+            linear_spline = pv.MultiBlock(lines)
+            # p.add_mesh(linear_spline, line_width=5, color=colors[i])
+            p.add_mesh(linear_spline, line_width=5, color='grey')
 
 
         # Plot the projective plane (XY axis)
