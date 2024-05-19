@@ -17,129 +17,6 @@ from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
 from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 
 
-class AbstractGraph:
-    """
-    TODO Figure out what happens if the graph has dangling edges
-    """
-
-    def __init__(self,
-                 nodes: list[str],
-                 edges: list[tuple[str, str]]):
-
-        self.nodes = self._validate_nodes(nodes)
-        self.edges = self._validate_edges(edges)
-
-        self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
-        self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if edge_pair not in self.adjacent_edge_pairs]
-
-
-
-    @staticmethod
-    def _validate_nodes(nodes: list[str]) -> list[str]:
-        """
-        Validates the user's input and returns a list of nodes.
-
-        Checks:
-        1. The input is a list
-        2. Each node is a string
-        3. Each node string only contains alphanumeric characters
-        4. All nodes are unique
-        """
-
-        if type(nodes) != list:
-            raise TypeError('Nodes must be a list.')
-
-        for node in nodes:
-            if type(node) != str:
-                raise TypeError('Nodes must be strings.')
-
-        for node in nodes:
-            if len(node) == 0:
-                raise ValueError('Nodes must be a at least a single character.')
-
-        if len(nodes) != len(set(nodes)):
-            raise ValueError('All nodes must be unique.')
-
-        # TODO Temporarily disabled for nodes like crossing "C1+" and "C1-".
-        # for node in nodes:
-        #     if not node.isalnum():
-        #         raise ValueError('Nodes must be alphanumeric.')
-
-        return nodes
-
-    def _validate_edges(self, edges: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        """
-        Validates the user's input and returns a list of edges.
-
-        Checks:
-        1. The input is a list
-        2. Each edge is a tuple
-        3. Each edge contains two valid nodes
-        4. All edges are unique
-        """
-
-        if type(edges) != list:
-            raise TypeError('Edges must be a list.')
-
-        for edge in edges:
-            if type(edge) != tuple:
-                raise TypeError('Edge must be tuples.')
-
-        for edge in edges:
-            if len(edge) != 2:
-                raise ValueError('Edges must contain two nodes.')
-
-        for edge in edges:
-            for node in edge:
-                if node not in self.nodes:
-                    raise ValueError('Edges must contain valid nodes.')
-
-        if len(edges) != len(set(edges)):
-            raise ValueError('All edges must be unique.')
-
-        return edges
-
-    def node_degree(self, node: str) -> int:
-        """
-        Returns the degree of a node.
-
-        The node degree is the number of edges that are incident to the node.
-        """
-        return len([edge for edge in self.edges if node in edge])
-
-    def get_adjacent_nodes(self, reference_node: str) -> list[str]:
-        """
-        Get the adjacent nodes to a given node.
-        """
-
-        adjacent_nodes = []
-
-        for edge in self.edges:
-            if reference_node == edge[0] or reference_node == edge[1]:
-                adjacent_nodes += [node for node in edge if node != reference_node]
-
-        return adjacent_nodes
-
-    @property
-    def edge_pairs(self):
-        return list(combinations(self.edges, 2))
-
-    def _get_adjacent_edge_pairs(self):
-
-        adjacent_edge_pairs = []
-
-        for edge_1, edge_2 in self.edge_pairs:
-
-            a, b = edge_1
-            c, d = edge_2
-
-            assertion_1 = a in [c, d]
-            assertion_2 = b in [c, d]
-
-            if assertion_1 or assertion_2:
-                adjacent_edge_pairs += [(edge_1, edge_2)]
-
-        return adjacent_edge_pairs
 
 
 class LinearAlgebra:
@@ -446,7 +323,7 @@ class LinearAlgebra:
             return 360 - inner
 
 
-class SpatialGraph(AbstractGraph, LinearAlgebra):
+class SpatialGraph(LinearAlgebra):
     """
     A class to represent a spatial graph.
 
@@ -460,8 +337,12 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
                  node_positions: np.ndarray,
                  edges: list[tuple[str, str]]):
 
-        # Initialize AbstractGraph Class
-        AbstractGraph.__init__(self, nodes, edges)
+        self.nodes = self._validate_nodes(nodes)
+        self.edges = self._validate_edges(edges)
+
+        self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
+        self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
+                                       edge_pair not in self.adjacent_edge_pairs]
 
         # Initialize Node positions
         self.node_positions = self._validate_node_positions(node_positions)
@@ -479,6 +360,113 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         # Project the spatial graph onto a random the xz-plane
         self.project()
+
+    @staticmethod
+    def _validate_nodes(nodes: list[str]) -> list[str]:
+        """
+        Validates the user's input and returns a list of nodes.
+
+        Checks:
+        1. The input is a list
+        2. Each node is a string
+        3. Each node string only contains alphanumeric characters
+        4. All nodes are unique
+        """
+
+        if type(nodes) != list:
+            raise TypeError('Nodes must be a list.')
+
+        for node in nodes:
+            if type(node) != str:
+                raise TypeError('Nodes must be strings.')
+
+        for node in nodes:
+            if len(node) == 0:
+                raise ValueError('Nodes must be a at least a single character.')
+
+        if len(nodes) != len(set(nodes)):
+            raise ValueError('All nodes must be unique.')
+
+        # TODO Temporarily disabled for nodes like crossing "C1+" and "C1-".
+        # for node in nodes:
+        #     if not node.isalnum():
+        #         raise ValueError('Nodes must be alphanumeric.')
+
+        return nodes
+
+    def _validate_edges(self, edges: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        """
+        Validates the user's input and returns a list of edges.
+
+        Checks:
+        1. The input is a list
+        2. Each edge is a tuple
+        3. Each edge contains two valid nodes
+        4. All edges are unique
+        """
+
+        if type(edges) != list:
+            raise TypeError('Edges must be a list.')
+
+        for edge in edges:
+            if type(edge) != tuple:
+                raise TypeError('Edge must be tuples.')
+
+        for edge in edges:
+            if len(edge) != 2:
+                raise ValueError('Edges must contain two nodes.')
+
+        for edge in edges:
+            for node in edge:
+                if node not in self.nodes:
+                    raise ValueError('Edges must contain valid nodes.')
+
+        if len(edges) != len(set(edges)):
+            raise ValueError('All edges must be unique.')
+
+        return edges
+
+    def node_degree(self, node: str) -> int:
+        """
+        Returns the degree of a node.
+
+        The node degree is the number of edges that are incident to the node.
+        """
+        return len([edge for edge in self.edges if node in edge])
+
+    def get_adjacent_nodes(self, reference_node: str) -> list[str]:
+        """
+        Get the adjacent nodes to a given node.
+        """
+
+        adjacent_nodes = []
+
+        for edge in self.edges:
+            if reference_node == edge[0] or reference_node == edge[1]:
+                adjacent_nodes += [node for node in edge if node != reference_node]
+
+        return adjacent_nodes
+
+    @property
+    def edge_pairs(self):
+        return list(combinations(self.edges, 2))
+
+    def _get_adjacent_edge_pairs(self):
+
+        adjacent_edge_pairs = []
+
+        for edge_1, edge_2 in self.edge_pairs:
+
+            a, b = edge_1
+            c, d = edge_2
+
+            assertion_1 = a in [c, d]
+            assertion_2 = b in [c, d]
+
+            if assertion_1 or assertion_2:
+                adjacent_edge_pairs += [(edge_1, edge_2)]
+
+        return adjacent_edge_pairs
 
     def _validate_node_positions(self,
                                  node_positions: np.ndarray) -> np.ndarray:
