@@ -19,31 +19,7 @@ from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
 from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
 
 
-
-
-class LinearAlgebra:
-    """
-    A class that contains static methods for necessary linear algebra calculations.
-    """
-
-    def __init__(self):
-        pass
-
-
-
-
-
-
-
-
-    @property
-    def projected_node_positions(self):
-        return self.node_positions[:, [0, 2]]
-
-
-
-
-class SpatialGraph(LinearAlgebra):
+class SpatialGraph:
     """
     A class to represent a spatial graph.
 
@@ -75,14 +51,14 @@ class SpatialGraph(LinearAlgebra):
         # Initialize Node positions
         # self.node_positions = self._validate_node_positions(node_positions)
 
-        # Initialize attributes necessary for geometric calculations
-        LinearAlgebra.__init__(self)
-
-
         # Project the spatial graph onto a random the xz-plane
-        self.node_positions = self.project(node_positions)
+        self.node_positions, self.rotation = self.project(node_positions)
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
+
+    @property
+    def projected_node_positions(self):
+        return self.node_positions[:, [0, 2]]
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -1020,7 +996,6 @@ class SpatialGraph(LinearAlgebra):
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-
                 # Third, Check nonadjacent edge pairs for validity.
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
                 # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
@@ -1031,11 +1006,10 @@ class SpatialGraph(LinearAlgebra):
             except ValueError:
                 continue
 
-        # if len(attempted_rotations) == 0:
-        #     raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
-        # else:
+        # raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+
         rotated_node_positions = rotate(node_positions, rotation)
-        return rotated_node_positions
+        return rotated_node_positions, rotation
 
     def create_spatial_graph_diagram(self):
         """
@@ -1161,8 +1135,11 @@ class SpatialGraph(LinearAlgebra):
 
         # Plot the projective plane (XY axis)
         center = np.mean(node_positions, axis=0)
+        y_offset = 1.5*np.max(node_positions[:, 1])-center[1]
+        offset_center = center + np.array([0, y_offset, 0])
         plane_size = 150.0
-        p.add_mesh(pv.Plane(center=center, direction=(0, 0, 1), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
+        p.add_mesh(pv.Plane(center=offset_center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
+
 
         # # Plot the crossing positions
         # # TODO, the out of plane as transparent red spheres, connected by a line...
