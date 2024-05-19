@@ -296,6 +296,68 @@ class SpatialGraph(LinearAlgebra):
         return node_positions
 
 
+    def get_vertices_and_crossings_of_edge(self, reference_edge: tuple[str, str]):
+        """
+        Returns the vertices and crossings of an edge, ordered from left to right.
+        """
+
+        # Get edge nodes and positions
+        edge_nodes = [node for node in reference_edge]
+        edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
+
+        # Get crossing and positions (if applicable)
+        edge_crossings = []
+        edge_crossing_positions = []
+
+        for edge_pair, position, crossing in zip(self.crossing_edge_pairs, self.crossing_positions, self.crossings):
+            if reference_edge in edge_pair:
+                edge_crossings.append(crossing)
+                edge_crossing_positions.append(position)
+
+        if len(edge_crossings) > 0:
+            # Merge the vertices and crossings
+            adjacent_nodes = edge_nodes + edge_crossings
+            adjacent_positions = np.vstack((edge_node_positions, edge_crossing_positions))
+
+        else:
+            adjacent_nodes = edge_nodes
+            adjacent_positions = edge_node_positions
+
+        # Order vertices and crossings from left to right by x position (i.e., ascending position index 0)
+        ordered_nodes = [node for _, node in
+                         sorted(zip(adjacent_positions, adjacent_nodes), key=lambda pair: pair[0][0])]
+
+        return ordered_nodes
+
+
+    def get_sub_edges(self):
+        """
+        Sub-edges constitute:
+        1. Edges that are not incident of a crossing (i.e., the edge is the sub-edge)
+        2. When an edge is incident to a crossing(s), the edge is divided into one or more sub-edges depending on the
+        number of crossings that the edge is incident to.
+        """
+
+        # Get the nodes and crossings of each edge, ordered from left to right
+        edge_nodes_and_crossings = {}
+        for edge in self.edges:
+            edge_nodes_and_crossings[edge] = self.get_vertices_and_crossings_of_edge(edge)
+
+        # Subdivide each edge if necessary.
+        # If there are 2 nodes then there is one sub-edge, 3 nodes means 2 sub-edges, etc.
+
+        sub_edges = []
+
+        for edge, nodes_and_crossings in edge_nodes_and_crossings.items():
+
+            if len(nodes_and_crossings) == 2:
+                sub_edges.append(edge)
+
+            else:
+                sub_edges += [(nodes_and_crossings[i], nodes_and_crossings[i + 1]) for i in
+                              range(len(nodes_and_crossings) - 1)]
+
+        return sub_edges
 
     def get_edge_vertices_and_or_crossings(self, edge):
         """
@@ -1057,9 +1119,7 @@ class SpatialGraph(LinearAlgebra):
 
         cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
 
-        sub_edges, _ = self.subdivide_edges_with_crossings()
-
-        for sub_edge in sub_edges:
+        for sub_edge in self.get_sub_edges():
             node_a, node_b = sub_edge
 
             node_a_index = nodes_and_crossings.index(node_a)
