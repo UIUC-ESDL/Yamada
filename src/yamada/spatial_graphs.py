@@ -27,83 +27,14 @@ class LinearAlgebra:
     """
 
     def __init__(self):
-        self.rotated_node_positions = None
-        self.rotation_generator_object = self.rotation_generator()
-        self.rotation = self.random_rotation()
-
-    @staticmethod
-    def rotation_generator():
-        """
-        A generator to generate random rotations for projecting a spatial graph onto a 2D plane. Angles in radians.
-        """
-
-        # Set the initial generator state to zero.
-        rotation = np.zeros(3)
-
-        while True:
-            yield rotation
-            rotation = np.random.rand(3) * 2 * np.pi
-
-    def random_rotation(self):
-        """
-        Query the rotation generator for a new rotation.
-        """
-        return next(self.rotation_generator_object)
+        pass
 
 
 
 
 
 
-    @staticmethod
-    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
-        """
-        If two 3D lines are projected onto the XZ plane and their projections intersect, then
-        calculate the correspond 3D coordinates of that intersection point for the two lines.
-        """
 
-        # Unpack the coordinates
-        x0, y0, z0 = a0_position
-        x1, y1, z1 = a1_position
-        x2, y2, z2 = a2_position
-        x3, y3, z3 = a3_position
-        xc, yc, zc = x0z_coords
-
-        # Changes in position
-        dx02 = x2 - x0
-        dy02 = y2 - y0
-        dz02 = z2 - z0
-        dx13 = x3 - x1
-        dy13 = y3 - y1
-        dz13 = z3 - z1
-
-        # Relative position of the crossing
-        if dx02 != 0:
-            t02 = (xc - x0) / dx02
-        elif dy02 != 0:
-            t02 = (yc - y0) / dy02
-        elif dz02 != 0:
-            t02 = (zc - z0) / dz02
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        if dx13 != 0:
-            t13 = (xc - x1) / dx13
-        elif dy13 != 0:
-            t13 = (yc - y1) / dy13
-        elif dz13 != 0:
-            t13 = (zc - z1) / dz13
-        else:
-            raise ValueError("The start and stop nodes have the same position")
-
-        # Calculate the 3D position of the crossing
-        y_c_02 = y0 + t02 * dy02
-        y_c_13 = y1 + t13 * dy13
-
-        position_c_02 = np.array([xc, y_c_02, zc])
-        position_c_13 = np.array([xc, y_c_13, zc])
-
-        return position_c_02, position_c_13
 
     @property
     def projected_node_positions(self):
@@ -147,11 +78,9 @@ class SpatialGraph(LinearAlgebra):
         # Initialize attributes necessary for geometric calculations
         LinearAlgebra.__init__(self)
 
-        # Initialize a first rotation
-        self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
         # Project the spatial graph onto a random the xz-plane
-        self.project(self.node_positions, self.rotated_node_positions)
+        self.project(self.node_positions)
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
@@ -979,7 +908,57 @@ class SpatialGraph(LinearAlgebra):
 
         return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict
 
-    def project(self, node_positions, rotated_node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
+    @staticmethod
+    def get_crossing_3D_positions(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+        """
+        If two 3D lines are projected onto the XZ plane and their projections intersect, then
+        calculate the correspond 3D coordinates of that intersection point for the two lines.
+        """
+
+        # Unpack the coordinates
+        x0, y0, z0 = a0_position
+        x1, y1, z1 = a1_position
+        x2, y2, z2 = a2_position
+        x3, y3, z3 = a3_position
+        xc, yc, zc = x0z_coords
+
+        # Changes in position
+        dx02 = x2 - x0
+        dy02 = y2 - y0
+        dz02 = z2 - z0
+        dx13 = x3 - x1
+        dy13 = y3 - y1
+        dz13 = z3 - z1
+
+        # Relative position of the crossing
+        if dx02 != 0:
+            t02 = (xc - x0) / dx02
+        elif dy02 != 0:
+            t02 = (yc - y0) / dy02
+        elif dz02 != 0:
+            t02 = (zc - z0) / dz02
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        if dx13 != 0:
+            t13 = (xc - x1) / dx13
+        elif dy13 != 0:
+            t13 = (yc - y1) / dy13
+        elif dz13 != 0:
+            t13 = (zc - z1) / dz13
+        else:
+            raise ValueError("The start and stop nodes have the same position")
+
+        # Calculate the 3D position of the crossing
+        y_c_02 = y0 + t02 * dy02
+        y_c_13 = y1 + t13 * dy13
+
+        position_c_02 = np.array([xc, y_c_02, zc])
+        position_c_13 = np.array([xc, y_c_13, zc])
+
+        return position_c_02, position_c_13
+
+    def project(self, node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
         """
         Project the spatial graph onto a random 2D plane.
 
