@@ -172,7 +172,6 @@ class LinearAlgebra:
         return next(self.rotation_generator_object)
 
     @staticmethod
-    # @njit(cache=True)
     def rotate(positions: np.ndarray,
                rotation:  np.ndarray) -> np.ndarray:
         """
@@ -204,7 +203,6 @@ class LinearAlgebra:
                         [sin(gamma), cos(gamma), 0.],
                         [0., 0., 1.]])
 
-        # TODO Replace with explicitly formulated matrix
         r = r_z @ r_y @ r_x
 
         # Transpose positions from [[x1,y1,z1],[x2... ] to [[x1,x2,x3],[y1,... ]
@@ -219,7 +217,6 @@ class LinearAlgebra:
 
 
     @staticmethod
-    # @njit(cache=True)
     def get_line_segment_intersection(a: np.ndarray,
                                       b: np.ndarray,
                                       c: np.ndarray,
@@ -334,20 +331,15 @@ class LinearAlgebra:
 
         min_dist = np.linalg.norm(d1 * t - d2 * u - d12)
 
-        # min_dist_position = np.array([a + d1 * t]).reshape(-1)
         min_dist_position = a + d1 * t
-
-        # Calculate the 3
 
         return min_dist, min_dist_position
 
 
     @staticmethod
-    # @njit(cache=True)
     def calculate_intermediate_y_position(a:     np.ndarray,
                                           b:     np.ndarray,
-                                          x_int: float,
-                                          z_int: float) -> float:
+                                          x_int: float) -> float:
         """
         Calculates the intermediate y position given two points and the intermediate x and z position.
         """
@@ -357,11 +349,8 @@ class LinearAlgebra:
 
         delta_x = x2 - x1
         delta_y = y2 - y1
-        # delta_z = z2 - z1
 
         ratio_x = (x_int - x1) / delta_x
-        # ratio_z = (z_int - z1) / delta_z
-        # assert np.isclose(ratio_x, ratio_z, rtol=1e-3)
 
         y_int = y1 + ratio_x * delta_y
 
@@ -528,17 +517,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             raise ValueError('All nodes must have a position.')
 
         return node_positions
-
-    def get_nonadjacent_edge_pairs_with_a_possible_crossing(self):
-
-        edges = self.edges
-        nodes = self.nodes
-        node_positions = self.node_positions
-        node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
-        edge_positions = [[node_positions_dict[node] for node in edge] for edge in edges]
-
-
-        nonadjacent_edge_pairs_with_a_possible_crossing = []
 
 
 
@@ -965,13 +943,11 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_vertex_position,
                                                                    edge_1_right_vertex_position,
-                                                                   crossing_position[0],
-                                                                   crossing_position[1])
+                                                                   crossing_position[0])
 
         y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_vertex_position,
                                                                    edge_2_right_vertex_position,
-                                                                   crossing_position[0],
-                                                                   crossing_position[1])
+                                                                   crossing_position[0])
 
         # Get the projected node positions
         reference_node_position = self.get_node_or_crossing_projected_position(crossing)
@@ -1081,8 +1057,8 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
 
         x_crossing, z_crossing = crossing_position
 
-        y_crossing_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing, z_crossing)
-        y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
+        y_crossing_1 = self.calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing)
+        y_crossing_2 = self.calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing)
 
         # todo Only check if crossing is in bounds!
         if y_crossing_1 == y_crossing_2:
@@ -1106,7 +1082,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         return overlap_order
 
 
-    # @njit
     def get_crossings(self):
 
         crossing_num = 0
@@ -1289,28 +1264,6 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
             self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
             self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
-
-    def create_vertices(self):
-        """
-        Create the vertices of the spatial graph.
-        """
-
-        vertices = [Vertex(self.node_degree(node), 'node_' + node) for node in self.nodes]
-
-        return vertices
-
-    def create_crossings(self):
-        """
-        Create the crossings of the spatial graph.
-        """
-
-        if self.crossing_positions is not None:
-            crossings = [Crossing('crossing_object_' + str(i)) for i in range(len(self.crossing_positions))]
-        else:
-            crossings = []
-
-        return crossings
-
     def create_spatial_graph_diagram(self):
         """
         Create a diagram of the spatial graph.
@@ -1319,8 +1272,11 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         nodes_and_crossings = self.nodes + self.crossings
 
         # Create the vertex and crossing objects
-        vertices = self.create_vertices()
-        crossings = self.create_crossings()
+        vertices = [Vertex(self.node_degree(node), 'node_' + node) for node in self.nodes]
+        if self.crossing_positions is not None:
+            crossings = [Crossing('crossing_object_' + str(i)) for i in range(len(self.crossing_positions))]
+        else:
+            crossings = []
         vertices_and_crossings = vertices + crossings
 
         # Create a dictionary that contains the cyclical ordering of every node and crossing
@@ -1367,27 +1323,34 @@ class SpatialGraph(AbstractGraph, LinearAlgebra):
         # Get the necessary values
         nodes = self.nodes
         node_positions = self.rotated_node_positions
-        crossings = self.crossings
-        crossing_positions = self.crossing_positions
+        # crossings = self.crossings
+        # crossing_positions = self.crossing_positions
+
+        crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict = self.get_crossings_3D()
+
+
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
 
         # Plot the vertices and crossings
-        for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
-            start_node = contiguous_edge[0]
-            end_node = contiguous_edge[-1]
-            start_position = contiguous_edge_positions_i[0][0]
-            end_position = contiguous_edge_positions_i[-1][1]
+        # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
+        #     start_node = contiguous_edge[0]
+        #     end_node = contiguous_edge[-1]
+        #     start_position = contiguous_edge_positions_i[0][0]
+        #     end_position = contiguous_edge_positions_i[-1][1]
+        #
+        #     if 'crossing' in start_node:
+        #         p.add_mesh(pv.Sphere(radius=1, center=start_position), color='red', opacity=0.35)
+        #     else:
+        #         p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='black')
+        #
+        #     if 'crossing' in end_node:
+        #         p.add_mesh(pv.Sphere(radius=1, center=end_position), color='red', opacity=0.35)
+        #     else:
+        #         p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
 
-            if 'crossing' in start_node:
-                p.add_mesh(pv.Sphere(radius=1, center=start_position), color='red', opacity=0.35)
-            else:
-                p.add_mesh(pv.Sphere(radius=2.5, center=start_position), color='black')
-
-            if 'crossing' in end_node:
-                p.add_mesh(pv.Sphere(radius=1, center=end_position), color='red', opacity=0.35)
-            else:
-                p.add_mesh(pv.Sphere(radius=2.5, center=end_position), color='black')
-
+        # Plot the nodes
+        for node, node_position in zip(nodes, node_positions):
+            p.add_mesh(pv.Sphere(radius=2.5, center=node_position), color='black')
 
         # Plot the lines
         # colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
