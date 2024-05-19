@@ -52,13 +52,13 @@ class SpatialGraph:
         # self.node_positions = self._validate_node_positions(node_positions)
 
         # Project the spatial graph onto a random the xz-plane
-        self.node_positions, self.rotation = self.project(node_positions)
+        self.node_positions_3d, self.rotation = self.project(node_positions)
+        self.node_positions_dict_3d = {node: position for node, position in zip(nodes, node_positions)}
+
+        self.node_positions_2d = self.node_positions_3d[:, [0, 2]]
+        self.node_positions_dict_2d = {node: position for node, position in zip(nodes, self.node_positions_2d)}
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
-
-    @property
-    def projected_node_positions(self):
-        return self.node_positions[:, [0, 2]]
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -213,7 +213,7 @@ class SpatialGraph:
 
         # Get edge nodes and positions
         edge_nodes = [node for node in reference_edge]
-        edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
+        edge_node_positions = [self.node_positions_dict_2d[node] for node in edge_nodes]
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
@@ -378,7 +378,7 @@ class SpatialGraph:
 
         # Get edge nodes and positions
         edge_nodes = [node for node in edge]
-        edge_node_positions = [self.projected_node_positions[self.nodes.index(node)] for node in edge_nodes]
+        edge_node_positions = [self.node_positions_dict_2d[node] for node in edge_nodes]
 
         # Get crossing and positions (if applicable)
         edge_crossings = []
@@ -424,7 +424,7 @@ class SpatialGraph:
 
         node_indices = [self.nodes.index(node) for node in adjacent_nodes]
 
-        return self.projected_node_positions[node_indices]
+        return self.node_positions_2d[node_indices]
 
     def cyclic_order_vertex(self,
                             reference_node:     str,
@@ -445,7 +445,7 @@ class SpatialGraph:
             node_ordering_dict = {}
 
         # Get the projected node positions
-        reference_node_position = self.projected_node_positions[self.nodes.index(reference_node)]
+        reference_node_position = self.node_positions_dict_2d[reference_node]
 
         # Initialize lists to store the adjacent node and edge information
         # Crossings are not relevant for this calculation since they exist along edges
@@ -483,7 +483,7 @@ class SpatialGraph:
         # Initialize the values
         edges = self.edges
         nodes = self.nodes
-        node_positions = self.node_positions
+        node_positions = self.node_positions_3d
         node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
 
         crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict = self.get_crossings_3D()
@@ -594,7 +594,7 @@ class SpatialGraph:
     def get_node_or_crossing_projected_position(self, reference_node: str) -> np.ndarray:
 
         if reference_node in self.nodes:
-            return self.projected_node_positions[self.nodes.index(reference_node)]
+            return self.node_positions_dict_2d[reference_node]
 
         elif reference_node in self.crossings:
             return self.crossing_positions[self.crossings.index(reference_node)]
@@ -649,10 +649,10 @@ class SpatialGraph:
         edge_2_left_vertex  = edge_2_nodes_and_crossings[0]
         edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
 
-        edge_1_left_vertex_position  = self.node_positions[self.nodes.index(edge_1_left_vertex)]
-        edge_1_right_vertex_position = self.node_positions[self.nodes.index(edge_1_right_vertex)]
-        edge_2_left_vertex_position  = self.node_positions[self.nodes.index(edge_2_left_vertex)]
-        edge_2_right_vertex_position = self.node_positions[self.nodes.index(edge_2_right_vertex)]
+        edge_1_left_vertex_position  = self.node_positions_3d[self.nodes.index(edge_1_left_vertex)]
+        edge_1_right_vertex_position = self.node_positions_3d[self.nodes.index(edge_1_right_vertex)]
+        edge_2_left_vertex_position  = self.node_positions_3d[self.nodes.index(edge_2_left_vertex)]
+        edge_2_right_vertex_position = self.node_positions_3d[self.nodes.index(edge_2_right_vertex)]
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
@@ -765,10 +765,10 @@ class SpatialGraph:
         node_3_index = self.nodes.index(node_3)
         node_4_index = self.nodes.index(node_4)
 
-        node_1_position = self.node_positions[node_1_index]
-        node_2_position = self.node_positions[node_2_index]
-        node_3_position = self.node_positions[node_3_index]
-        node_4_position = self.node_positions[node_4_index]
+        node_1_position = self.node_positions_3d[node_1_index]
+        node_2_position = self.node_positions_3d[node_2_index]
+        node_3_position = self.node_positions_3d[node_3_index]
+        node_4_position = self.node_positions_3d[node_4_index]
 
         x_crossing, z_crossing = crossing_position
 
@@ -810,10 +810,10 @@ class SpatialGraph:
 
         for line_1, line_2 in self.nonadjacent_edge_pairs:
 
-            a = self.projected_node_positions[self.nodes.index(line_1[0])]
-            b = self.projected_node_positions[self.nodes.index(line_1[1])]
-            c = self.projected_node_positions[self.nodes.index(line_2[0])]
-            d = self.projected_node_positions[self.nodes.index(line_2[1])]
+            a = self.node_positions_dict_2d[line_1[0]]
+            b = self.node_positions_dict_2d[line_1[1]]
+            c = self.node_positions_dict_2d[line_2[0]]
+            d = self.node_positions_dict_2d[line_2[1]]
 
             min_dist, crossing_position = get_line_segment_intersection(a, b, c, d)
 
@@ -848,7 +848,7 @@ class SpatialGraph:
         crossing_positions_2D = np.hstack((xz_coords, y_coords))
         crossing_positions_2D = crossing_positions_2D[:, [0, 2, 1]]
 
-        nodes_dict = {node: self.node_positions[self.nodes.index(node)] for node in self.nodes}
+        nodes_dict = {node: self.node_positions_3d[self.nodes.index(node)] for node in self.nodes}
 
         crossing_positions_3D = []
         for crossing, crossing_position_2D,crossing_edge_pair in zip(crossings, crossing_positions_2D, crossing_edge_pairs):
@@ -1068,7 +1068,7 @@ class SpatialGraph:
         # Get the necessary values
         nodes = self.nodes
         # node_positions = self.rotated_node_positions
-        node_positions = self.node_positions
+        node_positions = self.node_positions_3d
         crossings = self.crossings
         crossing_positions = self.crossing_positions
 
