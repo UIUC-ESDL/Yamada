@@ -151,7 +151,7 @@ class SpatialGraph(LinearAlgebra):
         self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
         # Project the spatial graph onto a random the xz-plane
-        self.project(self.rotated_node_positions)
+        self.project(self.node_positions, self.rotated_node_positions)
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
@@ -979,7 +979,7 @@ class SpatialGraph(LinearAlgebra):
 
         return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict
 
-    def project(self, rotated_node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
+    def project(self, node_positions, rotated_node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -1000,14 +1000,16 @@ class SpatialGraph(LinearAlgebra):
         rotations = np.vstack((initial_rotation, random_rotations))
 
 
-        attempted_rotations = []
-        num_crossings = []
+        # attempted_rotations = []
+        # num_crossings = []
 
-        for _ in range(max_iter):
+        for rotation in rotations:
 
             try:
-
-                projected_node_positions = self.rotated_node_positions[:, [0, 2]]
+                # Rotate the node positions
+                rotated_node_positions = rotate(node_positions, rotation)
+                projected_node_positions = rotated_node_positions[:, [0, 2]]
+                # projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
@@ -1052,21 +1054,22 @@ class SpatialGraph(LinearAlgebra):
                 # between endpoints.
                 # TODO Implement
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-                attempted_rotations.append(self.rotation)
+                # attempted_rotations.append(self.rotation)
 
             except ValueError:
-                self.rotation = self.random_rotation()
-                self.rotated_node_positions = rotate(self.node_positions, self.rotation)
+                continue
+                # self.rotation = self.random_rotation()
+                # self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
             # If there is no error in the projection rotate anyways
-            self.rotation = self.random_rotation()
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
+            # self.rotation = self.random_rotation()
+            # self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
-        if len(attempted_rotations) == 0:
-            raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
-        else:
-            self.rotation = attempted_rotations[0]
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
+        # if len(attempted_rotations) == 0:
+        #     raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
+        # else:
+        self.rotation = rotation  # attempted_rotations[0]
+        self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
     def create_spatial_graph_diagram(self):
         """
