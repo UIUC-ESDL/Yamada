@@ -52,7 +52,7 @@ class SpatialGraph:
         # self.node_positions = self._validate_node_positions(node_positions)
 
         # Project the spatial graph onto a random the xz-plane
-        self.node_positions_3d, self.rotation = self.project(node_positions)
+        self.node_positions_3d = self.project(node_positions)
         self.node_positions_dict_3d = {node: position for node, position in zip(nodes, node_positions)}
 
         self.node_positions_2d = self.node_positions_3d[:, [0, 2]]
@@ -1009,7 +1009,7 @@ class SpatialGraph:
         # raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
 
         rotated_node_positions = rotate(node_positions, rotation)
-        return rotated_node_positions, rotation
+        return rotated_node_positions
 
     def create_spatial_graph_diagram(self):
         """
@@ -1079,6 +1079,35 @@ class SpatialGraph:
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
         # contiguous_sub_edges = self.get_contiguous_edges()
 
+        # Plot the 3D Spatial Graph
+
+        # Plot the 3D Lines
+        for sub_edge in self.edges:
+            node_a = sub_edge[0]
+            node_b = sub_edge[1]
+
+            node_a_position = node_positions_dict[node_a]
+            node_b_position = node_positions_dict[node_b]
+
+            line = pv.Line(node_a_position, node_b_position)
+            p.add_mesh(line, color='black', line_width=5)
+
+
+
+        # Plot the 3D Nodes
+        for node, node_position in zip(nodes, node_positions):
+            p.add_mesh(pv.Sphere(radius=2.5, center=node_position), color='black')
+
+        # Plot the 2D Projection
+
+        # Plot the projective plane (XY axis)
+        center = np.mean(node_positions, axis=0)
+        y_offset = 2 * np.max(node_positions[:, 1]) - center[1]
+        offset_center = center + np.array([0, y_offset, 0])
+        plane_size = 150.0
+        p.add_mesh(pv.Plane(center=offset_center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size),
+                   color='gray', opacity=0.25)
+
         # Plot the vertices and crossings
         for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
             start_node = contiguous_edge[0]
@@ -1096,49 +1125,29 @@ class SpatialGraph:
             else:
                 p.add_mesh(pv.Sphere(radius=4, center=end_position), color='green', opacity=0.5)
 
-        # Plot the 3D Nodes
-        for node, node_position in zip(nodes, node_positions):
-            p.add_mesh(pv.Sphere(radius=2.5, center=node_position), color='black')
-
-        # Plot the 3D Lines
-        for sub_edge in self.edges:
-            node_a = sub_edge[0]
-            node_b = sub_edge[1]
-
-            node_a_position = node_positions_dict[node_a]
-            node_b_position = node_positions_dict[node_b]
-
-            line = pv.Line(node_a_position, node_b_position)
-            p.add_mesh(line, color='black', line_width=5)
-
-        # for contiguous_sub_edge in contiguous_sub_edges:
-        #     for i in range(len(contiguous_sub_edge) - 1):
-        #         node_a = contiguous_sub_edge[i]
-        #         node_b = contiguous_sub_edge[i + 1]
 
 
 
-        # Plot the lines
-        # colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
+        # Plot the Projected lines
+        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
         for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
             lines = []
             for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
                 start = sub_edge_position_1
                 end = sub_edge_position_2
+
+                # Modify the y coordinate
+                start[1] = y_offset
+                end[1] = y_offset
+
                 line = pv.Line(start, end)
                 lines.append(line)
 
             linear_spline = pv.MultiBlock(lines)
-            # p.add_mesh(linear_spline, line_width=5, color=colors[i])
-            p.add_mesh(linear_spline, line_width=5, color='grey')
+            p.add_mesh(linear_spline, line_width=5, color=colors[i])
+            # p.add_mesh(linear_spline, line_width=5, color='grey')
 
 
-        # Plot the projective plane (XY axis)
-        center = np.mean(node_positions, axis=0)
-        y_offset = 1.5*np.max(node_positions[:, 1])-center[1]
-        offset_center = center + np.array([0, y_offset, 0])
-        plane_size = 150.0
-        p.add_mesh(pv.Plane(center=offset_center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size), color='gray', opacity=0.25)
 
 
         # # Plot the crossing positions
