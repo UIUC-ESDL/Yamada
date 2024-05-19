@@ -38,7 +38,7 @@ class LinearAlgebra:
 
     @property
     def projected_node_positions(self):
-        return self.rotated_node_positions[:, [0, 2]]
+        return self.node_positions[:, [0, 2]]
 
 
 
@@ -70,7 +70,7 @@ class SpatialGraph(LinearAlgebra):
 
         # Temporarily convert node positions to array
         node_positions_list = [node_positions[node] for node in nodes]
-        self.node_positions = np.array(node_positions_list)
+        node_positions = np.array(node_positions_list)
 
         # Initialize Node positions
         # self.node_positions = self._validate_node_positions(node_positions)
@@ -80,7 +80,7 @@ class SpatialGraph(LinearAlgebra):
 
 
         # Project the spatial graph onto a random the xz-plane
-        self.project(self.node_positions)
+        self.node_positions = self.project(node_positions)
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
@@ -673,10 +673,10 @@ class SpatialGraph(LinearAlgebra):
         edge_2_left_vertex  = edge_2_nodes_and_crossings[0]
         edge_2_right_vertex = edge_2_nodes_and_crossings[-1]
 
-        edge_1_left_vertex_position  = self.rotated_node_positions[self.nodes.index(edge_1_left_vertex)]
-        edge_1_right_vertex_position = self.rotated_node_positions[self.nodes.index(edge_1_right_vertex)]
-        edge_2_left_vertex_position  = self.rotated_node_positions[self.nodes.index(edge_2_left_vertex)]
-        edge_2_right_vertex_position = self.rotated_node_positions[self.nodes.index(edge_2_right_vertex)]
+        edge_1_left_vertex_position  = self.node_positions[self.nodes.index(edge_1_left_vertex)]
+        edge_1_right_vertex_position = self.node_positions[self.nodes.index(edge_1_right_vertex)]
+        edge_2_left_vertex_position  = self.node_positions[self.nodes.index(edge_2_left_vertex)]
+        edge_2_right_vertex_position = self.node_positions[self.nodes.index(edge_2_right_vertex)]
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
@@ -789,10 +789,10 @@ class SpatialGraph(LinearAlgebra):
         node_3_index = self.nodes.index(node_3)
         node_4_index = self.nodes.index(node_4)
 
-        node_1_position = self.rotated_node_positions[node_1_index]
-        node_2_position = self.rotated_node_positions[node_2_index]
-        node_3_position = self.rotated_node_positions[node_3_index]
-        node_4_position = self.rotated_node_positions[node_4_index]
+        node_1_position = self.node_positions[node_1_index]
+        node_2_position = self.node_positions[node_2_index]
+        node_3_position = self.node_positions[node_3_index]
+        node_4_position = self.node_positions[node_4_index]
 
         x_crossing, z_crossing = crossing_position
 
@@ -978,17 +978,11 @@ class SpatialGraph(LinearAlgebra):
         random_rotations = 2 * np.pi * np.random.rand(max_iter - 1, 3)
         rotations = np.vstack((initial_rotation, random_rotations))
 
-
-        # attempted_rotations = []
-        # num_crossings = []
-
         for rotation in rotations:
-
             try:
                 # Rotate the node positions
                 rotated_node_positions = rotate(node_positions, rotation)
                 projected_node_positions = rotated_node_positions[:, [0, 2]]
-                # projected_node_positions = self.rotated_node_positions[:, [0, 2]]
 
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
@@ -1033,22 +1027,15 @@ class SpatialGraph(LinearAlgebra):
                 # between endpoints.
                 # TODO Implement
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-                # attempted_rotations.append(self.rotation)
 
             except ValueError:
                 continue
-                # self.rotation = self.random_rotation()
-                # self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-
-            # If there is no error in the projection rotate anyways
-            # self.rotation = self.random_rotation()
-            # self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
         # if len(attempted_rotations) == 0:
         #     raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
         # else:
-        self.rotation = rotation  # attempted_rotations[0]
-        self.rotated_node_positions = rotate(self.node_positions, self.rotation)
+        rotated_node_positions = rotate(node_positions, rotation)
+        return rotated_node_positions
 
     def create_spatial_graph_diagram(self):
         """
