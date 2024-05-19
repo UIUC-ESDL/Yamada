@@ -7,7 +7,7 @@
 
 
 import numpy as np
-from yamada import LinearAlgebra
+from yamada.geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
 
 
 # ## Test calculate_counter_clockwise_angle
@@ -18,8 +18,6 @@ from yamada import LinearAlgebra
 
 
 def test_calculate_counter_clockwise_angle():
-
-    la = LinearAlgebra()
 
     # Reference vector; zero Radians
     reference_vector = np.array([1, 0])
@@ -35,14 +33,14 @@ def test_calculate_counter_clockwise_angle():
     degree_300 = np.array([0.5, -np.sqrt(3)/2])
 
     # Calculate angles
-    angle_0   = la.calculate_counter_clockwise_angle(reference_vector, degree_0)
-    angle_30  = la.calculate_counter_clockwise_angle(reference_vector, degree_30)
-    angle_90  = la.calculate_counter_clockwise_angle(reference_vector, degree_90)
-    angle_135 = la.calculate_counter_clockwise_angle(reference_vector, degree_135)
-    angle_180 = la.calculate_counter_clockwise_angle(reference_vector, degree_180)
-    angle_240 = la.calculate_counter_clockwise_angle(reference_vector, degree_240)
-    angle_270 = la.calculate_counter_clockwise_angle(reference_vector, degree_270)
-    angle_300 = la.calculate_counter_clockwise_angle(reference_vector, degree_300)
+    angle_0   = calculate_counter_clockwise_angle(reference_vector, degree_0)
+    angle_30  = calculate_counter_clockwise_angle(reference_vector, degree_30)
+    angle_90  = calculate_counter_clockwise_angle(reference_vector, degree_90)
+    angle_135 = calculate_counter_clockwise_angle(reference_vector, degree_135)
+    angle_180 = calculate_counter_clockwise_angle(reference_vector, degree_180)
+    angle_240 = calculate_counter_clockwise_angle(reference_vector, degree_240)
+    angle_270 = calculate_counter_clockwise_angle(reference_vector, degree_270)
+    angle_300 = calculate_counter_clockwise_angle(reference_vector, degree_300)
 
     assert np.isclose(angle_0, 0) or np.isclose(angle_0, 360)
     assert np.isclose(angle_30, 30)
@@ -74,14 +72,12 @@ def test_rotation_at_origin_zero():
                                     [1, 1, 1],  # g
                                     [0, 1, 1]])  # h
 
-    la = LinearAlgebra()
-
     # Rotate about the origin by 0 degrees
     rotate_zero = np.array([0, 0, 0])
 
     # Rotate the cube
 
-    rotated_component_positions = la.rotate(component_positions, rotate_zero)
+    rotated_component_positions = rotate(component_positions, rotate_zero)
 
     expected_rotated_component_positions_zero = np.array([[0, 0, 0],  # a
                                                           [1, 0, 0],  # b
@@ -114,7 +110,6 @@ def test_rotation_at_origin_z_90():
                                     [1, 1, 1],  # g
                                     [0, 1, 1]])  # h
 
-    la = LinearAlgebra()
 
     # Rotate about the z-axis by 90 degrees
     rotate_z_90 = np.array([0, 0, np.pi/2])
@@ -122,7 +117,7 @@ def test_rotation_at_origin_z_90():
 
     # Rotate the cube
 
-    rotated_component_positions = la.rotate(component_positions, rotate_z_90)
+    rotated_component_positions = rotate(component_positions, rotate_z_90)
 
     expected_rotated_component_positions_z_90 = np.array([[0, 0, 0],  # a
                                                           [0, 1, 0],  # b
@@ -154,15 +149,13 @@ def test_rotation_at_origin_z_180():
                                     [1, 1, 1],  # g
                                     [0, 1, 1]])  # h
 
-    la = LinearAlgebra()
-
     # Rotate about the z-axis by 180 degrees
     rotate_z_180 = np.array([0, 0, np.pi])
 
 
     # Rotate the cube
 
-    rotated_component_positions = la.rotate(component_positions, rotate_z_180)
+    rotated_component_positions = rotate(component_positions, rotate_z_180)
 
     expected_rotated_component_positions_z_180 = np.array([[0, 0, 0],  # a
                                                            [-1, 0, 0],  # b
@@ -193,8 +186,6 @@ def test_rotation_at_origin_x_90():
                                     [1, 1, 1],  # g
                                     [0, 1, 1]])  # h
 
-    la = LinearAlgebra()
-
     # Rotate about the x-axis by 90 degrees
     rotate_x_90 = np.array([np.pi/2, 0, 0])
 
@@ -209,7 +200,7 @@ def test_rotation_at_origin_x_90():
                                                           [0, -1, 1]])  # h
 
     # Rotate the cube
-    rotated_component_positions = la.rotate(component_positions, rotate_x_90)
+    rotated_component_positions = rotate(component_positions, rotate_x_90)
 
 
     assert np.allclose(rotated_component_positions, expected_rotated_component_positions_x_90)
@@ -231,13 +222,11 @@ def test_rotation_at_origin_z_90_x_90():
                                     [1, 1, 1],  # g
                                     [0, 1, 1]])  # h
 
-    la = LinearAlgebra()
-
 
     rotate_x_90_z_90 = np.array([np.pi/2, 0, np.pi/2])
 
     # Rotate the cube
-    rotated_component_positions = la.rotate(component_positions, rotate_x_90_z_90)
+    rotated_component_positions = rotate(component_positions, rotate_x_90_z_90)
 
     expected_rotated_component_positions_z_90_x_90 = np.array([[0, 0, 0],    # a
                                                                [0, 1, 0],    # b

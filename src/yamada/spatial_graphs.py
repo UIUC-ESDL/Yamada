@@ -387,7 +387,7 @@ class SpatialGraph(LinearAlgebra):
 
         rotations = []
         for shifted_adjacent_node_position in shifted_adjacent_node_positions:
-            rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
+            rotations.append(calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
         ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
 
@@ -448,11 +448,6 @@ class SpatialGraph(LinearAlgebra):
 
         return subdivided_edges, subdivided_edge_positions
 
-
-
-
-
-        return sub_edges
 
 
     def get_sub_edges(self):
@@ -718,11 +713,11 @@ class SpatialGraph(LinearAlgebra):
 
         crossing_position = self.crossing_positions[self.crossings.index(crossing)]
 
-        y_crossing_edge_1 = self.calculate_intermediate_y_position(edge_1_left_vertex_position,
+        y_crossing_edge_1 = calculate_intermediate_y_position(edge_1_left_vertex_position,
                                                                    edge_1_right_vertex_position,
                                                                    crossing_position[0])
 
-        y_crossing_edge_2 = self.calculate_intermediate_y_position(edge_2_left_vertex_position,
+        y_crossing_edge_2 = calculate_intermediate_y_position(edge_2_left_vertex_position,
                                                                    edge_2_right_vertex_position,
                                                                    crossing_position[0])
 
@@ -763,7 +758,7 @@ class SpatialGraph(LinearAlgebra):
 
         # Calculate the angle of each node
         for shifted_adjacent_node_position in shifted_adjacent_vertex_positions:
-            rotations.append(self.calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
+            rotations.append(calculate_counter_clockwise_angle(reference_vector, shifted_adjacent_node_position))
 
         # Sort the nodes by their angle
         ordered_nodes = [node for _, node in sorted(zip(rotations, adjacent_nodes))]
@@ -964,7 +959,7 @@ class SpatialGraph(LinearAlgebra):
 
         if predefined_rotation is not None:
             self.rotation = predefined_rotation
-            self.rotated_node_positions = self.rotate(self.node_positions, self.rotation)
+            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
             self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
             return
 
