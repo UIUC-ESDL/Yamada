@@ -415,9 +415,6 @@ class SpatialGraph:
         Get the adjacent nodes to a given node.
         """
         adjacent_nodes = self.get_adjacent_nodes(reference_node)
-
-        node_indices = [self.nodes.index(node) for node in adjacent_nodes]
-
         projected_node_positions = [self.node_positions_dict_2d[node] for node in adjacent_nodes]
 
         return np.array(projected_node_positions)
