@@ -123,18 +123,26 @@ class SpatialGraph(LinearAlgebra):
 
     def __init__(self,
                  nodes: list[str],
-                 node_positions: np.ndarray,
+                 node_positions: dict,
                  edges: list[tuple[str, str]]):
 
-        self.nodes = self._validate_nodes(nodes)
-        self.edges = self._validate_edges(edges)
+        self.nodes = nodes
+        self.edges = edges
+
+        # TODO Temporarily disable checks
+        # self.nodes = self._validate_nodes(nodes)
+        # self.edges = self._validate_edges(edges)
 
         self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
         self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
                                        edge_pair not in self.adjacent_edge_pairs]
 
+        # Temporarily convert node positions to array
+        node_positions_list = [node_positions[node] for node in nodes]
+        self.node_positions = np.array(node_positions_list)
+
         # Initialize Node positions
-        self.node_positions = self._validate_node_positions(node_positions)
+        # self.node_positions = self._validate_node_positions(node_positions)
 
         # Initialize attributes necessary for geometric calculations
         LinearAlgebra.__init__(self)
@@ -990,6 +998,8 @@ class SpatialGraph(LinearAlgebra):
 
         """
 
+
+
         if predefined_rotation is not None:
             self.rotation = predefined_rotation
             self.rotated_node_positions = rotate(self.node_positions, self.rotation)
@@ -1004,13 +1014,15 @@ class SpatialGraph(LinearAlgebra):
 
             try:
 
+                projected_node_positions = self.rotated_node_positions[:, [0, 2]]
+
                 # First, check that no edges are perfectly vertical or perfectly horizontal.
                 # While neither of these cases technically incorrect, it's easier to implement looping through rotations
                 # rather than add edge cases for each 2D and 3D line equation.
 
                 for edge in self.edges:
-                    x1, z1 = self.projected_node_positions[self.nodes.index(edge[0])]
-                    x2, z2 = self.projected_node_positions[self.nodes.index(edge[1])]
+                    x1, z1 = projected_node_positions[self.nodes.index(edge[0])]
+                    x2, z2 = projected_node_positions[self.nodes.index(edge[1])]
 
                     if x1 == x2 or z1 == z2:
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
@@ -1020,10 +1032,10 @@ class SpatialGraph(LinearAlgebra):
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
                 for line_1, line_2 in self.adjacent_edge_pairs:
-                    a = self.projected_node_positions[self.nodes.index(line_1[0])]
-                    b = self.projected_node_positions[self.nodes.index(line_1[1])]
-                    c = self.projected_node_positions[self.nodes.index(line_2[0])]
-                    d = self.projected_node_positions[self.nodes.index(line_2[1])]
+                    a = projected_node_positions[self.nodes.index(line_1[0])]
+                    b = projected_node_positions[self.nodes.index(line_1[1])]
+                    c = projected_node_positions[self.nodes.index(line_2[0])]
+                    d = projected_node_positions[self.nodes.index(line_2[1])]
                     min_dist, crossing_position, = get_line_segment_intersection(a, b, c, d)
 
                     if min_dist > 0.0001:
