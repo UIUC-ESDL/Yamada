@@ -150,13 +150,10 @@ class SpatialGraph(LinearAlgebra):
         # Initialize a first rotation
         self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
-        # Initialize attributes that are calculated later
-        self.crossings = None
-        self.crossing_positions = None
-        self.crossing_edge_pairs = None
-
         # Project the spatial graph onto a random the xz-plane
-        self.project()
+        self.project(self.rotated_node_positions)
+
+        self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
     @staticmethod
     def _validate_nodes(nodes: list[str]) -> list[str]:
@@ -982,7 +979,7 @@ class SpatialGraph(LinearAlgebra):
 
         return crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs, crossing_positions_3D_dict
 
-    def project(self, max_iter=2, predefined_rotation=None):
+    def project(self, rotated_node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -998,16 +995,12 @@ class SpatialGraph(LinearAlgebra):
 
         """
 
+        # # Define the random rotations
+        random_rotations = 2 * np.pi * np.random.rand(max_iter - 1, 3)
+        rotations = np.vstack((initial_rotation, random_rotations))
 
 
-        if predefined_rotation is not None:
-            self.rotation = predefined_rotation
-            self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-            self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
-            return
-
-
-        rotations = []
+        attempted_rotations = []
         num_crossings = []
 
         for _ in range(max_iter):
@@ -1057,12 +1050,9 @@ class SpatialGraph(LinearAlgebra):
                 # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
                 # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
                 # between endpoints.
+                # TODO Implement
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-
-                self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
-
-                rotations.append(self.rotation)
-                num_crossings.append(len(self.crossings))
+                attempted_rotations.append(self.rotation)
 
             except ValueError:
                 self.rotation = self.random_rotation()
@@ -1072,14 +1062,11 @@ class SpatialGraph(LinearAlgebra):
             self.rotation = self.random_rotation()
             self.rotated_node_positions = rotate(self.node_positions, self.rotation)
 
-        if len(rotations) == 0:
+        if len(attempted_rotations) == 0:
             raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
         else:
-            min_crossings = min(num_crossings)
-            min_crossings_index = num_crossings.index(min_crossings)
-            self.rotation = rotations[min_crossings_index]
+            self.rotation = attempted_rotations[0]
             self.rotated_node_positions = rotate(self.node_positions, self.rotation)
-            self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
     def create_spatial_graph_diagram(self):
         """
