@@ -45,7 +45,7 @@ sg = SpatialGraph(nodes=nodes,
 
 # Plot the Spatial Graph in 3D and the projected 2D plane to see what's going on. Crossings will be circled in red.
 # Note: Crossings occur when two edges that do not intersect, but appear to when they are projected onto a 2D plane.
-sg.plot()
+# sg.plot()
 
 # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
 sgd = sg.create_spatial_graph_diagram()

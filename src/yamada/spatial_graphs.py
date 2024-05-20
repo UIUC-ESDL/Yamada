@@ -31,7 +31,8 @@ class SpatialGraph:
     def __init__(self,
                  nodes: list[str],
                  node_positions: dict,
-                 edges: list[tuple[str, str]]):
+                 edges: list[tuple[str, str]],
+                 projection_rotation=(0, 0, 0)):
 
         self.nodes = nodes
         self.edges = edges
@@ -52,7 +53,7 @@ class SpatialGraph:
         # self.node_positions = self._validate_node_positions(node_positions)
 
         # Project the spatial graph onto a random the xz-plane
-        self.node_positions_3d = self.project(node_positions)
+        self.node_positions_3d = self.project(node_positions, initial_rotation=projection_rotation)
         self.node_positions_dict_3d = {node: position for node, position in zip(nodes, node_positions)}
 
         self.node_positions_2d = self.node_positions_3d[:, [0, 2]]
@@ -1060,6 +1061,8 @@ class SpatialGraph:
     def plot(self):
         """
         TODO, replace cylinder with circle and dashed line
+        TODO Scale everything so it's always between 0 and 1
+        TODO Add labels
         """
 
         # plotter = pv.Plotter()
@@ -1092,11 +1095,9 @@ class SpatialGraph:
             line = pv.Line(node_a_position, node_b_position)
             p.add_mesh(line, color='black', line_width=5)
 
-
-
         # Plot the 3D Nodes
         for node, node_position in zip(nodes, node_positions):
-            p.add_mesh(pv.Sphere(radius=2.5, center=node_position), color='black')
+            p.add_mesh(pv.Sphere(radius=0.05, center=node_position), color='black')
 
         # Plot the 2D Projection
 
@@ -1105,8 +1106,8 @@ class SpatialGraph:
         y_offset = 2 * np.max(node_positions[:, 1]) - center[1]
         offset_center = center + np.array([0, y_offset, 0])
         plane_size = 150.0
-        p.add_mesh(pv.Plane(center=offset_center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size),
-                   color='gray', opacity=0.25)
+        # p.add_mesh(pv.Plane(center=offset_center, direction=(0, 1, 0), i_size=plane_size, j_size=plane_size),
+        #            color='gray', opacity=0.25)
 
         # Plot the vertices and crossings
         for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
@@ -1116,14 +1117,14 @@ class SpatialGraph:
             end_position = contiguous_edge_positions_i[-1][1]
 
             if 'crossing' in start_node:
-                p.add_mesh(pv.Sphere(radius=4, center=start_position), color='red', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='red', opacity=0.5)
             else:
-                p.add_mesh(pv.Sphere(radius=4, center=start_position), color='green', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='green', opacity=0.5)
 
             if 'crossing' in end_node:
-                p.add_mesh(pv.Sphere(radius=4, center=end_position), color='red', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='red', opacity=0.5)
             else:
-                p.add_mesh(pv.Sphere(radius=4, center=end_position), color='green', opacity=0.5)
+                p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='green', opacity=0.5)
 
 
 
