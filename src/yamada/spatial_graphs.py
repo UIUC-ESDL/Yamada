@@ -1004,6 +1004,9 @@ class SpatialGraph:
                 # TODO Implement
                 # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
 
+                # If all are satisfied
+                break
+
             except ValueError:
                 continue
 
