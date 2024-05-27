@@ -108,7 +108,6 @@ class Shadow:
         return SpatialGraphDiagram(classes, check=check)
 
 
-# TODO Compile Plantri for Windows
 def spatial_graph_diagrams_fixed_crossings(G, crossings):
     """
     Let's start with the theta graph
