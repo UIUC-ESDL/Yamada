@@ -5,18 +5,15 @@ This module contains classes and functions for working with spatial graphs.
 
 import numpy as np
 
-import matplotlib.pyplot as plt
 from itertools import combinations
-from numba import njit
-import math
 import pyvista as pv
 import matplotlib.colors as mcolors
 import random
 
 from .geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
 
-from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
-from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.diagram_elements import Vertex, Crossing
+from yamada.spatial_graph_diagrams import SpatialGraphDiagram
 
 
 class SpatialGraph:

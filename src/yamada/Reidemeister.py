@@ -1,6 +1,6 @@
 from itertools import combinations
 from random import choice
-from .diagram_elements import Vertex, Edge, Crossing
+from yamada.diagram_elements import Vertex, Edge, Crossing
 
 
 # %% Reidemeister 0

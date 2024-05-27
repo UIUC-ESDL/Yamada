@@ -1,7 +1,6 @@
 from cypari import pari
-from yamada.spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
-from yamada.spatial_graph_diagrams.diagram_elements import Vertex, Edge, Crossing
-from yamada.spatial_graph_diagrams.Reidemeister import *
+from yamada.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.Reidemeister import *
 import numpy as np
 import random
 

@@ -2,8 +2,7 @@ import numpy as np
 import networkx as nx
 import json
 from yamada import SpatialGraph
-from yamada.spatial_graph_diagrams.Reidemeister import *
-import time as time
+from yamada.Reidemeister import *
 
 # set the random seed for reproducibility
 np.random.seed(0)

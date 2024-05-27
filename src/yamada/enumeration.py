@@ -1,142 +1,19 @@
 import networkx as nx
-import pickle
 import collections
 import itertools
 import subprocess
 import io
 import time
-import glob
-from .spatial_graph_diagrams.diagram_elements import Vertex, Crossing
-from .spatial_graph_diagrams.spatial_graph_diagrams import SpatialGraphDiagram
-from .utilities import read_json_file
+from yamada.diagram_elements import Vertex, Crossing, Edge
+from yamada.spatial_graph_diagrams import SpatialGraphDiagram
 
 
-def split_edge(edge):
-    """
-    Splits an edge with more than two nodes into a series of edges which each have two nodes.
-    """
-
-    edges = []
-    for i in range(len(edge)-1):
-        edges.append((edge[i], edge[i+1]))
-    return edges
-
-
-def split_edges(edges):
-    """
-    Splits a list of edges with more than two nodes into a series of edges which each have two nodes.
-    """
-
-    # Strip crossings from edges
-    edges_without_crossings = []
-    for edge in edges:
-        edge_without_crossings = [node for node in edge if "C" not in node]
-        edges_without_crossings.append(edge_without_crossings)
-
-    new_edges = []
-    for edge in edges_without_crossings:
-        new_edges.extend(split_edge(edge))
-    return new_edges
-
-
-def extract_graph_from_json_file(filename):
-    """
-    Reads a json file and returns a networkx graph
-    """
-
-    data = read_json_file(filename)
-
-    # Extract the dictionary inputs
-    nodes              = list(data['3D_positions'][0].keys())
-    node_positions     = list(data['3D_positions'][0].values())
-    crossings          = list(data['3D_positions'][1].keys())
-    crossing_positions = list(data['3D_positions'][1].values())
-    edges              = list(data['3D_positions'][2])
-
-    # Extract non crossings from crossings
-    noncrossings, noncrossing_positions = zip(*[(crossing, crossing_position) for crossing, crossing_position in zip(crossings, crossing_positions) if "C" not in crossing])
-
-
-
-    # Only extract non crossings
-    # Merge nodes and crossings
-    nodes.extend(noncrossings)
-    node_positions.extend(noncrossing_positions)
-
-    # Remove crossings from edges
-
-    # Format edges so that each edge has two nodes
-    edges = split_edges(edges)
-
-    return nodes, node_positions, edges
-
-# def extract_graph_from_dict(data, index):
-
-
-
-
-
-
-# def generate_random_layout(layout):
-#     """
-#     Generates random layouts using a force-directed algorithm
-
-#     Initially assumes 0 rotation and 1x6 design vector
-
-
-#     :return:
-#     """
-
-#     g = nx.MultiGraph()
-#     g.add_nodes_from(layout.nodes)
-#     g.add_edges_from(layout.edges)
-
-#     # Optimal distance between nodes
-#     k = 1
-
-#     scale = 6
-
-#     # TODO remove this random number seed for actual problems
-#     seed = 11
-
-#     # Dimension of layout
-#     dim = 3
-
-#     positions = nx.spring_layout(g, k=k, dim=dim, scale=scale, seed=seed)
-
-#     # Generate random angles too?
-
-#     # Temporarily pad zeros for rotations
-#     design_vectors = []
-#     rotation = np.array([0, 0, 0])
-
-#     for i in positions:
-#         position = positions[i]
-#         design_vector = np.concatenate((position, rotation))
-#         design_vectors.append(design_vector)
-
-#     # Flatten design vectors
-#     # TODO Make more efficient?
-#     design_vector = np.concatenate(design_vectors)
-
-#     return design_vector
-
-
-# """Generate Yamada polynomial spatial topologies..."""
-
-
-
-
-
-
-
-
-def shadows_via_plantri_by_ascii(num_tri_verts, num_crossings):
+def shadows_via_plantri_by_ascii(plantri_directory, num_tri_verts, num_crossings):
     assert num_tri_verts % 2 == 0
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
-    cmd = ['plantri',
+    cmd = [plantri_directory+'plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
            '-c1',  # graph should be 1-connected
@@ -168,12 +45,12 @@ def read_edge_code(stream, size):
     return ans
 
 
-def shadows_via_plantri_by_edge_codes(num_tri_verts, num_crossings):
+def shadows_via_plantri_by_edge_codes(plantri_directory, num_tri_verts, num_crossings):
     assert num_tri_verts % 2 == 0
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
-    cmd = ['.plantri',
+    cmd = [plantri_directory+'plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
            '-c1',  # graph should be 1-connected
@@ -230,9 +107,6 @@ class Shadow:
 
         return SpatialGraphDiagram(classes, check=check)
 
-
-# def spatial_graph_diagrams_from_shadow(shadow, signs):
-#    assert len(signs
 
 # TODO Compile Plantri for Windows
 def spatial_graph_diagrams_fixed_crossings(G, crossings):
@@ -298,19 +172,6 @@ def enumerate_yamada_classes_multicore(G, max_crossings, pool):
         timings[crossings] = time.time() - start
     return polys, timings, examined
 
-
-def pickle_yamada(data, filename):
-    with open(filename, 'wb') as file:
-        pickle.dump(data, file)
-
-
-def load_yamada(filename):
-    with open(filename, 'rb') as file:
-        return pickle.load(file)
-
-def read_pickle(nodes):
-    file = open(max(glob.glob(f'pickles/G{nodes}_C*.pickle')), 'rb')
-    return pickle.load(file)
 
 def num_automorphisms(graph):
     matcher = nx.isomorphism.GraphMatcher(graph, graph)

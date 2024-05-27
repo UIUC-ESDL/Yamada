@@ -8,7 +8,6 @@
 
 import numpy as np
 from yamada import SpatialGraph
-from yamada import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial
 
 
 # ## Verifying the cyclic ordering of nodes for a vertex

@@ -8,7 +8,7 @@
 
 import networkx as nx
 from cypari import pari
-from yamada import h_poly, normalize_yamada_polynomial
+from yamada import h_poly
 
 
 # ## H Polynomials
