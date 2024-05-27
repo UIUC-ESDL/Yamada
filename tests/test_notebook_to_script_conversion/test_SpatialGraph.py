@@ -8,7 +8,6 @@
 
 import numpy as np
 from yamada import SpatialGraph
-from yamada import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_poly, normalize_yamada_polynomial
 
 
 # ## Verifying the cyclic ordering of nodes for a vertex
@@ -21,18 +20,18 @@ from yamada import Vertex, Edge, Crossing, SpatialGraphDiagram, h_poly, reverse_
 def test_cyclic_node_ordering_vertex():
 
     nodes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-
-    node_positions = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, 0.5, 0], [0.25,0.75, 0], [0.75, 0.75, 0], [0, 1, 0], [1, 1, 0]])
+    
+    node_positions = {'a': [0,0,0], 'b': [1,0,0], 'c': [0.5,1,0], 'd': [0.5,0.5,0], 'e': [0.25,0.75,0], 'f': [0.75,0.75,0], 'g': [0,1,0], 'h': [1,1,0]}
 
     edges = [('a', 'b'), ('a', 'g'), ('a', 'd'), ('b', 'd'), ('b', 'h'), ('d', 'e'), ('d', 'f'), ('e', 'c'), ('f', 'c'), ('g', 'c'), ('h', 'c')]
 
-    sg = SpatialGraph(nodes=nodes,
-                      node_positions=node_positions,
-                      edges=edges)
-
     # Use a predefined rotation (from a random seed) that previously produced an error
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.project(predefined_rotation=rotation)
+
+    sg = SpatialGraph(nodes=nodes,
+                      node_positions=node_positions,
+                      edges=edges,
+                      projection_rotation=rotation)
 
     order = sg.cyclic_order_vertex('c')
     expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
@@ -52,7 +51,7 @@ def test_cyclic_node_ordering_vertex():
 
 
 def test_cyclic_ordering_crossing():
-
+    # TODO Re-label these! Or Find out what the actual rotations are and update them!
     component_a = 'comp_a'
     component_b = 'comp_b'
     component_c = 'comp_c'
@@ -104,6 +103,8 @@ def test_cyclic_ordering_crossing():
 
     node_positions = np.concatenate((component_positions, waypoint_positions), axis=0)
 
+    node_positions = {node: pos for node, pos in zip(nodes, node_positions)}
+
     edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
          (component_a, waypoint_ad), (waypoint_ad, component_d),
          (component_a, waypoint_ae), (waypoint_ae, component_e),
@@ -117,14 +118,13 @@ def test_cyclic_ordering_crossing():
          (component_f, waypoint_fg), (waypoint_fg, component_g),
          (component_g, waypoint_gh), (waypoint_gh, component_h)]
 
-
-    sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
-
     # Define the random rotation that previously caused issues
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.project(predefined_rotation=rotation)
 
-
+    sg = SpatialGraph(nodes=nodes, 
+                      node_positions=node_positions, 
+                      edges=edges,
+                      projection_rotation=rotation)
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -193,6 +193,8 @@ def test_cyclic_ordering_crossing_2():
                                    [0.5, 0.95, 1]])  # gh
 
     node_positions = np.concatenate((component_positions, waypoint_positions), axis=0)
+    
+    node_positions = {node: pos for node, pos in zip(nodes, node_positions)}
 
     edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
          (component_a, waypoint_ad), (waypoint_ad, component_d),
@@ -207,12 +209,13 @@ def test_cyclic_ordering_crossing_2():
          (component_f, waypoint_fg), (waypoint_fg, component_g),
          (component_g, waypoint_gh), (waypoint_gh, component_h)]
 
-
-    sg = SpatialGraph(nodes=nodes, node_positions=list(node_positions), edges=edges)
-
     # Set rotation
     rotation = np.array([2.73943676, 0.16289932, 3.4536312 ])
-    sg.project(predefined_rotation=rotation)
+
+    sg = SpatialGraph(nodes=nodes, 
+                      node_positions=node_positions, 
+                      edges=edges,
+                      projection_rotation=rotation)
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -239,14 +242,16 @@ def test_cyclic_ordering_crossing_2():
 
 def test_get_sub_edges():
 
-    sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-                      node_positions=np.array([[0, 0.5, 0], [1, 0.5, 1], [1, 0, 0], [0, 0, 1]]),
-                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')])
-
     # Set rotation
-
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-    sg.project(predefined_rotation=rotation)
+
+    sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
+                      node_positions={'a':[0, 0.5, 0],
+                                      'b': [1, 0.5, 1], 
+                                      'c': [1, 0, 0], 
+                                      'd': [0, 0, 1]},
+                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+                      projection_rotation=rotation)
 
     sep = sg.get_sub_edges()
 

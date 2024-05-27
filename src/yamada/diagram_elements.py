@@ -27,7 +27,7 @@ class BaseVertex:
     A flat vertex has n inputs, labeled 0, 1, ..., n-1 in
     anticlockwise order.
 
-    The adjacents should be edges, not other flat vertices.
+    The adjacent should be edges, not other flat vertices.
     """
 
     def __init__(self, degree, label):

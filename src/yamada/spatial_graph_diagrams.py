@@ -46,14 +46,9 @@ rather than directly calculate Yamada polynomials in this script (you'll get err
 import networkx as nx
 import pickle
 from cypari import pari
-import matplotlib.pyplot as plt
-from ..H_polynomial import h_poly
-from ..utilities import get_coefficients_and_exponents
-from .diagram_elements import Vertex, Edge, Crossing, EntryPoint
-from .Reidemeister import has_r1, apply_r1, has_r2, apply_r2, has_r3, apply_r3
-import pyvista as pv
-
-
+from yamada.H_polynomial import h_poly
+from yamada.utilities import get_coefficients_and_exponents
+from yamada.diagram_elements import Vertex, Edge, Crossing
 
 
 class SpatialGraphDiagram:
@@ -184,22 +179,6 @@ class SpatialGraphDiagram:
                     E[1] = (B, j)
 
         self.edges = edges
-
-    # def inflate_edge(self, crossing_1, crossing_2):
-    #     """
-    #     Splices and edge between two connected crossings
-    #     TODO Delete?
-    #     """
-    #
-    #     E = Edge(len(self.edges))
-    #     self.edges.append(E)
-    #     self.data[E.label] = E
-    #
-    #     c1_index_to_c2 = [i for i in range(4) if crossing_1.adjacent[i][0] == crossing_2][0]
-    #     c2_index_to_c1 = [i for i in range(4) if crossing_2.adjacent[i][0] == crossing_1][0]
-    #
-    #     E[0] = crossing_1.adjacent[c1_index_to_c2]
-    #     E[1] = crossing_2.adjacent[c2_index_to_c1]
 
 
     def _merge_vertices(self):
@@ -383,12 +362,6 @@ class SpatialGraphDiagram:
         return G
 
 
-
-
-
-
-
-
     def yamada_polynomial(self, check_pieces=False):
         """
         Return the non-normalized Yamada polynomial of the knot.
@@ -444,10 +417,7 @@ class SpatialGraphDiagram:
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
     def normalized_yamada_polynomial(self):
-        """normalized_yamada_polynomial
-
-        TODO Why does the normalizer work this way?
-        """
+        """normalized_yamada_polynomial"""
 
         yamada_polynomial = self.yamada_polynomial()
 
@@ -465,8 +435,6 @@ class SpatialGraphDiagram:
 
 def normalize_yamada_polynomial(yamada_polynomial):
     """normalized_yamada_polynomial
-
-    TODO Why does the normalizer work this way?
     """
 
     A = pari('A')
@@ -479,9 +447,6 @@ def normalize_yamada_polynomial(yamada_polynomial):
     normalized_yamada_polynomial = min([ans1, ans2], key=list)
 
     return normalized_yamada_polynomial
-
-
-
 
 
 def reverse_poly(poly):

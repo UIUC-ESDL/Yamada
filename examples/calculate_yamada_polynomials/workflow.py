@@ -32,6 +32,9 @@ filepath = directory + "enumerated_spatial_topologies/G6/C1/G6C1I0.json"
 
 nodes, node_positions, edges = extract_graph_from_json_file(filepath)
 
+# Convert the node_positions to a dictionary
+# TODO Change input formatter
+node_positions = {node: position for node, position in zip(nodes, node_positions)}
 
 # %% Create a SpatialGraph object and calculate the Yamada polynomial
 

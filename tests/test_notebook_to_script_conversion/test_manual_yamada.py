@@ -7,7 +7,7 @@
 import networkx as nx
 from cypari import pari
 from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
-    Crossing, reverse_poly, normalize_yamada_polynomial
+    Crossing, normalize_yamada_polynomial
 
 
 # 
