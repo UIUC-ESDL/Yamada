@@ -6,6 +6,7 @@ import io
 import time
 from yamada.diagram_elements import Vertex, Crossing, Edge
 from yamada.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.Reidemeister import has_r2, has_r6
 
 
 def shadows_via_plantri_by_ascii(plantri_directory, num_tri_verts, num_crossings):
@@ -50,6 +51,14 @@ def shadows_via_plantri_by_edge_codes(plantri_directory, num_tri_verts, num_cros
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
+    # cmd = ['./plantri53/plantri',
+    #        '-p -d',  # simple planar maps, but return the dual
+    #        '-f4',  # maximum valence in the returned dual is <= 4
+    #        '-c1',  # graph should be 1-connected
+    #        '-m2',  # no valence 1 vertices = no loops in the dual
+    #        '-E',  # return binary edge code format
+    #        '-e%d' % edges,
+    #        '%d' % faces]
     cmd = [plantri_directory+'plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
@@ -127,7 +136,7 @@ def spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
         U = diagram.underlying_graph()
         if U is not None:
             if nx.is_isomorphic(G, U):
-                if not diagram.has_r6():
+                if not has_r6(diagram):
                     num_cross = len(shadow.crossings)
                     if num_cross == 0:
                         yield diagram
@@ -135,7 +144,8 @@ def spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
                         for signs in itertools.product((0, 1), repeat=num_cross - 1):
                             signs = (0,) + signs
                             D = shadow.spatial_graph_diagram(signs=signs, check=False)
-                            if not D.has_r2():
+                            D_has_r2, _ = has_r2(D)
+                            if not D_has_r2:
                                 yield D
 
 
