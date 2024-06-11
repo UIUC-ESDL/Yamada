@@ -131,6 +131,7 @@ def position_spatial_graphs_in_3d(ust_dict, z_height=20):
     for ust in list(ust_dict.values()):
 
         nodes, node_positions, edges = position_spatial_graph_in_3d(ust, z_height)
+        node_positions = {node: position for node, position in zip(nodes, node_positions)}
         sg_inputs.append((nodes, node_positions, edges))
 
     return sg_inputs
