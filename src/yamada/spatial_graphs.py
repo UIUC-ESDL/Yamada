@@ -1174,9 +1174,9 @@ class SpatialGraph:
         #
         #
 
-        # p.view_isometric()
+        p.view_isometric()
         # p.view_xy()
-        p.view_xz()
+        # p.view_xz()
         p.show_axes()
         p.show_bounds()
 
