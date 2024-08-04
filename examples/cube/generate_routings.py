@@ -51,11 +51,11 @@ def create_cube_paths(grid, corners, reference_paths, k, l):
         # Create a copy of the grid
         grid_copy = grid.copy()
 
-        # # Remove any waypoint nodes
-        # for _, path in edge_paths:
-        #     if len(path) > 2:
-        #         for node in path[1:-1]:
-        #             grid_copy.remove_node(node)
+        # Remove any waypoint nodes
+        for _, path in edge_paths:
+            if len(path) > 2:
+                for node in path[1:-1]:
+                    grid_copy.remove_node(node)
 
         # Remove the cube corners from the grid, except for the start and end nodes
         for node in corners:
