@@ -40,9 +40,82 @@ def calculate_reference_paths(grid, cube_edges):
 
 
 
-def create_cube_paths(grid, corners, reference_paths, k, l):
+# def create_cube_paths(grid, corners, reference_paths, k, l):
+#
+#     # TODO: Remove all edges from an intermediate node, and start/end nodes should not be in middle of list...
+#
+#     edge_paths = []
+#
+#     for (start, end), reference_path in reference_paths.items():
+#
+#         # Create a copy of the grid
+#         grid_copy = grid.copy()
+#
+#         # Remove any waypoint nodes
+#         for _, path in edge_paths:
+#             if len(path) > 2:
+#                 for node in path[1:-1]:
+#                     grid_copy.remove_node(node)
+#
+#         # Remove the cube corners from the grid, except for the start and end nodes
+#         for node in corners:
+#             if node not in [start, end]:
+#                 grid_copy.remove_node(node)
+#
+#         # For a path with k waypoints, create k + 1 sub-paths
+#         n_subpaths = k + 1
+#         subpaths = []
+#
+#         # Identify waypoints within l distance of at least one node in the reference path
+#         candidate_waypoints = [node for node in grid_copy.nodes if any(manhattan_distance(node, ref) <= l for ref in reference_path)]
+#
+#         # Candidates should not be the start or end nodes
+#         candidate_waypoints = [node for node in candidate_waypoints if node not in corners]
+#
+#         # Randomly select k waypoints from the candidate waypoints
+#         waypoints = random.sample(candidate_waypoints, k)
+#
+#         # # Sort the waypoints by their distance to the start node
+#         # waypoints.sort(key=lambda node: manhattan_distance(node, start))
+#
+#         # Create the sub-paths
+#         for i in range(n_subpaths):
+#             grid_copy_copy = grid_copy.copy()
+#             if i == 0:
+#                 grid_copy_copy.remove_node(end)
+#                 reserved_waypoints = waypoints[1:]
+#                 grid_copy_copy.remove_nodes_from(reserved_waypoints)
+#                 subpath = nx.astar_path(grid_copy_copy, start, waypoints[0], heuristic=manhattan_distance)
+#             elif i == n_subpaths - 1:
+#                 grid_copy_copy.remove_node(start)
+#                 reserved_waypoints = waypoints[:-1]
+#                 grid_copy_copy.remove_nodes_from(reserved_waypoints)
+#                 subpath = nx.astar_path(grid_copy_copy, waypoints[-1], end, heuristic=manhattan_distance)
+#             else:
+#                 grid_copy_copy.remove_node(start)
+#                 grid_copy_copy.remove_node(end)
+#                 # TODO Or waypoints[i + 2:] (?)
+#                 reserved_waypoints = waypoints[:i] + waypoints[i + 1:]
+#                 grid_copy_copy.remove_nodes_from(reserved_waypoints)
+#                 subpath = nx.astar_path(grid_copy_copy, waypoints[i - 1], waypoints[i], heuristic=manhattan_distance)
+#
+#             subpaths += subpath
+#
+#             # Remove the sub-path from the grid
+#             for j in range(len(subpath) - 1):
+#                 grid_copy.remove_edge(subpath[j], subpath[j + 1])
+#
+#         # Remove repeated nodes from the sub-paths
+#         path = [subpaths[0]]
+#         for node in subpaths[1:]:
+#             if node != path[-1]:
+#                 path.append(node)
+#
+#         edge_paths.append(((start, end), path))
+#
+#     return edge_paths
 
-    # TODO: Remove all edges from an intermediate node, and start/end nodes should not be in middle of list...
+def create_cube_paths(grid, corners, reference_paths, k, l):
 
     edge_paths = []
 
@@ -75,34 +148,31 @@ def create_cube_paths(grid, corners, reference_paths, k, l):
         # Randomly select k waypoints from the candidate waypoints
         waypoints = random.sample(candidate_waypoints, k)
 
-        # # Sort the waypoints by their distance to the start node
-        # waypoints.sort(key=lambda node: manhattan_distance(node, start))
+        # Now add the start and end nodes to the list of waypoints
+        waypoints = [start] + waypoints + [end]
 
         # Create the sub-paths
         for i in range(n_subpaths):
             grid_copy_copy = grid_copy.copy()
-            if i == 0:
-                grid_copy_copy.remove_node(end)
-                reserved_waypoints = waypoints[1:]
-                grid_copy_copy.remove_nodes_from(reserved_waypoints)
-                subpath = nx.astar_path(grid_copy_copy, start, waypoints[0], heuristic=manhattan_distance)
-            elif i == n_subpaths - 1:
-                grid_copy_copy.remove_node(start)
-                reserved_waypoints = waypoints[:-1]
-                grid_copy_copy.remove_nodes_from(reserved_waypoints)
-                subpath = nx.astar_path(grid_copy_copy, waypoints[-1], end, heuristic=manhattan_distance)
-            else:
-                grid_copy_copy.remove_node(start)
-                grid_copy_copy.remove_node(end)
-                reserved_waypoints = waypoints[:i] + waypoints[i + 1:]
-                grid_copy_copy.remove_nodes_from(reserved_waypoints)
-                subpath = nx.astar_path(grid_copy_copy, waypoints[i - 1], waypoints[i], heuristic=manhattan_distance)
+
+            # Reserve unused waypoints
+            reserved_waypoints = waypoints[:i] + waypoints[i + 2:]
+
+            # Remove reserved waypoints
+            grid_copy_copy.remove_nodes_from(reserved_waypoints)
+
+            # Calculate the sub-path
+            subpath = nx.astar_path(grid_copy_copy, waypoints[i], waypoints[i + 1], heuristic=manhattan_distance)
 
             subpaths += subpath
 
             # Remove the sub-path from the grid
-            for j in range(len(subpath) - 1):
-                grid_copy.remove_edge(subpath[j], subpath[j + 1])
+            # for j in range(len(subpath) - 1):
+            #     grid_copy.remove_edge(subpath[j], subpath[j + 1])
+
+            # Remove the sub-path nodes from the grid
+            grid_copy.remove_nodes_from(subpath[1:-1])
+
 
         # Remove repeated nodes from the sub-paths
         path = [subpaths[0]]
@@ -115,13 +185,21 @@ def create_cube_paths(grid, corners, reference_paths, k, l):
     return edge_paths
 
 
-def draw_graph(cube_corners, edge_paths):
+def draw_graph(grid, cube_corners, edge_paths):
     plotter = pv.Plotter()
 
     # Define a list of distinct colors
     color_palette = [
         "red", "green", "blue", "yellow", "purple", "cyan", "magenta", "orange", "lime", "pink", "teal", "brown"
     ]
+
+    # Draw reference paths in wireframe
+    for edge in grid.edges():
+        points = []
+        for node in edge:
+            points.append(node)
+        line = pv.lines_from_points(points)
+        plotter.add_mesh(line, color='gray', line_width=1, style='wireframe', opacity=0.25)
 
     # Draw cube nodes larger
     for node in cube_corners:
@@ -142,14 +220,14 @@ def draw_graph(cube_corners, edge_paths):
         for node in path:
             points.append(node)
         line = pv.lines_from_points(points)
-        plotter.add_mesh(line, color=color, line_width=4)
+        plotter.add_mesh(line, color=color, line_width=6)
 
     plotter.show()
 
 # Example usage
 n = 8  # Size of the grid
-m = 5  # Size of the cube
-k = 1  # Number of waypoints
+m = 4  # Size of the cube
+k = 1  # Number of waypoints TODO fix for >1 waypoint
 l = 2  # Minimum distance from the original path nodes
 
 grid = create_grid_graph(n)
@@ -168,8 +246,12 @@ reference_paths = calculate_reference_paths(grid, cube_edges)
 # Create paths with waypoints
 edge_paths = create_cube_paths(grid, cube_corners, reference_paths, k, l)
 
+# # Draw the reference paths
+# edge_paths_ref = [(key, value) for key, value in reference_paths.items()]
+# draw_graph(grid, cube_corners, edge_paths_ref)
+
 # Draw the graph with waypoints
-draw_graph(cube_corners, edge_paths)
+draw_graph(grid, cube_corners, edge_paths)
 
 # Define nodes, edges, and node positions of the cube nodes and paths
 node_labels = {tuple(node): idx for idx, node in enumerate(set(itertools.chain(*[path for _, path in edge_paths])))}
