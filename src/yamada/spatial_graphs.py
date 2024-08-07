@@ -3,8 +3,10 @@
 This module contains classes and functions for working with spatial graphs.
 """
 
+
 import numpy as np
 
+import itertools
 from itertools import combinations
 import pyvista as pv
 import matplotlib.colors as mcolors
@@ -14,6 +16,10 @@ from .geometry import rotate, get_line_segment_intersection, calculate_intermedi
 
 from yamada.diagram_elements import Vertex, Crossing
 from yamada.spatial_graph_diagrams import SpatialGraphDiagram
+
+# TODO Replace random, but use a seed for reproducibility for now
+random.seed(0)
+np.random.seed(0)
 
 
 class SpatialGraph:
@@ -948,7 +954,7 @@ class SpatialGraph:
 
         """
 
-        # # Define the random rotations
+        # Define the random rotations
         random_rotations = 2 * np.pi * np.random.rand(max_iter - 1, 3)
         rotations = np.vstack((initial_rotation, random_rotations))
 
@@ -1065,6 +1071,10 @@ class SpatialGraph:
         TODO Add labels
         """
 
+        # Define a list of colors to cycle through
+        color_list = list(mcolors.TABLEAU_COLORS.keys())
+        color_cycle = itertools.cycle(color_list)
+
         # plotter = pv.Plotter()
         p = pv.Plotter(window_size=[1000, 1000])
 
@@ -1130,9 +1140,9 @@ class SpatialGraph:
 
 
         # Plot the Projected lines
-        colors = [random.choice(list(mcolors.TABLEAU_COLORS.keys())) for _ in range(len(contiguous_sub_edges))]
         for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
             lines = []
+            color = next(color_cycle)
             for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
                 start = sub_edge_position_1
                 end = sub_edge_position_2
@@ -1145,7 +1155,7 @@ class SpatialGraph:
                 lines.append(line)
 
             linear_spline = pv.MultiBlock(lines)
-            p.add_mesh(linear_spline, line_width=5, color=colors[i])
+            p.add_mesh(linear_spline, line_width=5, color=color)
             # p.add_mesh(linear_spline, line_width=5, color='grey')
 
 
