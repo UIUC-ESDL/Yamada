@@ -1066,8 +1066,6 @@ class SpatialGraph:
 
     def plot(self):
         """
-        TODO, replace cylinder with circle and dashed line
-        TODO Scale everything so it's always between 0 and 1
         TODO Add labels
         """
 
@@ -1076,7 +1074,7 @@ class SpatialGraph:
         color_cycle = itertools.cycle(color_list)
 
         # plotter = pv.Plotter()
-        p = pv.Plotter(shape=(1,2), window_size=[2000, 1000])
+        p = pv.Plotter(window_size=[1000, 1000])
 
         # Get the necessary values
         nodes = self.nodes
@@ -1085,30 +1083,6 @@ class SpatialGraph:
         crossing_positions = self.crossing_positions
         node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
-
-
-        # Plot the 3D Spatial Graph in the first subplot
-        p.subplot(0,0)
-        p.add_title("3D Spatial Graph")
-
-        # Plot the 3D Lines
-        for sub_edge in self.edges:
-            node_a = sub_edge[0]
-            node_b = sub_edge[1]
-
-            node_a_position = node_positions_dict[node_a]
-            node_b_position = node_positions_dict[node_b]
-
-            line = pv.Line(node_a_position, node_b_position)
-            p.add_mesh(line, color='black', line_width=5)
-
-        # Plot the 3D Nodes
-        for node, node_position in zip(nodes, node_positions):
-            p.add_mesh(pv.Sphere(radius=0.05, center=node_position), color='black')
-
-        #
-        p.view_isometric()
-        p.show_axes()
 
 
         # Plot the 2D Projection in the second subplot
@@ -1149,8 +1123,7 @@ class SpatialGraph:
             p.add_mesh(linear_spline, line_width=5, color=color)
 
 
-
-        # ...
+        # Configure the plot
         p.view_xz()
         p.show_axes()
 
