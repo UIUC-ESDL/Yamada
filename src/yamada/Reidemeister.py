@@ -1,7 +1,10 @@
 from itertools import combinations
+import random
 from random import choice
 from yamada.diagram_elements import Vertex, Edge, Crossing
 
+# Set the random seed for reproducibility
+random.seed(0)
 
 # %% Reidemeister 0
 
@@ -271,6 +274,8 @@ def apply_r3(sgd, r3_input):
     """
     We apply the R3 move by sliding the moving crossings along the moving edges, though the stationary crossing,
     and over/under an adjacent stationary crossing edge. Doing so requires us to
+
+    TODO: R3 Occasionally raises an error.
     """
 
     # Make a copy of the sgd object to avoid modifying the original
@@ -528,6 +533,7 @@ def reidemeister_simplify(sgd, n_tries=10):
         sgd_has_r3, r3_inputs = has_r3(sgd)
         if sgd_has_r3:
             # Pick a random candidate
+            # TODO make random choice replicable when needed
             r3_input = choice(r3_inputs)
             sgd = apply_r3(sgd, r3_input)
             total_r3_count += 1
