@@ -1065,9 +1065,6 @@ class SpatialGraph:
         return sgd
 
     def plot(self):
-        """
-        TODO Add labels
-        """
 
         # Define a list of colors to cycle through
         color_list = list(mcolors.TABLEAU_COLORS.keys())
@@ -1084,28 +1081,51 @@ class SpatialGraph:
         node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
 
+        # Function to calculate offset position
+        def calculate_offset_position(position, offset=[0.1, 0.1, 0.1]):
+            return position + np.array(offset)
 
-        # Plot the 2D Projection in the second subplot
-        p.subplot(0, 1)
-        p.add_title("2D Projection")
-
-
-        # Plot the vertices and crossings
+        # TODO Use something more consistent than if "string" in node
+        labeled_nodes = []
         for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
             start_node = contiguous_edge[0]
             end_node = contiguous_edge[-1]
             start_position = contiguous_edge_positions_i[0][0]
             end_position = contiguous_edge_positions_i[-1][1]
 
-            if 'crossing' in start_node:
-                p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='black', opacity=0.5)
-            # else:
-            #     p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='black', opacity=0.5)
+            if start_node not in labeled_nodes:
+                color = "red" if "crossing" in start_node else "black"
+                p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color=color, opacity=0.5)
+                offset_start_position = calculate_offset_position(start_position)
+                p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12, text_color='black')
+                labeled_nodes.append(start_node)
 
-            if 'crossing' in end_node:
-                p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='black', opacity=0.5)
-            # else:
-            #     p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='black', opacity=0.5)
+            if end_node not in labeled_nodes:
+                color = "red" if "crossing" in end_node else "black"
+                p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color=color, opacity=0.5)
+                offset_end_position = calculate_offset_position(end_position)
+                p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
+                labeled_nodes.append(end_node)
+
+        # # Plot the vertices and crossings
+        # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
+        #     start_node = contiguous_edge[0]
+        #     end_node = contiguous_edge[-1]
+        #     start_position = contiguous_edge_positions_i[0][0]
+        #     end_position = contiguous_edge_positions_i[-1][1]
+        #
+        #     p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='black', opacity=0.5)
+        #     offset_start_position = calculate_offset_position(start_position)
+        #     p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12,
+        #                        text_color='black')
+        #     arrow = pv.Arrow(start=start_position, direction=offset_start_position)
+        #     p.add_mesh(arrow, color='black', opacity=0.25)
+        #
+        #     p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='black', opacity=0.5)
+        #     offset_end_position = calculate_offset_position(end_position)
+        #     p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
+        #     arrow = pv.Arrow(start=end_position, direction=end_position)
+        #     p.add_mesh(arrow, color='black', opacity=0.25)
 
 
         # Plot the Projected lines
@@ -1121,6 +1141,11 @@ class SpatialGraph:
 
             linear_spline = pv.MultiBlock(lines)
             p.add_mesh(linear_spline, line_width=5, color=color)
+
+
+
+
+
 
 
         # Configure the plot
