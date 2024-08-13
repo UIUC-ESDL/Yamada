@@ -1,11 +1,13 @@
 import itertools
+import numpy as np
 import random
 import networkx as nx
 import pyvista as pv
 from networkx.algorithms.approximation import traveling_salesman_problem
 
-# Set the random seed for reproducibility
+# TODO Replace random, but use a seed for reproducibility for now
 random.seed(0)
+np.random.seed(0)
 
 def create_grid_graph(size):
     # Create a 3D grid graph with the specified size
@@ -152,9 +154,9 @@ def draw_graph(grid, cube_corners, edge_paths):
 # k = 2  # Number of waypoints
 # l = 3  # Minimum distance from the original path nodes
 n = 10  # Size of the grid
-m = 4  # Size of the cube
+m = 5  # Size of the cube
 k = 1  # Number of waypoints
-l = 1  # Minimum distance from the original path nodes
+l = 2  # Minimum distance from the original path nodes
 
 grid = create_grid_graph(n)
 cube_corners = select_cube_corners(n, m)
@@ -209,7 +211,7 @@ sgd = sg.create_spatial_graph_diagram()
 
 # TODO Fix
 # n=19 works, n=20 does not
-sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=30)
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=100)
 
 print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
 

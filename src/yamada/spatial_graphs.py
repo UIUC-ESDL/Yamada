@@ -10,6 +10,7 @@ import itertools
 from itertools import combinations
 import pyvista as pv
 import matplotlib.colors as mcolors
+from matplotlib import cm
 import random
 
 from .geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
@@ -18,8 +19,8 @@ from yamada.diagram_elements import Vertex, Crossing
 from yamada.spatial_graph_diagrams import SpatialGraphDiagram
 
 # TODO Replace random, but use a seed for reproducibility for now
-random.seed(0)
-np.random.seed(0)
+# random.seed(0)
+# np.random.seed(0)
 
 
 class SpatialGraph:
@@ -1068,10 +1069,11 @@ class SpatialGraph:
 
         # Define a list of colors to cycle through
         color_list = list(mcolors.TABLEAU_COLORS.keys())
+        # color_list = [mcolors.rgb2hex(color) for color in cm.tab20.colors]
         color_cycle = itertools.cycle(color_list)
 
         # plotter = pv.Plotter()
-        p = pv.Plotter(window_size=[1000, 1000])
+        p = pv.Plotter(shape=(1,2), window_size=[2000, 1000])
 
         # Get the necessary values
         nodes = self.nodes
@@ -1081,51 +1083,32 @@ class SpatialGraph:
         node_positions_dict = {node: position for node, position in zip(nodes, node_positions)}
         contiguous_sub_edges, contiguous_sub_edge_positions = self.get_contiguous_edges()
 
-        # Function to calculate offset position
-        def calculate_offset_position(position, offset=[0.1, 0.1, 0.1]):
-            return position + np.array(offset)
+        # Plot the 3D Spatial Graph in the first subplot
+        p.subplot(0, 0)
+        p.add_title("3D Spatial Graph")
 
-        # TODO Use something more consistent than if "string" in node
-        labeled_nodes = []
+        # # Function to calculate offset position
+        # def calculate_offset_position(position, offset=[0.1, 0.1, 0.1]):
+        #     return position + np.array(offset)
+
+
         for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
             start_node = contiguous_edge[0]
             end_node = contiguous_edge[-1]
             start_position = contiguous_edge_positions_i[0][0]
             end_position = contiguous_edge_positions_i[-1][1]
 
-            if start_node not in labeled_nodes:
-                color = "red" if "crossing" in start_node else "black"
-                p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color=color, opacity=0.5)
-                offset_start_position = calculate_offset_position(start_position)
-                p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12, text_color='black')
-                labeled_nodes.append(start_node)
+            # TODO Use something more consistent than if "string" in node
+            # color = "red" if "Crossing" in start_node else "black"
+            # p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color=color, opacity=0.5)
+            # offset_start_position = calculate_offset_position(start_position)
+            # p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12, text_color='black')
 
-            if end_node not in labeled_nodes:
-                color = "red" if "crossing" in end_node else "black"
-                p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color=color, opacity=0.5)
-                offset_end_position = calculate_offset_position(end_position)
-                p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
-                labeled_nodes.append(end_node)
-
-        # # Plot the vertices and crossings
-        # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
-        #     start_node = contiguous_edge[0]
-        #     end_node = contiguous_edge[-1]
-        #     start_position = contiguous_edge_positions_i[0][0]
-        #     end_position = contiguous_edge_positions_i[-1][1]
-        #
-        #     p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color='black', opacity=0.5)
-        #     offset_start_position = calculate_offset_position(start_position)
-        #     p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12,
-        #                        text_color='black')
-        #     arrow = pv.Arrow(start=start_position, direction=offset_start_position)
-        #     p.add_mesh(arrow, color='black', opacity=0.25)
-        #
-        #     p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color='black', opacity=0.5)
-        #     offset_end_position = calculate_offset_position(end_position)
-        #     p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
-        #     arrow = pv.Arrow(start=end_position, direction=end_position)
-        #     p.add_mesh(arrow, color='black', opacity=0.25)
+            # # TODO Use something more consistent than if "string" in node
+            # color = "red" if "Crossing" in end_node else "black"
+            # p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color=color, opacity=0.5)
+            # offset_end_position = calculate_offset_position(end_position)
+            # p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
 
 
         # Plot the Projected lines
@@ -1140,17 +1123,42 @@ class SpatialGraph:
                 lines.append(line)
 
             linear_spline = pv.MultiBlock(lines)
-            p.add_mesh(linear_spline, line_width=5, color=color)
+            # p.add_mesh(linear_spline, line_width=5, color=color)
+            p.add_mesh(linear_spline, line_width=5, color="k")
 
+        # Configure the plot
+        p.view_isometric()
+        p.show_axes()
 
+        # Reset the color cycle for 2D edges
+        color_cycle = itertools.cycle(color_list)
 
+        # Plot the 2D Projection in the second subplot
+        p.subplot(0, 1)
+        p.add_title("2D Projection")
 
+        # Plot the Projected lines in 2D
+        for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+            lines = []
+            color = next(color_cycle)
+            for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
+                start = sub_edge_position_1
+                end = sub_edge_position_2
 
+                line = pv.Line((start[0],0,start[2]), (end[0],0,end[2]))
+                lines.append(line)
+
+            linear_spline = pv.MultiBlock(lines)
+            p.add_mesh(linear_spline, line_width=5, color=color, label=f"Edge {i}")
 
 
         # Configure the plot
         p.view_xz()
         p.show_axes()
+        # p.add_legend(size=(0.1, 0.5), border=True, bcolor='white', loc='center right')
+
+        # show legend
+
 
         p.show()
 

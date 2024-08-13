@@ -4,7 +4,7 @@ from random import choice
 from yamada.diagram_elements import Vertex, Edge, Crossing
 
 # Set the random seed for reproducibility
-random.seed(0)
+# random.seed(0)
 
 # %% Reidemeister 0
 
@@ -490,7 +490,7 @@ def has_r6(sgd):
 
 
 def r1_and_r2_simplify(sgd, r1_count, r2_count):
-    max_iter = 100
+    max_iter = 1000
     i = 0
     sgd_has_r1 = True
     sgd_has_r2 = True

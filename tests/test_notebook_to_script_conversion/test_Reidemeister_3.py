@@ -44,6 +44,14 @@ from yamada import SpatialGraphDiagram, Crossing, Edge
 # 
 # 
 
+# 
+
+# In[ ]:
+
+
+# TODO, add simple example that repeats the R3 move back and forth n times, checks original inputs
+
+
 # In[7]:
 
 
