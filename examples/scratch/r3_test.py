@@ -71,7 +71,7 @@ sg = SpatialGraph(nodes=node_labels,
                   edges=edges)
 
 # Plot
-# sg.plot()
+sg.plot()
 
 # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
 sgd = sg.create_spatial_graph_diagram()
