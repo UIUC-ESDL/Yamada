@@ -6,8 +6,8 @@ import pyvista as pv
 from networkx.algorithms.approximation import traveling_salesman_problem
 
 # TODO Replace random, but use a seed for reproducibility for now
-random.seed(0)
-np.random.seed(0)
+# random.seed(0)
+# np.random.seed(0)
 
 def create_grid_graph(size):
     # Create a 3D grid graph with the specified size
@@ -153,10 +153,14 @@ def draw_graph(grid, cube_corners, edge_paths):
 # m = 5  # Size of the cube
 # k = 2  # Number of waypoints
 # l = 3  # Minimum distance from the original path nodes
+# n = 10  # Size of the grid
+# m = 4  # Size of the cube
+# k = 1  # Number of waypoints
+# l = 2  # Minimum distance from the original path nodes
 n = 10  # Size of the grid
-m = 5  # Size of the cube
+m = 4  # Size of the cube
 k = 1  # Number of waypoints
-l = 2  # Minimum distance from the original path nodes
+l = 0  # Minimum distance from the original path nodes
 
 grid = create_grid_graph(n)
 cube_corners = select_cube_corners(n, m)
@@ -194,29 +198,29 @@ print("Node positions:", node_positions)
 
 
 
-from yamada import SpatialGraph
-from yamada.Reidemeister import *
-
-# Instantiate the SpatialGraph object
-sg = SpatialGraph(nodes=nodes,
-                  node_positions=node_positions,
-                  edges=edges)
-
-# # Plot the Spatial Graph in 3D and the projected 2D plane to see what's going on. Crossings will be circled in red.
-# # Note: Crossings occur when two edges that do not intersect, but appear to when they are projected onto a 2D plane.
-# # sg.plot()
-
-# Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
-sgd = sg.create_spatial_graph_diagram()
-
-# TODO Fix
-# n=19 works, n=20 does not
-sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=100)
-
-print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
-
-# yp = sgd.normalized_yamada_polynomial()
-# print(yp)
+# from yamada import SpatialGraph
+# from yamada.Reidemeister import *
+#
+# # Instantiate the SpatialGraph object
+# sg = SpatialGraph(nodes=nodes,
+#                   node_positions=node_positions,
+#                   edges=edges)
+#
+# # # Plot the Spatial Graph in 3D and the projected 2D plane to see what's going on. Crossings will be circled in red.
+# # # Note: Crossings occur when two edges that do not intersect, but appear to when they are projected onto a 2D plane.
+# # # sg.plot()
+#
+# # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
+# sgd = sg.create_spatial_graph_diagram()
+#
+# # TODO Fix
+# # n=19 works, n=20 does not
+# sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=100)
+#
+# print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
+#
+# # yp = sgd.normalized_yamada_polynomial()
+# # print(yp)
 
 
 
