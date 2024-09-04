@@ -435,24 +435,6 @@ def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
     raise Exception('Corner not found in crossing')
 
 
-def get_crossing_shift_indices(keep_crossing, remove_crossing1, remove_crossing2):
-    edge1 = find_common_edge(keep_crossing, remove_crossing1)
-    edge2 = find_common_edge(keep_crossing, remove_crossing2)
-
-    keep_crossing_index_e1 = get_index_of_crossing_corner(keep_crossing, edge1)
-    keep_crossing_index_e2 = get_index_of_crossing_corner(keep_crossing, edge2)
-
-    if keep_crossing_index_e1 == (keep_crossing_index_e2 - 1) % 4:
-        shifted_crossing_index_e1 = (keep_crossing_index_e1 - 1) % 4
-        shifted_crossing_index_e2 = (keep_crossing_index_e2 + 1) % 4
-    elif keep_crossing_index_e1 == (keep_crossing_index_e2 + 1) % 4:
-        shifted_crossing_index_e1 = (keep_crossing_index_e1 + 1) % 4
-        shifted_crossing_index_e2 = (keep_crossing_index_e2 - 1) % 4
-    else:
-        raise Exception('Edges are not adjacent')
-
-    return shifted_crossing_index_e1, shifted_crossing_index_e2
-
 
 # %% Reidemeister 4
 
@@ -482,9 +464,11 @@ def has_r6(sgd):
 # %% Reidemeister Simplification
 
 
-def r1_and_r2_simplify(sgd, r1_count, r2_count):
+def r1_and_r2_simplify(sgd):
     max_iter = 1000
     i = 0
+    r1_count = 0
+    r2_count = 0
     sgd_has_r1 = True
     sgd_has_r2 = True
     while sgd_has_r1 and sgd_has_r2:
@@ -508,6 +492,7 @@ def r1_and_r2_simplify(sgd, r1_count, r2_count):
 
 
 def reidemeister_simplify(sgd, n_tries=10):
+
     # Make a copy of the sgd object
     sgd = sgd.copy()
 
@@ -516,14 +501,13 @@ def reidemeister_simplify(sgd, n_tries=10):
     total_r2_count = 0
     total_r3_count = 0
 
-    # # Check for any initial moves that will monotonically simplify the diagram
-    # sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
-    # total_r1_count += r1_count
-    # total_r2_count += r2_count
+    # Check for any initial moves that will monotonically simplify the diagram
+    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd)
+    total_r1_count += r1_count
+    total_r2_count += r2_count
 
     # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
-        print("Loop:", i)
         sgd_has_r3, r3_inputs = has_r3(sgd)
         if sgd_has_r3:
             # Pick a semi-random R3 move
@@ -531,10 +515,10 @@ def reidemeister_simplify(sgd, n_tries=10):
             sgd = apply_r3(sgd, r3_input)
             total_r3_count += 1
 
-            # # Check for any R1 or R2 moves that will monotonically simplify the diagram
-            # sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
-            # total_r1_count += r1_count
-            # total_r2_count += r2_count
+            # Check for any R1 or R2 moves that will monotonically simplify the diagram
+            sgd, r1_count, r2_count = r1_and_r2_simplify(sgd)
+            total_r1_count += r1_count
+            total_r2_count += r2_count
         else:
             break
 
