@@ -11,7 +11,8 @@ from itertools import combinations
 import pyvista as pv
 import matplotlib.colors as mcolors
 from matplotlib import cm
-import random
+# import random
+from scipy.stats import qmc
 
 from .geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
 
@@ -955,9 +956,12 @@ class SpatialGraph:
 
         """
 
-        # Define the random rotations
-        random_rotations = 2 * np.pi * np.random.rand(max_iter - 1, 3)
-        rotations = np.vstack((initial_rotation, random_rotations))
+        # Define the random rotations (in a deterministic manner w/ a Halton sequence)
+        sampler = qmc.Halton(d=3, scramble=False)
+        halton_samples = sampler.random(n=max_iter)
+        halton_rotations = 2 * np.pi * halton_samples
+        rotations = halton_rotations
+
 
         for rotation in rotations:
             try:

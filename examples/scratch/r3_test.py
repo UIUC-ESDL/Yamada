@@ -1,4 +1,5 @@
 from yamada import SpatialGraph, has_r3, apply_r3
+from yamada.Reidemeister import reidemeister_simplify
 
 node_labels = ["0", "1", "2", "3", "4", "5", "6", "7",
                "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r"]
@@ -78,15 +79,12 @@ sgd = sg.create_spatial_graph_diagram()
 
 print(has_r3(sgd))
 
-# print(f"Crossings: {len(sgd.crossings)}")
+print(f"Crossings: {len(sgd.crossings)}")
 
-# ...
 # n_tries = 15
 # sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=n_tries)
 # print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
 
-# sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, 0, 0)
-# print(f"R1: {r1_count}, R2: {r2_count}, Remaining Crossings: {len(sgd.crossings)}")
 
 # if len(sgd.crossings) <= 10:
 #     yp = sgd.normalized_yamada_polynomial()
