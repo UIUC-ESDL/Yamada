@@ -234,7 +234,7 @@ class SpatialGraphDiagram:
         Connects two edges together. Replaces them with a single, new edge.
         """
 
-        # Connecting two
+        # Ensure that an edge does not directly connect to itself; insert a vertex if it does.
         if edge_1 == edge_2:
             V = Vertex(2, repr(edge_1) + '_stopper')
             self.add_vertex(V)
@@ -250,7 +250,13 @@ class SpatialGraphDiagram:
             edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
 
             # Create a new edge
-            new_edge_label = str(edge_1.label) + '_' + str(edge_2.label)
+
+            # Find all edges in the diagram with edge_1 and edge_2 in their label
+            labels = [edge.label for edge in self.edges if str(edge_1.label) in str(edge.label) and str(edge_2.label) in str(edge.label)]
+            new_edge_label = str(edge_1.label) + '_' + str(edge_2.label) + '_' + str(len(labels))
+
+
+
             new_edge = Edge(new_edge_label)
 
             # Remove the edges from the diagram

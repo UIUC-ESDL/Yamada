@@ -520,74 +520,6 @@ class SpatialGraph:
 
 
 
-    # def get_contiguous_edge_positions(self):
-    #
-    #     nodes = self.nodes
-    #     crossings = self.crossings
-    #     contiguous_edges = self.get_contiguous_edges()
-    #
-    #
-    #     node_positions_dict = {node: self.rotated_node_positions[nodes.index(node)] for node in nodes}
-    #
-    #     if self.crossing_positions is not None:
-    #         crossings, crossing_positions_2D, crossing_positions_3D, crossing_edge_pairs = self.get_crossings_3D()
-    #         crossing_positions_2D_dict = {crossing: position for crossing, position in zip(crossings, crossing_positions_2D)}
-    #         crossing_positions_3D_dict = {}
-    #         for crossing, crossing_position_2D, crossing_position_3D, crossing_edge_pair in zip(crossings,
-    #                                                                                             crossing_positions_2D,
-    #                                                                                             crossing_positions_3D,
-    #                                                                                             crossing_edge_pairs):
-    #             edge_pair_1, edge_pair_2 = crossing_edge_pair
-    #             node_a, node_c = edge_pair_1
-    #             node_b, node_d = edge_pair_2
-    #
-    #             crossing_position_3D_ac, crossing_position_3D_bd = crossing_position_3D
-    #             crossing_positions_3D_dict[crossing] = {'projection': crossing_position_2D,
-    #                                                    node_a: crossing_position_3D_ac,
-    #                                                    node_b: crossing_position_3D_bd,
-    #                                                    node_c: crossing_position_3D_ac,
-    #                                                    node_d: crossing_position_3D_bd}
-    #
-    #     else:
-    #         crossing_positions_dict = {}
-    #
-    #     combined_positions_dict = {**node_positions_dict, **crossing_positions_2D_dict}
-    #
-    #     contiguous_edge_positions = []
-    #     for contiguous_edge in contiguous_edges:
-    #
-    #         contiguous_edge_positions_i = []
-    #         for i in range(len(contiguous_edge) - 1):
-    #             node_a = contiguous_edge[i]
-    #             node_b = contiguous_edge[i + 1]
-    #
-    #             if 'crossing' in node_a and 'crossing' in node_b:
-    #                 # Assume that two crossings cannot share more than one straight line
-    #                 # Find a node that the two crossings share from the extended sub-edges
-    #                 extended_sub_edge_index = [i for i, sub_edge in enumerate(extended_sub_edges) if node_a in sub_edge and node_b in sub_edge][0]
-    #                 shared_nodes = [node for node in extended_sub_edges[extended_sub_edge_index] if node not in [node_a, node_b]]
-    #                 shared_node = shared_nodes[0]
-    #
-    #                 position_a = crossing_positions_3D_dict[node_a][shared_node]
-    #                 position_b = crossing_positions_3D_dict[node_b][shared_node]
-    #             elif 'crossing' in node_a:
-    #                 position_a = crossing_positions_3D_dict[node_a][node_b]
-    #                 position_b = combined_positions_dict[node_b]
-    #             elif 'crossing' in node_b:
-    #                 position_a = combined_positions_dict[node_a]
-    #                 position_b = crossing_positions_3D_dict[node_b][node_a]
-    #             else:
-    #                 position_a = combined_positions_dict[node_a]
-    #                 position_b = combined_positions_dict[node_b]
-    #
-    #             contiguous_edge_positions_i.append((position_a, position_b))
-    #
-    #         contiguous_edge_positions.append(contiguous_edge_positions_i)
-    #
-    #     return contiguous_edge_positions
-
-
-
     def get_node_or_crossing_projected_position(self, reference_node: str) -> np.ndarray:
 
         if reference_node in self.nodes:
@@ -655,11 +587,13 @@ class SpatialGraph:
 
         y_crossing_edge_1 = calculate_intermediate_y_position(edge_1_left_vertex_position,
                                                                    edge_1_right_vertex_position,
-                                                                   crossing_position[0])
+                                                                   crossing_position[0],
+                                                                   crossing_position[1])
 
         y_crossing_edge_2 = calculate_intermediate_y_position(edge_2_left_vertex_position,
                                                                    edge_2_right_vertex_position,
-                                                                   crossing_position[0])
+                                                                   crossing_position[0],
+                                                                   crossing_position[1])
 
         # Get the projected node positions
         reference_node_position = self.get_node_or_crossing_projected_position(crossing)
@@ -769,8 +703,8 @@ class SpatialGraph:
 
         x_crossing, z_crossing = crossing_position
 
-        y_crossing_1 = calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing)
-        y_crossing_2 = calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing)
+        y_crossing_1 = calculate_intermediate_y_position(node_1_position, node_2_position, x_crossing, z_crossing)
+        y_crossing_2 = calculate_intermediate_y_position(node_3_position, node_4_position, x_crossing, z_crossing)
 
         # todo Only check if crossing is in bounds!
         if y_crossing_1 == y_crossing_2:

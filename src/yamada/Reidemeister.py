@@ -522,6 +522,7 @@ def reidemeister_simplify(sgd, n_tries=10):
 
     # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
+        print("Loop:", i)
         sgd_has_r3, r3_inputs = has_r3(sgd)
         if sgd_has_r3:
             # Pick a semi-random R3 move

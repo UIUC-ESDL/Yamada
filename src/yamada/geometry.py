@@ -167,11 +167,10 @@ def get_line_segment_intersection(a: np.ndarray,
 
 def calculate_intermediate_y_position(a:     np.ndarray,
                                       b:     np.ndarray,
-                                      x_int: float) -> float:
+                                      x_int: float,
+                                      z_int: float) -> float:
     """
     Calculates the intermediate y position given two points and the intermediate x and z position.
-
-    TODO Make more robust, for when denominator is zero.
     """
 
     x1, y1, z1 = a
@@ -179,10 +178,21 @@ def calculate_intermediate_y_position(a:     np.ndarray,
 
     delta_x = x2 - x1
     delta_y = y2 - y1
+    delta_z = z2 - z1
 
-    ratio_x = (x_int - x1) / delta_x
+    if delta_x == 0 and delta_z == 0:
+        raise ValueError("The XZ projection of these two points overlap. This projection is not valid.")
 
-    y_int = y1 + ratio_x * delta_y
+    elif delta_x != 0:
+        ratio_x = (x_int - x1) / delta_x
+        y_int = y1 + ratio_x * delta_y
+
+    elif delta_z != 0:
+        ratio_z = (z_int - z1) / delta_z
+        y_int = y1 + ratio_z * delta_y
+
+    else:
+        raise ValueError("This should not happen.")
 
     return y_int
 
