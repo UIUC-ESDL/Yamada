@@ -46,10 +46,10 @@ def rotate(positions: np.ndarray,
     return rotated_node_positions
 
 
-def get_line_segment_intersection(a: np.ndarray,
-                                  b: np.ndarray,
-                                  c: np.ndarray,
-                                  d: np.ndarray) -> tuple[float, np.ndarray]:
+def compute_line_segment_intersection(a: np.ndarray,
+                                      b: np.ndarray,
+                                      c: np.ndarray,
+                                      d: np.ndarray) -> tuple[float, np.ndarray]:
     """
     Returns the minimum Euclidean distance between two line segments and its position.
 
@@ -165,10 +165,10 @@ def get_line_segment_intersection(a: np.ndarray,
     return min_dist, min_dist_position
 
 
-def calculate_intermediate_y_position(a:     np.ndarray,
-                                      b:     np.ndarray,
-                                      x_int: float,
-                                      z_int: float) -> float:
+def compute_intermediate_y_position(a:     np.ndarray,
+                                    b:     np.ndarray,
+                                    x_int: float,
+                                    z_int: float) -> float:
     """
     Calculates the intermediate y position given two points and the intermediate x and z position.
     """
@@ -196,8 +196,57 @@ def calculate_intermediate_y_position(a:     np.ndarray,
 
     return y_int
 
-def calculate_counter_clockwise_angle(vector_a: np.ndarray,
-                                      vector_b: np.ndarray) -> float:
+def compute_3D_intersection(a0_position, a1_position, a2_position, a3_position, x0z_coords):
+    """
+    If two 3D lines are projected onto the XZ plane and their projections intersect, then
+    calculate the correspond 3D coordinates of that intersection point for the two lines.
+    """
+
+    # Unpack the coordinates
+    x0, y0, z0 = a0_position
+    x1, y1, z1 = a1_position
+    x2, y2, z2 = a2_position
+    x3, y3, z3 = a3_position
+    xc, yc, zc = x0z_coords
+
+    # Changes in position
+    dx02 = x2 - x0
+    dy02 = y2 - y0
+    dz02 = z2 - z0
+    dx13 = x3 - x1
+    dy13 = y3 - y1
+    dz13 = z3 - z1
+
+    # Relative position of the crossing
+    if dx02 != 0:
+        t02 = (xc - x0) / dx02
+    elif dy02 != 0:
+        t02 = (yc - y0) / dy02
+    elif dz02 != 0:
+        t02 = (zc - z0) / dz02
+    else:
+        raise ValueError("The start and stop nodes have the same position")
+
+    if dx13 != 0:
+        t13 = (xc - x1) / dx13
+    elif dy13 != 0:
+        t13 = (yc - y1) / dy13
+    elif dz13 != 0:
+        t13 = (zc - z1) / dz13
+    else:
+        raise ValueError("The start and stop nodes have the same position")
+
+    # Calculate the 3D position of the crossing
+    y_c_02 = y0 + t02 * dy02
+    y_c_13 = y1 + t13 * dy13
+
+    position_c_02 = np.array([xc, y_c_02, zc])
+    position_c_13 = np.array([xc, y_c_13, zc])
+
+    return position_c_02, position_c_13
+
+def compute_counter_clockwise_angle(vector_a: np.ndarray,
+                                    vector_b: np.ndarray) -> float:
     """
     Returns the angle in degrees between vectors 'A' and 'B'.
 

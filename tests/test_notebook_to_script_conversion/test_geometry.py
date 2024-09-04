@@ -7,7 +7,7 @@
 
 
 import numpy as np
-from yamada.geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
+from yamada.geometry import rotate, compute_line_segment_intersection, compute_intermediate_y_position, compute_counter_clockwise_angle
 
 
 # ## Test calculate_counter_clockwise_angle
@@ -33,14 +33,14 @@ def test_calculate_counter_clockwise_angle():
     degree_300 = np.array([0.5, -np.sqrt(3)/2])
 
     # Calculate angles
-    angle_0   = calculate_counter_clockwise_angle(reference_vector, degree_0)
-    angle_30  = calculate_counter_clockwise_angle(reference_vector, degree_30)
-    angle_90  = calculate_counter_clockwise_angle(reference_vector, degree_90)
-    angle_135 = calculate_counter_clockwise_angle(reference_vector, degree_135)
-    angle_180 = calculate_counter_clockwise_angle(reference_vector, degree_180)
-    angle_240 = calculate_counter_clockwise_angle(reference_vector, degree_240)
-    angle_270 = calculate_counter_clockwise_angle(reference_vector, degree_270)
-    angle_300 = calculate_counter_clockwise_angle(reference_vector, degree_300)
+    angle_0   = compute_counter_clockwise_angle(reference_vector, degree_0)
+    angle_30  = compute_counter_clockwise_angle(reference_vector, degree_30)
+    angle_90  = compute_counter_clockwise_angle(reference_vector, degree_90)
+    angle_135 = compute_counter_clockwise_angle(reference_vector, degree_135)
+    angle_180 = compute_counter_clockwise_angle(reference_vector, degree_180)
+    angle_240 = compute_counter_clockwise_angle(reference_vector, degree_240)
+    angle_270 = compute_counter_clockwise_angle(reference_vector, degree_270)
+    angle_300 = compute_counter_clockwise_angle(reference_vector, degree_300)
 
     assert np.isclose(angle_0, 0) or np.isclose(angle_0, 360)
     assert np.isclose(angle_30, 30)

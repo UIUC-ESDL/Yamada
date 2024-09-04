@@ -118,7 +118,6 @@ def h_poly(g):
     # Case 2: Else, the abstract graph contains subgraphs that are not connected. Recursively calculate the H polynomial
     # of each subgraph (see "if statement" above).
 
-
     # Recursion logic case 1: The abstract graph is connected.
     if nx.is_connected(g):
 

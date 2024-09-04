@@ -40,7 +40,6 @@ Compared to Dobrynin and Vesnin:
 Note: The way this script is written w/ pickling you must import this script into another script
 rather than directly calculate Yamada polynomials in this script (you'll get error messages)
 
-
 """
 
 import networkx as nx
@@ -62,7 +61,6 @@ class SpatialGraphDiagram:
         self.crossings = None
         self.vertices = None
 
-
         # Need labels of vertices/crossings to be unique and hashable
         self.data = {d.label: d for d in data}
         assert len(data) == len(self.data)
@@ -74,7 +72,6 @@ class SpatialGraphDiagram:
 
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
-
 
         if check:
             self._check()
@@ -185,7 +182,6 @@ class SpatialGraphDiagram:
         """
         Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
         calculations but do not add any information.
-        TODO Why doesn't it remove some 2-valent vertices?
         """
 
         degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]
@@ -250,13 +246,9 @@ class SpatialGraphDiagram:
             edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
 
             # Create a new edge
-
             # Find all edges in the diagram with edge_1 and edge_2 in their label
             labels = [edge.label for edge in self.edges if str(edge_1.label) in str(edge.label) and str(edge_2.label) in str(edge.label)]
             new_edge_label = str(edge_1.label) + '_' + str(edge_2.label) + '_' + str(len(labels))
-
-
-
             new_edge = Edge(new_edge_label)
 
             # Remove the edges from the diagram
@@ -406,9 +398,6 @@ class SpatialGraphDiagram:
         V = Vertex(4, repr(C_0) + '_smushed')
         S_0.add_vertex(V)
 
-        # Clean up the diagram
-        # self._merge_vertices()
-
         for i in range(4):
             B, j = C_0.adjacent[i]
             V[i] = B[j]
@@ -457,7 +446,6 @@ def normalize_yamada_polynomial(yamada_polynomial):
 
 def reverse_poly(poly):
     """
-    TODO Why does reverse_poly invert the exponent? What is the purpose?
     """
 
     A = pari('A')
