@@ -216,16 +216,16 @@ def apply_r2(sgd, r2_inputs):
 def has_r3(sgd):
     """
     Criteria:
-    1. There must be a face with exactly three crossings.
-    2. At least one of the edges of the face must pass either fully under or fully over two crossings.
+    1. The face must have exactly 3 crossings and 3 edges.
+    2. At least one of the edges of the face must pass either fully under or fully over its two crossings.
 
     Note: A face can have more than one possible R3 move.
 
     Terminology:
-    - stationary_crossing: The crossing that is not being moved
-    - crossing_edge: The edge that is crossing the stationary crossing
-    - moving_crossings (1 & 2): The two crossings connected to the r3_edge and therefore move with it.
-    - stationary_edges (1 & 2): The two edges that connect the moving_crossings to the stationary_crossing.
+    - stationary_crossing: The crossing that is not being moved by R3.
+    - moving_edge: The edge that is moving across the stationary crossing
+    - moving_crossings (1 & 2): The two crossings connected to the moving_edge and therefore move with it.
+    - stationary_edges (1 & 2): The two edges that form the stationary_crossing.
     """
 
     # Initialize the lists
@@ -240,11 +240,12 @@ def has_r3(sgd):
 
     # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
     for face in candidate_faces:
-        candidate_edges = double_over_or_under_edges(face)
+        candidate_edges = edges_that_are_fully_under_or_over(face)
         for candidate_edge in candidate_edges:
             r3_input = {}
             crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
 
+            # In a triangular face (3 crossings, 3 edges), the stationary crossing is opposite of the moving edge.
             stationary_crossing = find_opposite_crossing(face, candidate_edge)
             moving_crossings = [crossing for crossing in crossings if crossing != stationary_crossing]
             stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
@@ -252,11 +253,11 @@ def has_r3(sgd):
 
             sgd_has_r3 = True
             r3_input['stationary_crossing'] = stationary_crossing.label
-            r3_input['moving_crossing_1'] = moving_crossings[0].label
-            r3_input['moving_crossing_2'] = moving_crossings[1].label
-            r3_input['crossing_edge'] = candidate_edge.label
             r3_input['stationary_edge_1'] = stationary_edge_1.label
             r3_input['stationary_edge_2'] = stationary_edge_2.label
+            r3_input['moving_crossing_1'] = moving_crossings[0].label
+            r3_input['moving_crossing_2'] = moving_crossings[1].label
+            r3_input['moving_edge'] = candidate_edge.label
             r3_inputs.append(r3_input)
 
     return sgd_has_r3, r3_inputs
@@ -264,77 +265,155 @@ def has_r3(sgd):
 
 def apply_r3(sgd, r3_input):
     """
-    We apply the R3 move by sliding the moving crossings along the moving edges, though the stationary crossing,
-    and over/under an adjacent stationary crossing edge. Doing so requires us to
+    We apply the R3 move by:
 
-    TODO: R3 Occasionally raises an error.
+    1. Identify the 4 edges associated with each of the 3 crossings. Note their index assignments
+    3. Delete the 4 edges associated with each of the three crossings.
+    4. Create 4 new edges for each crossing.
+    4.a. Assign
+    Do we need edges?
+    TODO Define moving crossings as ccw and cw
+
     """
 
     # Make a copy of the sgd object to avoid modifying the original
     sgd = sgd.copy()
 
-    # Get the inputs
-    stationary_crossing_label = r3_input['stationary_crossing']
-    moving_crossing_1_label = r3_input['moving_crossing_1']
-    moving_crossing_2_label = r3_input['moving_crossing_2']
-    crossing_edge_label = r3_input['crossing_edge']
-    stationary_edge_1_label = r3_input['stationary_edge_1']
-    stationary_edge_2_label = r3_input['stationary_edge_2']
+    # Unpack the inputs
+    sc_label = r3_input['stationary_crossing']
+    mc1_label = r3_input['moving_crossing_1']
+    mc2_label = r3_input['moving_crossing_2']
+    me_label = r3_input['moving_edge']
+    se1_label = r3_input['stationary_edge_1']
+    se2_label = r3_input['stationary_edge_2']
 
-    # Find the objects given the labels
-    stationary_crossing = [crossing for crossing in sgd.crossings if crossing.label == stationary_crossing_label][0]
-    moving_crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == moving_crossing_1_label][0]
-    moving_crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == moving_crossing_2_label][0]
-    stationary_edge_1 = [edge for edge in sgd.edges if edge.label == stationary_edge_1_label][0]
-    stationary_edge_2 = [edge for edge in sgd.edges if edge.label == stationary_edge_2_label][0]
+    # Find the objects given their labels
+    sc = [crossing for crossing in sgd.crossings if crossing.label == sc_label][0]
+    se1 = [edge for edge in sgd.edges if edge.label == se1_label][0]
+    se2 = [edge for edge in sgd.edges if edge.label == se2_label][0]
+    me = [edge for edge in sgd.edges if edge.label == me_label][0]
+    mc1 = [crossing for crossing in sgd.crossings if crossing.label == mc1_label][0]
+    mc2 = [crossing for crossing in sgd.crossings if crossing.label == mc2_label][0]
 
-    # Get the indices of the
-    mc1_stationary_edge_index = get_index_of_crossing_corner(moving_crossing_1, stationary_edge_1)
-    mc1_stationary_edge_flipside_index = get_index_of_crossing_corner(moving_crossing_1, stationary_edge_1,
-                                                                      opposite_side=True)
+    # Stationary crossing edge assignments
+    crossing_index_sc_mc1 = get_index_of_crossing_corner(sc, se1)
+    crossing_index_sc_mc2 = get_index_of_crossing_corner(sc, se2)
+    crossing_index_sc_opposite_mc1 = get_index_of_crossing_corner(sc, se1, opposite_side=True)
+    crossing_index_sc_opposite_mc2 = get_index_of_crossing_corner(sc, se2, opposite_side=True)
 
-    mc2_stationary_edge_index = get_index_of_crossing_corner(moving_crossing_2, stationary_edge_2)
-    mc2_stationary_edge_flipside_index = get_index_of_crossing_corner(moving_crossing_2, stationary_edge_2,
-                                                                      opposite_side=True)
+    # Moving crossing 1 edge assignments
+    crossing_index_mc1_sc = get_index_of_crossing_corner(mc1, se1)
+    crossing_index_mc1_mc2 = get_index_of_crossing_corner(mc1, me)
+    crossing_index_mc1_opposite_sc = get_index_of_crossing_corner(mc1, se1, opposite_side=True)
+    crossing_index_mc1_opposite_mc2 = get_index_of_crossing_corner(mc1, me, opposite_side=True)
 
-    se1_continuation_mc1, se1_continuation_mc1_index = moving_crossing_1.adjacent[mc1_stationary_edge_flipside_index]
+    # Moving crossing 2 edge assignments
+    crossing_index_mc2_sc = get_index_of_crossing_corner(mc2, se1)
+    crossing_index_mc2_mc1 = get_index_of_crossing_corner(mc2, me)
+    crossing_index_mc2_opposite_sc = get_index_of_crossing_corner(mc2, se1, opposite_side=True)
+    crossing_index_mc2_opposite_mc1 = get_index_of_crossing_corner(mc2, me, opposite_side=True)
 
-    se1_mc1_index = [i for (edge, i) in moving_crossing_1.adjacent if edge == stationary_edge_1][0]
+    # Determine how the R3 move will affect crossing_index_sc_mc1 and crossing_index_sc_mc2
+    crossing_index_sc_mc1_updated, crossing_index_sc_mc2_updated = get_crossing_shift_indices(sc, mc1, mc2)
 
-    # Get the new stationary crossing indices that the moving crossings will connect to
-    shifted_index1, shifted_index2 = get_crossing_shift_indices(stationary_crossing,
-                                                                moving_crossing_1, moving_crossing_2)
+    # Find the edge objects
 
-    # Connect the stationary edges with their continuations on the opposite side of the moving crossings
-    # Warning this deletes edges, and can disrupt other parts of this code
-    sgd.connect_edges(stationary_edge_1, se1_mc1_index, se1_continuation_mc1, se1_continuation_mc1_index)
+    # Find the objects adjacent to one crossing on the side opposing another crossing
+    sc_adj_opposite_mc1 = sc.adjacent[crossing_index_sc_opposite_mc1][0]
+    sc_adj_opposite_mc2 = sc.adjacent[crossing_index_sc_opposite_mc2][0]
+    mc1_adj_opposite_sc = mc1.adjacent[crossing_index_mc1_opposite_sc][0]
+    mc1_adj_opposite_mc2 = mc1.adjacent[crossing_index_mc1_opposite_mc2][0]
+    mc2_adj_opposite_sc = mc2.adjacent[crossing_index_mc2_opposite_sc][0]
+    mc2_adj_opposite_mc1 = mc2.adjacent[crossing_index_mc2_opposite_mc1][0]
 
-    se2_continuation_mc2, se2_continuation_mc2_index = moving_crossing_2.adjacent[mc2_stationary_edge_flipside_index]
-    se2_mc2_index = [i for (edge, i) in moving_crossing_2.adjacent if edge == stationary_edge_2][0]
+    # Edge assignments
+    crossing_index_sc_adj_opposite_mc1_to_sc = get_index_of_crossing_corner(sc_adj_opposite_mc1, sc)
+    crossing_index_sc_adj_opposite_mc2_to_sc = get_index_of_crossing_corner(sc_adj_opposite_mc2, sc)
+    crossing_index_mc1_adj_opposite_sc_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_sc, mc1)
+    crossing_index_mc1_adj_opposite_mc2_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_mc2, mc1)
+    crossing_index_mc2_adj_opposite_sc_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_sc, mc2)
+    crossing_index_mc2_adj_opposite_mc1_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_mc1, mc2)
 
-    sgd.connect_edges(stationary_edge_2, se2_mc2_index, se2_continuation_mc2, se2_continuation_mc2_index)
+    # Delete the edges associated with the crossings
+    # FIXME assumes that edges must exist between crossings...
+    sc_edges = [edge for edge, _ in sc.adjacent]
+    mc1_edges = [edge for edge, _ in mc1.adjacent]
+    mc2_edges = [edge for edge, _ in mc2.adjacent]
+    edges_to_remove = sc_edges + mc1_edges + mc2_edges
+    for edge in edges_to_remove:
+        sgd.remove_edge(edge)
 
-    # Get the edges that connect to the stationary crossing where we will insert the moving crossings
-    mc1_new_edge, mc1_new_edge_index = stationary_crossing.adjacent[shifted_index1]
-    mc2_new_edge, mc2_new_edge_index = stationary_crossing.adjacent[shifted_index2]
 
-    # Reassign the edges that connect to the stationary crossing to the moving crossings
-    moving_crossing_1[mc1_stationary_edge_index] = mc1_new_edge[mc1_new_edge_index]
-    moving_crossing_2[mc2_stationary_edge_index] = mc2_new_edge[mc2_new_edge_index]
+    # The two moving crossings will still share the same edge
+    mc1[crossing_index_mc1_mc2] = mc2[crossing_index_mc2_mc1]
 
-    # Create two new edges and insert them between the moving crossings and the stationary crossing (post-shift)
-    new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
-    new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
-    new_edge_1 = Edge(new_edge_1_label)
-    new_edge_2 = Edge(new_edge_2_label)
+    # The two moving crossings still connect to their continuations
+    mc1[crossing_index_mc1_opposite_mc2] = mc1_adj_opposite_mc2[crossing_index_mc1_adj_opposite_mc2_to_mc1]
+    mc2[crossing_index_mc2_opposite_mc1] = mc2_adj_opposite_mc1[crossing_index_mc2_adj_opposite_mc1_to_mc2]
 
-    sgd.add_edge(new_edge_1,
-                 moving_crossing_1, mc1_stationary_edge_flipside_index,
-                 stationary_crossing, shifted_index1)
+    # The MC1 adjacent object opposite of SC will now connect to SC where MC1 was
+    sc[crossing_index_sc_mc1] = mc1_adj_opposite_sc[crossing_index_mc1_adj_opposite_sc_to_mc1]
 
-    sgd.add_edge(new_edge_2,
-                 moving_crossing_2, mc2_stationary_edge_flipside_index,
-                 stationary_crossing, shifted_index2)
+    # The MC2 adjacent object opposite of SC will now connect to SC where MC2 was
+    sc[crossing_index_sc_mc2] = mc2_adj_opposite_sc[crossing_index_mc2_adj_opposite_sc_to_mc2]
+
+    # MC1 will not connect between SC and the SC adjacent object opposite of MC2
+    sc[crossing_index_sc_mc1_updated] = mc1[crossing_index_mc1_sc]
+    sc_adj_opposite_mc2[crossing_index_sc_adj_opposite_mc2_to_sc] = mc1[crossing_index_mc1_opposite_sc]
+
+    # MC2 will not connect between SC and the SC adjacent object opposite of MC1
+    sc[crossing_index_sc_mc2_updated] = mc2[crossing_index_mc2_sc]
+    sc_adj_opposite_mc1[crossing_index_sc_adj_opposite_mc1_to_sc] = mc2[crossing_index_mc2_opposite_sc]
+
+
+
+    # # Get the indices of the
+    # mc1_stationary_edge_index = get_index_of_crossing_corner(mc1, se1)
+    # mc1_stationary_edge_flipside_index = get_index_of_crossing_corner(mc1, se1,
+    #                                                                   opposite_side=True)
+    #
+    # mc2_stationary_edge_index = get_index_of_crossing_corner(mc2, se2)
+    # mc2_stationary_edge_flipside_index = get_index_of_crossing_corner(mc2, se2,
+    #                                                                   opposite_side=True)
+    #
+    # se1_continuation_mc1, se1_continuation_mc1_index = mc1.adjacent[mc1_stationary_edge_flipside_index]
+    #
+    # se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
+    #
+    # # Get the new stationary crossing indices that the moving crossings will connect to
+    # shifted_index1, shifted_index2 = get_crossing_shift_indices(sc,
+    #                                                             mc1, mc2)
+    #
+    # # Connect the stationary edges with their continuations on the opposite side of the moving crossings
+    # # Warning this deletes edges, and can disrupt other parts of this code
+    # sgd.connect_edges(se1, se1_mc1_index, se1_continuation_mc1, se1_continuation_mc1_index)
+    #
+    # se2_continuation_mc2, se2_continuation_mc2_index = mc2.adjacent[mc2_stationary_edge_flipside_index]
+    # se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
+    #
+    # sgd.connect_edges(se2, se2_mc2_index, se2_continuation_mc2, se2_continuation_mc2_index)
+    #
+    # # Get the edges that connect to the stationary crossing where we will insert the moving crossings
+    # mc1_new_edge, mc1_new_edge_index = sc.adjacent[shifted_index1]
+    # mc2_new_edge, mc2_new_edge_index = sc.adjacent[shifted_index2]
+    #
+    # # Reassign the edges that connect to the stationary crossing to the moving crossings
+    # mc1[mc1_stationary_edge_index] = mc1_new_edge[mc1_new_edge_index]
+    # mc2[mc2_stationary_edge_index] = mc2_new_edge[mc2_new_edge_index]
+    #
+    # # Create two new edges and insert them between the moving crossings and the stationary crossing (post-shift)
+    # new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
+    # new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
+    # new_edge_1 = Edge(new_edge_1_label)
+    # new_edge_2 = Edge(new_edge_2_label)
+    #
+    # sgd.add_edge(new_edge_1,
+    #              mc1, mc1_stationary_edge_flipside_index,
+    #              sc, shifted_index1)
+    #
+    # sgd.add_edge(new_edge_2,
+    #              mc2, mc2_stationary_edge_flipside_index,
+    #              sc, shifted_index2)
 
     return sgd
 
@@ -351,7 +430,7 @@ def face_has_exactly_3_crossings_and_3_edges(face):
     return has_exactly_3_crossings_and_3_edges
 
 
-def double_over_or_under_edges(face):
+def edges_that_are_fully_under_or_over(face):
     edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
     candidate_edges = []
     for edge in edges:
@@ -515,10 +594,10 @@ def reidemeister_simplify(sgd, n_tries=10):
     total_r2_count = 0
     total_r3_count = 0
 
-    # Check for any initial moves that will monotonically simplify the diagram
-    sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
-    total_r1_count += r1_count
-    total_r2_count += r2_count
+    # # Check for any initial moves that will monotonically simplify the diagram
+    # sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
+    # total_r1_count += r1_count
+    # total_r2_count += r2_count
 
     # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
@@ -530,10 +609,10 @@ def reidemeister_simplify(sgd, n_tries=10):
             sgd = apply_r3(sgd, r3_input)
             total_r3_count += 1
 
-            # Check for any R1 or R2 moves that will monotonically simplify the diagram
-            sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
-            total_r1_count += r1_count
-            total_r2_count += r2_count
+            # # Check for any R1 or R2 moves that will monotonically simplify the diagram
+            # sgd, r1_count, r2_count = r1_and_r2_simplify(sgd, total_r1_count, total_r2_count)
+            # total_r1_count += r1_count
+            # total_r2_count += r2_count
         else:
             break
 
