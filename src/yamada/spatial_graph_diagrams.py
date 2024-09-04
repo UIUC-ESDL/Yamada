@@ -230,6 +230,10 @@ class SpatialGraphDiagram:
         Connects two edges together. Replaces them with a single, new edge.
         """
 
+        # Ensure both are edges
+        if not isinstance(edge_1, Edge) or not isinstance(edge_2, Edge):
+            raise ValueError("Both objects must be edges.")
+
         # Ensure that an edge does not directly connect to itself; insert a vertex if it does.
         if edge_1 == edge_2:
             V = Vertex(2, repr(edge_1) + '_stopper')
