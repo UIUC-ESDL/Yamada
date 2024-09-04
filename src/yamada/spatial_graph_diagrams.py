@@ -258,23 +258,6 @@ class SpatialGraphDiagram:
             # Add the new edge to the diagram
             self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
 
-    def remove_excess_edges(self):
-        """
-        Removes all edges from the diagram that are not connected to a crossing.
-        """
-
-        edges = [edge for edge in self.edges]
-        for edge in edges:
-            A, i = edge.adjacent[0]
-            B, j = edge.adjacent[1]
-            if isinstance(A, Edge) and isinstance(B, Edge):
-                self.remove_edge(edge)
-                self.connect_edges(A, i, B, j)
-            elif isinstance(A, Edge):
-                self.connect_edges(A, i, edge, 0)
-            elif isinstance(B, Edge):
-                self.connect_edges(edge, 1, B, j)
-
 
 
     def short_cut(self, crossing, i0):
