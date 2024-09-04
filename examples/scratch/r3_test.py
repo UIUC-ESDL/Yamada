@@ -80,7 +80,7 @@ sgd = sg.create_spatial_graph_diagram()
 
 print(f"Crossings: {len(sgd.crossings)}")
 
-n_tries = 15
+n_tries = 100
 sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=n_tries)
 print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
 
