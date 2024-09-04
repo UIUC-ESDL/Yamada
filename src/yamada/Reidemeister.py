@@ -287,6 +287,8 @@ def apply_r3(sgd, r3_input):
     mc2 = [crossing for crossing in sgd.crossings if crossing.label == mc2_label][0]
 
     # Stationary crossing edge assignments
+    index_sc_to_se1 = get_index_of_crossing_corner(sc, se1)
+    index_sc_to_se2 = get_index_of_crossing_corner(sc, se2)
     index_sc_to_opposite_se1 = get_index_of_crossing_corner(sc, se1, opposite_side=True)
     index_sc_to_opposite_se2 = get_index_of_crossing_corner(sc, se2, opposite_side=True)
 
@@ -298,48 +300,59 @@ def apply_r3(sgd, r3_input):
     index_mc2_to_se2 = get_index_of_crossing_corner(mc2, se2)
     index_mc2_to_opposite_se2 = get_index_of_crossing_corner(mc2, se2, opposite_side=True)
 
-    # Determine how the R3 move will affect crossing_index_sc_mc1 and crossing_index_sc_mc2
-    crossing_index_sc_to_mc1_updated, crossing_index_sc_to_mc2_updated = get_crossing_shift_indices(sc, mc1, mc2)
-
-
     # Find the objects adjacent to one crossing on the side opposing another crossing
     sc_adj_opposite_of_se1 = sc.adjacent[index_sc_to_opposite_se1][0]
     sc_adj_opposite_of_se2 = sc.adjacent[index_sc_to_opposite_se2][0]
+    mc1_adj_opposite_of_se1 = mc1.adjacent[index_mc1_to_opposite_se1][0]
+    mc2_adj_opposite_of_se2 = mc2.adjacent[index_mc2_to_opposite_se2][0]
+
+    index_mc1_adj_opposite_of_se1_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_of_se1, mc1)
+    index_mc2_adj_opposite_of_se2_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_of_se2, mc2)
 
     # Edge assignments
-    crossing_index_sc_adj_opposite_of_se1_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se1, sc)
-    crossing_index_sc_adj_opposite_of_se2_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se2, sc)
+    index_sc_adj_opposite_of_se1_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se1, sc)
+    index_sc_adj_opposite_of_se2_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se2, sc)
 
 
     # Splice the edges on both sides of MC1 (SE1 and Opposite SE1) and MC2 (SE2 and Opposite SE2)
     se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
+    se1_sc_index = [i for (edge, i) in sc.adjacent if edge == se1][0]
     se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
-    se1_continuation_mc1, se1_continuation_mc1_index = mc1.adjacent[index_mc1_to_opposite_se1]
-    se2_continuation_mc2, se2_continuation_mc2_index = mc2.adjacent[index_mc2_to_opposite_se2]
+    se2_sc_index = [i for (edge, i) in sc.adjacent if edge == se2][0]
 
-    sgd.connect_edges(se1, se1_mc1_index,
-                      se1_continuation_mc1, se1_continuation_mc1_index)
 
-    sgd.connect_edges(se2, se2_mc2_index,
-                      se2_continuation_mc2, se2_continuation_mc2_index)
 
-    # Connect MC1 and MC2 to SC with a new edge
-    new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
-    new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
-    new_edge_1 = Edge(new_edge_1_label)
-    new_edge_2 = Edge(new_edge_2_label)
 
-    sgd.add_edge(new_edge_1,
-                 mc1, index_mc1_to_se1,
-                 sc, crossing_index_sc_to_mc1_updated)
+    # Connect the dangling edges to SC
+    sc[index_sc_to_se1] = mc1_adj_opposite_of_se1[index_mc1_adj_opposite_of_se1_to_mc1]
+    sc[index_sc_to_se2] = mc2_adj_opposite_of_se2[index_mc2_adj_opposite_of_se2_to_mc2]
 
-    sgd.add_edge(new_edge_2,
-                 mc2, index_mc2_to_se2,
-                 sc, crossing_index_sc_to_mc2_updated)
+    # Connect SEs to the new SC connections
+    se1[se1_sc_index] = sc[index_sc_to_opposite_se2]
+    se2[se2_sc_index] = sc[index_sc_to_opposite_se1]
+    se1[se1_mc1_index] = mc1[index_mc1_to_opposite_se1]
+    se2[se2_mc2_index] = mc2[index_mc2_to_opposite_se2]
+
+    # Connect MCs to adjacents of SC
+
+
+    # # Connect MC1 and MC2 to SC with a new edge
+    # new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
+    # new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
+    # new_edge_1 = Edge(new_edge_1_label)
+    # new_edge_2 = Edge(new_edge_2_label)
+    #
+    # sgd.add_edge(new_edge_1,
+    #              mc1, index_mc1_to_se1,
+    #              sc, crossing_index_sc_to_mc1_updated)
+    #
+    # sgd.add_edge(new_edge_2,
+    #              mc2, index_mc2_to_se2,
+    #              sc, crossing_index_sc_to_mc2_updated)
 
     # Connect MC1 and MC2 to SC's original connections
-    sc_adj_opposite_of_se2[crossing_index_sc_adj_opposite_of_se2_to_sc] = mc1[index_mc1_to_opposite_se1]
-    sc_adj_opposite_of_se1[crossing_index_sc_adj_opposite_of_se1_to_sc] = mc2[index_mc2_to_opposite_se2]
+    sc_adj_opposite_of_se2[index_sc_adj_opposite_of_se2_to_sc] = mc1[index_mc1_to_se1]
+    sc_adj_opposite_of_se1[index_sc_adj_opposite_of_se1_to_sc] = mc2[index_mc2_to_se2]
 
     return sgd
 
