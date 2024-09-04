@@ -6,6 +6,4 @@ venv/*
 dist/*
 SPI2Py.egg-info/*
 .vscode/
-/src/Yamada.egg-info/
-/src/Yamada.egg-info/PKG-INFO
-/src/Yamada.egg-info/requires.txt
+**/Yamada.egg-info/
