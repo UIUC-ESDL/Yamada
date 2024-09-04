@@ -31,7 +31,7 @@ def test_cyclic_node_ordering_vertex():
     sg = SpatialGraph(nodes=nodes,
                       node_positions=node_positions,
                       edges=edges,
-                      projection_rotation=rotation)
+                      rotation=rotation)
 
     order = sg.cyclic_order_vertex('c')
     expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
@@ -124,7 +124,7 @@ def test_cyclic_ordering_crossing():
     sg = SpatialGraph(nodes=nodes, 
                       node_positions=node_positions, 
                       edges=edges,
-                      projection_rotation=rotation)
+                      rotation=rotation)
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -215,7 +215,7 @@ def test_cyclic_ordering_crossing_2():
     sg = SpatialGraph(nodes=nodes, 
                       node_positions=node_positions, 
                       edges=edges,
-                      projection_rotation=rotation)
+                      rotation=rotation)
 
     ordering_dict = sg.cyclic_order_crossings()
 
@@ -251,7 +251,7 @@ def test_get_sub_edges():
                                       'c': [1, 0, 0], 
                                       'd': [0, 0, 1]},
                       edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
-                      projection_rotation=rotation)
+                      rotation=rotation)
 
     sep = sg.get_sub_edges()
 

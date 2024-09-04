@@ -170,6 +170,8 @@ def calculate_intermediate_y_position(a:     np.ndarray,
                                       x_int: float) -> float:
     """
     Calculates the intermediate y position given two points and the intermediate x and z position.
+
+    TODO Make more robust, for when denominator is zero.
     """
 
     x1, y1, z1 = a

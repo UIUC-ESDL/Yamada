@@ -11,17 +11,12 @@ from itertools import combinations
 import pyvista as pv
 import matplotlib.colors as mcolors
 from matplotlib import cm
-# import random
 from scipy.stats import qmc
 
 from .geometry import rotate, get_line_segment_intersection, calculate_intermediate_y_position, calculate_counter_clockwise_angle
 
 from yamada.diagram_elements import Vertex, Crossing
 from yamada.spatial_graph_diagrams import SpatialGraphDiagram
-
-# TODO Replace random, but use a seed for reproducibility for now
-# random.seed(0)
-# np.random.seed(0)
 
 
 class SpatialGraph:
@@ -37,14 +32,10 @@ class SpatialGraph:
                  nodes: list[str],
                  node_positions: dict,
                  edges: list[tuple[str, str]],
-                 projection_rotation=(0, 0, 0)):
+                 rotation=None):
 
         self.nodes = nodes
         self.edges = edges
-
-        # TODO Temporarily disable checks
-        # self.nodes = self._validate_nodes(nodes)
-        # self.edges = self._validate_edges(edges)
 
         self.adjacent_edge_pairs = self._get_adjacent_edge_pairs()
         self.nonadjacent_edge_pairs = [edge_pair for edge_pair in self.edge_pairs if
@@ -58,7 +49,7 @@ class SpatialGraph:
         # self.node_positions = self._validate_node_positions(node_positions)
 
         # Project the spatial graph onto a random the xz-plane
-        self.node_positions_3d = self.project(node_positions, initial_rotation=projection_rotation)
+        self.node_positions_3d = self.project(node_positions, forced_rotation=rotation)
         self.node_positions_dict_3d = {node: position for node, position in zip(nodes, node_positions)}
 
         self.node_positions_2d = self.node_positions_3d[:, [0, 2]]
@@ -940,7 +931,7 @@ class SpatialGraph:
 
         return position_c_02, position_c_13
 
-    def project(self, node_positions, max_iter=2, initial_rotation=(0, 0, 0)):
+    def project(self, node_positions, max_iter=2, forced_rotation=None):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -962,6 +953,9 @@ class SpatialGraph:
         halton_rotations = 2 * np.pi * halton_samples
         rotations = halton_rotations
 
+        # Add the initial rotation if it exists, for debugging purposes
+        if forced_rotation is not None:
+            rotations = np.vstack((forced_rotation, rotations))
 
         for rotation in rotations:
             try:
