@@ -296,52 +296,29 @@ def apply_r3(sgd, r3_input):
     mc2 = [crossing for crossing in sgd.crossings if crossing.label == mc2_label][0]
 
     # Stationary crossing edge assignments
-    crossing_index_sc_to_se1 = get_index_of_crossing_corner(sc, se1)
-    crossing_index_sc_to_se2 = get_index_of_crossing_corner(sc, se2)
     crossing_index_sc_to_opposite_se1 = get_index_of_crossing_corner(sc, se1, opposite_side=True)
     crossing_index_sc_to_opposite_se2 = get_index_of_crossing_corner(sc, se2, opposite_side=True)
 
     # Moving crossing 1 edge assignments
     crossing_index_mc1_to_se1 = get_index_of_crossing_corner(mc1, se1)
-    crossing_index_mc1_to_me = get_index_of_crossing_corner(mc1, me)
     crossing_index_mc1_to_opposite_se1 = get_index_of_crossing_corner(mc1, se1, opposite_side=True)
-    crossing_index_mc1_to_opposite_me = get_index_of_crossing_corner(mc1, me, opposite_side=True)
 
     # Moving crossing 2 edge assignments
     crossing_index_mc2_to_se2 = get_index_of_crossing_corner(mc2, se2)
-    crossing_index_mc2_to_me = get_index_of_crossing_corner(mc2, me)
     crossing_index_mc2_to_opposite_se2 = get_index_of_crossing_corner(mc2, se2, opposite_side=True)
-    crossing_index_mc2_to_opposite_me = get_index_of_crossing_corner(mc2, me, opposite_side=True)
 
     # Determine how the R3 move will affect crossing_index_sc_mc1 and crossing_index_sc_mc2
     crossing_index_sc_to_mc1_updated, crossing_index_sc_to_mc2_updated = get_crossing_shift_indices(sc, mc1, mc2)
 
-    # Find the edge objects
 
     # Find the objects adjacent to one crossing on the side opposing another crossing
     sc_adj_opposite_of_se1 = sc.adjacent[crossing_index_sc_to_opposite_se1][0]
     sc_adj_opposite_of_se2 = sc.adjacent[crossing_index_sc_to_opposite_se2][0]
-    mc1_adj_opposite_of_se1 = mc1.adjacent[crossing_index_mc1_to_opposite_se1][0]
-    mc1_adj_opposite_of_me = mc1.adjacent[crossing_index_mc1_to_opposite_me][0]
-    mc2_adj_opposite_of_se2 = mc2.adjacent[crossing_index_mc2_to_opposite_se2][0]
-    mc2_adj_opposite_of_me = mc2.adjacent[crossing_index_mc2_to_opposite_me][0]
 
     # Edge assignments
-    crossing_index_sc_adj_opposite_of_mc1_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se1, sc)
-    crossing_index_sc_adj_opposite_of_mc2_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se2, sc)
-    crossing_index_mc1_adj_opposite_of_sc_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_of_se1, mc1)
-    crossing_index_mc1_adj_opposite_of_mc2_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_of_me, mc1)
-    crossing_index_mc2_adj_opposite_of_sc_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_of_se2, mc2)
-    crossing_index_mc2_adj_opposite_of_mc1_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_of_me, mc2)
+    crossing_index_sc_adj_opposite_of_se1_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se1, sc)
+    crossing_index_sc_adj_opposite_of_se2_to_sc = get_index_of_crossing_corner(sc_adj_opposite_of_se2, sc)
 
-    # For record keeping
-    # The two moving crossings will still share the same edge
-    # mc1[crossing_index_mc1_to_mc2] = mc2[crossing_index_mc2_to_mc1]
-    # The two moving crossings will still connect to their continuations
-    # mc1[crossing_index_mc1_to_opposite_mc2] = mc1_adj_opposite_mc2[crossing_index_mc1_adj_opposite_mc2_to_mc1]
-    # mc2[crossing_index_mc2_to_opposite_mc1] = mc2_adj_opposite_mc1[crossing_index_mc2_adj_opposite_mc1_to_mc2]
-
-    # FIXME Check for edges between
 
     # Splice the edges on both sides of MC1 (SE1 and Opposite SE1) and MC2 (SE2 and Opposite SE2)
     se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
@@ -371,59 +348,9 @@ def apply_r3(sgd, r3_input):
                  sc, crossing_index_sc_to_mc2_updated)
 
     # Connect MC1 and MC2 to SC's original connections
+    sc_adj_opposite_of_se2[crossing_index_sc_adj_opposite_of_se2_to_sc] = mc1[crossing_index_mc1_to_opposite_se1]
+    sc_adj_opposite_of_se1[crossing_index_sc_adj_opposite_of_se1_to_sc] = mc2[crossing_index_mc2_to_opposite_se2]
 
-    sc_adj_opposite_of_se2[crossing_index_sc_adj_opposite_of_mc2_to_sc] = mc1[crossing_index_mc1_to_opposite_se1]
-    sc_adj_opposite_of_se1[crossing_index_sc_adj_opposite_of_mc1_to_sc] = mc2[crossing_index_mc2_to_opposite_se2]
-
-    # FIXME Faces?
-
-    # # Get the indices of the
-    # mc1_stationary_edge_index = get_index_of_crossing_corner(mc1, se1)
-    # mc1_stationary_edge_flipside_index = get_index_of_crossing_corner(mc1, se1,
-    #                                                                   opposite_side=True)
-    #
-    # mc2_stationary_edge_index = get_index_of_crossing_corner(mc2, se2)
-    # mc2_stationary_edge_flipside_index = get_index_of_crossing_corner(mc2, se2,
-    #                                                                   opposite_side=True)
-    #
-    # se1_continuation_mc1, se1_continuation_mc1_index = mc1.adjacent[mc1_stationary_edge_flipside_index]
-    #
-    # se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
-    #
-    # # Get the new stationary crossing indices that the moving crossings will connect to
-    # shifted_index1, shifted_index2 = get_crossing_shift_indices(sc,
-    #                                                             mc1, mc2)
-    #
-    # # Connect the stationary edges with their continuations on the opposite side of the moving crossings
-    # # Warning this deletes edges, and can disrupt other parts of this code
-    # sgd.connect_edges(se1, se1_mc1_index, se1_continuation_mc1, se1_continuation_mc1_index)
-    #
-    # se2_continuation_mc2, se2_continuation_mc2_index = mc2.adjacent[mc2_stationary_edge_flipside_index]
-    # se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
-    #
-    # sgd.connect_edges(se2, se2_mc2_index, se2_continuation_mc2, se2_continuation_mc2_index)
-    #
-    # # Get the edges that connect to the stationary crossing where we will insert the moving crossings
-    # mc1_new_edge, mc1_new_edge_index = sc.adjacent[shifted_index1]
-    # mc2_new_edge, mc2_new_edge_index = sc.adjacent[shifted_index2]
-    #
-    # # Reassign the edges that connect to the stationary crossing to the moving crossings
-    # mc1[mc1_stationary_edge_index] = mc1_new_edge[mc1_new_edge_index]
-    # mc2[mc2_stationary_edge_index] = mc2_new_edge[mc2_new_edge_index]
-    #
-    # # Create two new edges and insert them between the moving crossings and the stationary crossing (post-shift)
-    # new_edge_1_label = 'ne' + str(len(sgd.edges) + 1)
-    # new_edge_2_label = 'ne' + str(len(sgd.edges) + 2)
-    # new_edge_1 = Edge(new_edge_1_label)
-    # new_edge_2 = Edge(new_edge_2_label)
-    #
-    # sgd.add_edge(new_edge_1,
-    #              mc1, mc1_stationary_edge_flipside_index,
-    #              sc, shifted_index1)
-    #
-    # sgd.add_edge(new_edge_2,
-    #              mc2, mc2_stationary_edge_flipside_index,
-    #              sc, shifted_index2)
 
     return sgd
 
