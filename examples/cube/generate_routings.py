@@ -4,6 +4,7 @@ import random
 import networkx as nx
 import pyvista as pv
 from networkx.algorithms.approximation import traveling_salesman_problem
+from time import time_ns
 
 # TODO Replace random, but use a seed for reproducibility for now
 # random.seed(0)
@@ -149,14 +150,14 @@ def draw_graph(grid, cube_corners, edge_paths):
     plotter.show()
 
 # Example usage
-# n = 12  # Size of the grid
-# m = 5  # Size of the cube
-# k = 2  # Number of waypoints
-# l = 3  # Minimum distance from the original path nodes
-n = 10  # Size of the grid
-m = 4  # Size of the cube
-k = 1  # Number of waypoints
-l = 2  # Minimum distance from the original path nodes
+n = 12  # Size of the grid
+m = 5  # Size of the cube
+k = 2  # Number of waypoints
+l = 3  # Minimum distance from the original path nodes
+# n = 10  # Size of the grid
+# m = 4  # Size of the cube
+# k = 1  # Number of waypoints
+# l = 2  # Minimum distance from the original path nodes
 # n = 10  # Size of the grid
 # m = 4  # Size of the cube
 # k = 1  # Number of waypoints
@@ -183,7 +184,7 @@ edge_paths = create_cube_paths(grid, cube_corners, reference_paths, k, l)
 # draw_graph(grid, cube_corners, edge_paths_ref)
 
 # Draw the graph with waypoints
-# draw_graph(grid, cube_corners, edge_paths)
+draw_graph(grid, cube_corners, edge_paths)
 
 # Define nodes, edges, and node positions of the cube nodes and paths
 node_labels = {tuple(node): str(idx) for idx, node in enumerate(set(itertools.chain(*[path for _, path in edge_paths])))}
@@ -213,13 +214,17 @@ sg.plot()
 # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
 sgd = sg.create_spatial_graph_diagram()
 
-print(f"Crossings: {len(sgd.crossings)}")
+print(f"Crossings Before Reidemeister Simplification: {len(sgd.crossings)}")
 
-# # TODO Fix
-# n=19 works, n=20 does not
-sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=100)
+t1 = time_ns()
 
-print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=200)
+
+t2 = time_ns()
+
+print(f"Crossings After Reidemeister Simplification: {len(sgd.crossings)}; R1s: {r1_count}, R2s: {r2_count}, R3s: {r3_count}")
+
+print(f"Simplify time: {(t2 - t1) / 1e9} seconds")
 
 if len(sgd.crossings) <= 8:
     yp = sgd.normalized_yamada_polynomial()
