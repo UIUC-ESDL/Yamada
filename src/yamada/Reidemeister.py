@@ -64,37 +64,22 @@ def has_r2(sgd):
     This function may be called multiple times to simplify the diagram.
     """
 
-    # Initialize the lists
-    sgd_has_r2 = False
-    r2_inputs = {}
+    r2_crossing_labels = []
 
-    # Identify all candidate faces
-    candidate_faces = []
     for face in sgd.faces():
-        num_crossings = len([entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)])
-        num_edges = len([entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)])
-        if num_crossings == 2 and num_edges == 2:
-            candidate_faces.append(face)
+        crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
+        edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
 
-    # Loop through each candidate face
-    for face in candidate_faces:
-        crossing1, crossing2 = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-        edge1, edge2 = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-        if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
-            sgd_has_r2 = True
-            crossing_1_label = crossing1.label
-            crossing_2_label = crossing2.label
-            r2_inputs['crossing_1_label'] = crossing_1_label
-            r2_inputs['crossing_2_label'] = crossing_2_label
+        if len(crossings) == 2 and len(edges) == 2:
+            crossing1, crossing2 = crossings
+            edge1, edge2 = edges
+            if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
+                r2_crossing_labels.append((crossing1.label, crossing2.label))
 
-            return sgd_has_r2, r2_inputs
+    return r2_crossing_labels
 
 
-
-    return sgd_has_r2, r2_inputs
-
-
-def apply_r2(sgd, r2_inputs):
+def apply_r2(sgd, crossing_labels):
     """
     0. Get the indices
     1. Remove the two crossings
@@ -107,8 +92,7 @@ def apply_r2(sgd, r2_inputs):
     sgd = sgd.copy()
 
     # Get the inputs
-    crossing_1_label = r2_inputs['crossing_1_label']
-    crossing_2_label = r2_inputs['crossing_2_label']
+    crossing_1_label, crossing_2_label = crossing_labels
 
     # Find the objects given the labels
     crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_1_label][0]

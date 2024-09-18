@@ -21,7 +21,7 @@ def test_r1_1():
 
     yp_ground_truth = -a**2 - a -1
 
-    x1 = Crossing('X')
+    x1 = Crossing('x1')
     x1[1], x1[3] = x1[2], x1[0]
 
     e0, e1 = Edge(0), Edge(1)
@@ -38,8 +38,9 @@ def test_r1_1():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 1
+    assert 'x1' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x1')
 
     yp_after_r1 = sgd.normalized_yamada_polynomial()
 
@@ -58,7 +59,7 @@ def test_r1_2():
 
     yp_ground_truth = -a**2 - a -1
 
-    x1 = Crossing('X')
+    x1 = Crossing('x1')
     x1[1], x1[3] = x1[2], x1[0]
 
     sgd = SpatialGraphDiagram([x1])
@@ -70,8 +71,9 @@ def test_r1_2():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 1
+    assert 'x1' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x1')
 
     yp_after_r1 = sgd.normalized_yamada_polynomial()
 
@@ -114,8 +116,9 @@ def test_r1_3():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 2
+    assert 'x1' in r1_crossing_labels and 'x2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x1')
 
     yp_after_first_r1 = sgd.normalized_yamada_polynomial()
     
@@ -124,8 +127,9 @@ def test_r1_3():
     r1_crossing_labels = has_r1(sgd)
     
     assert len(r1_crossing_labels) == 1
+    assert 'x2' in r1_crossing_labels
     
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x2')
     
     yp_after_second_r1 = sgd.normalized_yamada_polynomial()
     
@@ -171,8 +175,9 @@ def test_r1_4():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 2
+    assert 'x1' in r1_crossing_labels and 'x2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x1')
 
     yp_after_first_r1 = sgd.normalized_yamada_polynomial()
     
@@ -181,8 +186,9 @@ def test_r1_4():
     r1_crossing_labels = has_r1(sgd)
     
     assert len(r1_crossing_labels) == 1
+    assert 'x2' in r1_crossing_labels
     
-    sgd = apply_r1(sgd, r1_crossing_labels[0])
+    sgd = apply_r1(sgd, 'x2')
     
     yp_after_second_r1 = sgd.normalized_yamada_polynomial()
     
