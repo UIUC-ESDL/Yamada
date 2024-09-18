@@ -239,8 +239,6 @@ class SpatialGraphDiagram:
             obj_1[idx] = obj_2[jdx]
 
 
-
-
     def short_cut(self, crossing, i0):
         """
         Short-cuts a crossing by removing the edge between them.

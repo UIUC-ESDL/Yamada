@@ -19,7 +19,7 @@ def test_r1_1():
     
     a = pari('A')
 
-    expected = -a**2 - a -1
+    yp_ground_truth = -a**2 - a -1
 
     x1 = Crossing('X')
     x1[1], x1[3] = x1[2], x1[0]
@@ -31,19 +31,20 @@ def test_r1_1():
 
     sgd = SpatialGraphDiagram([x1, e0, e1])
 
-    yp_before = sgd.normalized_yamada_polynomial()
+    yp_before_r1 = sgd.normalized_yamada_polynomial()
+    
+    assert yp_before_r1 == yp_ground_truth
 
-    sgd_has_r1, r1_input = has_r1(sgd)
+    r1_crossing_labels = has_r1(sgd)
 
-    assert sgd_has_r1
+    assert len(r1_crossing_labels) == 1
 
-    sgd = apply_r1(sgd, r1_input)
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
 
-    yp_after = sgd.normalized_yamada_polynomial()
+    yp_after_r1 = sgd.normalized_yamada_polynomial()
 
-    assert yp_before == yp_after
-
-    assert yp_after == expected
+    assert yp_after_r1 == yp_ground_truth
+    
 
 
 # ![R1 Move](./images/r1_2.png)
@@ -55,26 +56,27 @@ def test_r1_2():
     
     a = pari('A')
 
-    expected = -a**2 - a -1
+    yp_ground_truth = -a**2 - a -1
 
     x1 = Crossing('X')
     x1[1], x1[3] = x1[2], x1[0]
 
     sgd = SpatialGraphDiagram([x1])
 
-    yp_before = sgd.normalized_yamada_polynomial()
+    yp_before_r1 = sgd.normalized_yamada_polynomial()
+    
+    assert yp_before_r1 == yp_ground_truth
 
-    sgd_has_r1, r1_input = has_r1(sgd)
+    r1_crossing_labels = has_r1(sgd)
 
-    assert sgd_has_r1
+    assert len(r1_crossing_labels) == 1
 
-    sgd = apply_r1(sgd, r1_input)
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
 
-    yp_after = sgd.normalized_yamada_polynomial()
+    yp_after_r1 = sgd.normalized_yamada_polynomial()
 
-    assert yp_before == yp_after
-
-    assert yp_after == expected
+    assert yp_after_r1 == yp_ground_truth
+    
 
 
 # ![R1 Move](./images/r1_double_loop_same_orientation.jpg)
@@ -86,7 +88,7 @@ def test_r1_3():
     
     a = pari('A')
 
-    expected = -a**2 - a -1
+    yp_ground_truth = -a**2 - a -1
 
     x1 = Crossing('x1')
     x2 = Crossing('x2')
@@ -105,33 +107,33 @@ def test_r1_3():
 
     sgd = SpatialGraphDiagram([x1, x2, e1, e2, e3, e4])
 
-    yp_before = sgd.normalized_yamada_polynomial()
-
-    # Remove the first loop
-
-    sgd_has_r1, r1_input = has_r1(sgd)
-
-    assert sgd_has_r1
-
-    sgd = apply_r1(sgd, r1_input)
-
-    yp_after_1 = sgd.normalized_yamada_polynomial()
-
-    assert yp_before == yp_after_1
-    assert yp_after_1 == expected
+    yp_before_r1s = sgd.normalized_yamada_polynomial()
     
-    # Remove the second loop
+    assert yp_before_r1s == yp_ground_truth
+
+    r1_crossing_labels = has_r1(sgd)
+
+    assert len(r1_crossing_labels) == 2
+
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
+
+    yp_after_first_r1 = sgd.normalized_yamada_polynomial()
     
-    sgd_has_r1, r1_input = has_r1(sgd)
+    assert yp_after_first_r1 == yp_ground_truth
     
-    assert sgd_has_r1
+    r1_crossing_labels = has_r1(sgd)
     
-    sgd = apply_r1(sgd, r1_input)
+    assert len(r1_crossing_labels) == 1
     
-    yp_after_2 = sgd.normalized_yamada_polynomial()
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
     
-    assert yp_after_1 == yp_after_2
-    assert yp_after_2 == expected
+    yp_after_second_r1 = sgd.normalized_yamada_polynomial()
+    
+    assert yp_after_second_r1 == yp_ground_truth
+    
+    r1_crossing_labels = has_r1(sgd)
+    
+    assert len(r1_crossing_labels) == 0
 
 
 # ![R1 Move](./images/r1_double_loop_opposite_orientation.jpg)
@@ -143,7 +145,7 @@ def test_r1_4():
     
     a = pari('A')
 
-    expected = -a**2 - a -1
+    yp_ground_truth = -a**2 - a -1
 
     x1 = Crossing('x1')
     x2 = Crossing('x2')
@@ -162,31 +164,31 @@ def test_r1_4():
 
     sgd = SpatialGraphDiagram([x1, x2, e1, e2, e3, e4])
 
-    yp_before = sgd.normalized_yamada_polynomial()
-
-    # Remove the first loop
-
-    sgd_has_r1, r1_input = has_r1(sgd)
-
-    assert sgd_has_r1
-
-    sgd = apply_r1(sgd, r1_input)
-
-    yp_after_1 = sgd.normalized_yamada_polynomial()
-
-    assert yp_before == yp_after_1
-    assert yp_after_1 == expected
+    yp_before_r1s = sgd.normalized_yamada_polynomial()
     
-    # Remove the second loop
+    assert yp_before_r1s == yp_ground_truth
+
+    r1_crossing_labels = has_r1(sgd)
+
+    assert len(r1_crossing_labels) == 2
+
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
+
+    yp_after_first_r1 = sgd.normalized_yamada_polynomial()
     
-    sgd_has_r1, r1_input = has_r1(sgd)
+    assert yp_after_first_r1 == yp_ground_truth
     
-    assert sgd_has_r1
+    r1_crossing_labels = has_r1(sgd)
     
-    sgd = apply_r1(sgd, r1_input)
+    assert len(r1_crossing_labels) == 1
     
-    yp_after_2 = sgd.normalized_yamada_polynomial()
+    sgd = apply_r1(sgd, r1_crossing_labels[0])
     
-    assert yp_after_1 == yp_after_2
-    assert yp_after_2 == expected
+    yp_after_second_r1 = sgd.normalized_yamada_polynomial()
+    
+    assert yp_after_second_r1 == yp_ground_truth
+    
+    r1_crossing_labels = has_r1(sgd)
+    
+    assert len(r1_crossing_labels) == 0
 
