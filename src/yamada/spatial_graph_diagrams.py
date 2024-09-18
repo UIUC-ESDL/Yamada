@@ -225,42 +225,19 @@ class SpatialGraphDiagram:
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
 
-    def connect_edges(self, edge_1, edge_1_index_1, edge_2, edge_2_index_1):
-        """
-        Connects two edges together. Replaces them with a single, new edge.
-        """
+    def connect(self, obj_1, idx, obj_2, jdx):
 
-        # Ensure both are edges
-        if not isinstance(edge_1, Edge) or not isinstance(edge_2, Edge):
-            raise ValueError("Both objects must be edges.")
+        both_are_edges = isinstance(obj_1, Edge) and isinstance(obj_2, Edge)
 
-        # Ensure that an edge does not directly connect to itself; insert a vertex if it does.
-        if edge_1 == edge_2:
-            V = Vertex(2, repr(edge_1) + '_stopper')
+        if both_are_edges:
+            V = Vertex(2, 'v' + str(len(self.vertices) + 1))
             self.add_vertex(V)
-            V[0] = edge_1[edge_1_index_1]
-            V[1] = edge_2[edge_2_index_1]
+            obj_1[idx] = V[0]
+            obj_2[jdx] = V[1]
 
         else:
+            obj_1[idx] = obj_2[jdx]
 
-            # Identify the objects at the other end of the edges
-            edge_1_index_2 = (edge_1_index_1 + 1) % 2
-            edge_2_index_2 = (edge_2_index_1 + 1) % 2
-            edge_1_adjacent, edge_1_adjacent_index = edge_1.adjacent[edge_1_index_2]
-            edge_2_adjacent, edge_2_adjacent_index = edge_2.adjacent[edge_2_index_2]
-
-            # Create a new edge
-            # Find all edges in the diagram with edge_1 and edge_2 in their label
-            labels = [edge.label for edge in self.edges if str(edge_1.label) in str(edge.label) and str(edge_2.label) in str(edge.label)]
-            new_edge_label = str(edge_1.label) + '_' + str(edge_2.label) + '_' + str(len(labels))
-            new_edge = Edge(new_edge_label)
-
-            # Remove the edges from the diagram
-            self.remove_edge(edge_1)
-            self.remove_edge(edge_2)
-
-            # Add the new edge to the diagram
-            self.add_edge(new_edge, edge_1_adjacent, edge_1_adjacent_index, edge_2_adjacent, edge_2_adjacent_index)
 
 
 

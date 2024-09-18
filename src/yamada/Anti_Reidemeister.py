@@ -83,7 +83,7 @@ def apply_anti_r1(sgd, r1_inputs):
     sgd.remove_edge(edge)
 
     # Connect the remaining edges
-    sgd.connect_edges(other_edge_1, other_edge_1_index, other_edge_2, other_edge_2_index)
+    sgd.connect(other_edge_1, other_edge_1_index, other_edge_2, other_edge_2_index)
 
     return sgd
 

@@ -79,7 +79,7 @@ def apply_r1(sgd, r1_inputs):
     sgd.remove_edge(edge)
 
     # Connect the remaining edges
-    sgd.connect_edges(other_edge_1, other_edge_1_index, other_edge_2, other_edge_2_index)
+    sgd.connect(other_edge_1, other_edge_1_index, other_edge_2, other_edge_2_index)
 
     return sgd
 
@@ -102,19 +102,19 @@ def has_r2(sgd):
     sgd_has_r2 = False
     r2_inputs = {}
 
-    # Identify all possible pairs of crossings
-    crossing_combinations = list(combinations(sgd.crossings, 2))
+    # Identify all candidate faces
+    candidate_faces = []
+    for face in sgd.faces():
+        num_crossings = len([entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)])
+        num_edges = len([entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)])
+        if num_crossings == 2 and num_edges == 2:
+            candidate_faces.append(face)
 
-    # Loop through each crossing pair
-    for crossing1, crossing2 in crossing_combinations:
-
-        # Does the crossing pair share at least two edges?
-        common_edges = find_common_edges(crossing1, crossing2)
-        if len(common_edges) >= 2:
-
-            pairs_of_common_edges = list(combinations(common_edges, 2))
-            for edge1, edge2 in pairs_of_common_edges:
-                if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
+    # Loop through each candidate face
+    for face in candidate_faces:
+        crossing1, crossing2 = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
+        edge1, edge2 = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
+        if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
                     sgd_has_r2 = True
                     crossing_1_label = crossing1.label
                     crossing_2_label = crossing2.label
@@ -148,6 +148,52 @@ def has_r2(sgd):
 
                     return sgd_has_r2, r2_inputs
 
+    # # Identify all possible pairs of crossings
+    # crossing_combinations = list(combinations(sgd.crossings, 2))
+    #
+    # # Loop through each crossing pair
+    # for crossing1, crossing2 in crossing_combinations:
+    #
+    #     # Does the crossing pair share at least two edges?
+    #     common_edges = find_common_edges(crossing1, crossing2)
+    #     if len(common_edges) >= 2:
+    #
+    #         pairs_of_common_edges = list(combinations(common_edges, 2))
+    #         for edge1, edge2 in pairs_of_common_edges:
+    #             if edge_is_double_over_or_under(edge1) and edge_is_double_over_or_under(edge2):
+    #                 sgd_has_r2 = True
+    #                 crossing_1_label = crossing1.label
+    #                 crossing_2_label = crossing2.label
+    #                 common_edge_1_crossing_1_index = get_index_of_crossing_corner(crossing1, edge1)
+    #                 common_edge_1_crossing_2_index = get_index_of_crossing_corner(crossing2, edge1)
+    #                 common_edge_2_crossing_1_index = get_index_of_crossing_corner(crossing1, edge2)
+    #                 common_edge_2_crossing_2_index = get_index_of_crossing_corner(crossing2, edge2)
+    #                 common_edge_1_continuation_1_crossing_index = get_index_of_crossing_corner(crossing1, edge1,
+    #                                                                                            opposite_side=True)
+    #                 common_edge_1_continuation_2_crossing_index = get_index_of_crossing_corner(crossing2, edge1,
+    #                                                                                            opposite_side=True)
+    #                 common_edge_2_continuation_1_crossing_index = get_index_of_crossing_corner(crossing1, edge2,
+    #                                                                                            opposite_side=True)
+    #                 common_edge_2_continuation_2_crossing_index = get_index_of_crossing_corner(crossing2, edge2,
+    #                                                                                            opposite_side=True)
+    #
+    #                 r2_inputs['crossing_1_label'] = crossing_1_label
+    #                 r2_inputs['crossing_2_label'] = crossing_2_label
+    #                 r2_inputs['common_edge_1_crossing_1_index'] = common_edge_1_crossing_1_index
+    #                 r2_inputs['common_edge_1_crossing_2_index'] = common_edge_1_crossing_2_index
+    #                 r2_inputs['common_edge_2_crossing_1_index'] = common_edge_2_crossing_1_index
+    #                 r2_inputs['common_edge_2_crossing_2_index'] = common_edge_2_crossing_2_index
+    #                 r2_inputs[
+    #                     'common_edge_1_continuation_1_crossing_index'] = common_edge_1_continuation_1_crossing_index
+    #                 r2_inputs[
+    #                     'common_edge_1_continuation_2_crossing_index'] = common_edge_1_continuation_2_crossing_index
+    #                 r2_inputs[
+    #                     'common_edge_2_continuation_1_crossing_index'] = common_edge_2_continuation_1_crossing_index
+    #                 r2_inputs[
+    #                     'common_edge_2_continuation_2_crossing_index'] = common_edge_2_continuation_2_crossing_index
+    #
+    #                 return sgd_has_r2, r2_inputs
+
     return sgd_has_r2, r2_inputs
 
 
@@ -155,8 +201,9 @@ def apply_r2(sgd, r2_inputs):
     """
     0. Get the indices
     1. Remove the two crossings
-    2. Remove the two common edges
-    3. Connect the continuations of the common edges
+    2. Connect edges on opposite sides of the crossings
+    # 2. Remove the two common edges
+    # 3. Connect the continuations of the common edges
     """
 
     # Make a copy of the sgd object to avoid modifying the original
@@ -178,35 +225,69 @@ def apply_r2(sgd, r2_inputs):
     crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_1_label][0]
     crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_2_label][0]
 
-    # Remove the first crossing and connect the continuations of the common edges
-    common_edge_1, common_edge_1_index_1 = crossing_1.adjacent[common_edge_1_crossing_1_index]
-    common_edge_1_continuation_1, common_edge_1_continuation_1_index = crossing_1.adjacent[
-        common_edge_1_continuation_1_crossing_index]
-    sgd.connect_edges(common_edge_1, common_edge_1_index_1, common_edge_1_continuation_1,
-                      common_edge_1_continuation_1_index)
-
-    common_edge_2, common_edge_2_index_1 = crossing_1.adjacent[common_edge_2_crossing_1_index]
-    common_edge_2_continuation_1, common_edge_2_continuation_1_index = crossing_1.adjacent[
-        common_edge_2_continuation_1_crossing_index]
-    sgd.connect_edges(common_edge_2, common_edge_2_index_1, common_edge_2_continuation_1,
-                      common_edge_2_continuation_1_index)
-
+    # Remove crossing 1
+    c1_a0, c1_a0_i = crossing_1.adjacent[0]
+    c1_a1, c1_a1_i = crossing_1.adjacent[1]
+    c1_a2, c1_a2_i = crossing_1.adjacent[2]
+    c1_a3, c1_a3_i = crossing_1.adjacent[3]
+    sgd.connect(c1_a0, c1_a0_i, c1_a2, c1_a2_i)
+    sgd.connect(c1_a1, c1_a1_i, c1_a3, c1_a3_i)
     sgd.remove_crossing(crossing_1)
 
-    # Remove the second crossing and connect the continuations of the common edges
-    common_edge_1, common_edge_1_index_2 = crossing_2.adjacent[common_edge_1_crossing_2_index]
-    common_edge_1_continuation_2, common_edge_1_continuation_2_index = crossing_2.adjacent[
-        common_edge_1_continuation_2_crossing_index]
-    sgd.connect_edges(common_edge_1, common_edge_1_index_2, common_edge_1_continuation_2,
-                      common_edge_1_continuation_2_index)
-
-    common_edge_2, common_edge_2_index_2 = crossing_2.adjacent[common_edge_2_crossing_2_index]
-    common_edge_2_continuation_2, common_edge_2_continuation_2_index = crossing_2.adjacent[
-        common_edge_2_continuation_2_crossing_index]
-    sgd.connect_edges(common_edge_2, common_edge_2_index_2, common_edge_2_continuation_2,
-                      common_edge_2_continuation_2_index)
-
+    # Remove crossing 2
+    c2_a0, c2_a0_i = crossing_2.adjacent[0]
+    c2_a1, c2_a1_i = crossing_2.adjacent[1]
+    c2_a2, c2_a2_i = crossing_2.adjacent[2]
+    c2_a3, c2_a3_i = crossing_2.adjacent[3]
+    sgd.connect(c2_a0, c2_a0_i, c2_a2, c2_a2_i)
+    sgd.connect(c2_a1, c2_a1_i, c2_a3, c2_a3_i)
     sgd.remove_crossing(crossing_2)
+
+    # # Get the inputs
+    # crossing_1_label = r2_inputs['crossing_1_label']
+    # crossing_2_label = r2_inputs['crossing_2_label']
+    # common_edge_1_crossing_1_index = r2_inputs['common_edge_1_crossing_1_index']
+    # common_edge_1_crossing_2_index = r2_inputs['common_edge_1_crossing_2_index']
+    # common_edge_2_crossing_1_index = r2_inputs['common_edge_2_crossing_1_index']
+    # common_edge_2_crossing_2_index = r2_inputs['common_edge_2_crossing_2_index']
+    # common_edge_1_continuation_1_crossing_index = r2_inputs['common_edge_1_continuation_1_crossing_index']
+    # common_edge_1_continuation_2_crossing_index = r2_inputs['common_edge_1_continuation_2_crossing_index']
+    # common_edge_2_continuation_1_crossing_index = r2_inputs['common_edge_2_continuation_1_crossing_index']
+    # common_edge_2_continuation_2_crossing_index = r2_inputs['common_edge_2_continuation_2_crossing_index']
+    #
+    # # Find the objects given the labels
+    # crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_1_label][0]
+    # crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_2_label][0]
+    #
+    # # Remove the first crossing and connect the continuations of the common edges
+    # common_edge_1, common_edge_1_index_1 = crossing_1.adjacent[common_edge_1_crossing_1_index]
+    # common_edge_1_continuation_1, common_edge_1_continuation_1_index = crossing_1.adjacent[
+    #     common_edge_1_continuation_1_crossing_index]
+    # sgd.connect_edges(common_edge_1, common_edge_1_index_1, common_edge_1_continuation_1,
+    #                   common_edge_1_continuation_1_index)
+    #
+    # common_edge_2, common_edge_2_index_1 = crossing_1.adjacent[common_edge_2_crossing_1_index]
+    # common_edge_2_continuation_1, common_edge_2_continuation_1_index = crossing_1.adjacent[
+    #     common_edge_2_continuation_1_crossing_index]
+    # sgd.connect_edges(common_edge_2, common_edge_2_index_1, common_edge_2_continuation_1,
+    #                   common_edge_2_continuation_1_index)
+    #
+    # sgd.remove_crossing(crossing_1)
+    #
+    # # Remove the second crossing and connect the continuations of the common edges
+    # common_edge_1, common_edge_1_index_2 = crossing_2.adjacent[common_edge_1_crossing_2_index]
+    # common_edge_1_continuation_2, common_edge_1_continuation_2_index = crossing_2.adjacent[
+    #     common_edge_1_continuation_2_crossing_index]
+    # sgd.connect_edges(common_edge_1, common_edge_1_index_2, common_edge_1_continuation_2,
+    #                   common_edge_1_continuation_2_index)
+    #
+    # common_edge_2, common_edge_2_index_2 = crossing_2.adjacent[common_edge_2_crossing_2_index]
+    # common_edge_2_continuation_2, common_edge_2_continuation_2_index = crossing_2.adjacent[
+    #     common_edge_2_continuation_2_crossing_index]
+    # sgd.connect_edges(common_edge_2, common_edge_2_index_2, common_edge_2_continuation_2,
+    #                   common_edge_2_continuation_2_index)
+    #
+    # sgd.remove_crossing(crossing_2)
 
     return sgd
 

@@ -179,6 +179,7 @@ def test_yamada_polynomial_theta_2_graph():
 # In[18]:
 
 
+# TODO FIX NUMBER ORDER 3 NODE
 def test_yamada_polynomial_omega_2_graph():
     """
     The Omega_2 graph from Drobrynin and Vesnin:
