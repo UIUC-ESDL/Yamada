@@ -381,15 +381,19 @@ def r1_and_r2_simplify(sgd):
     sgd_has_r2 = True
     while sgd_has_r1 and sgd_has_r2:
 
-        sgd_has_r1, r1_inputs = has_r1(sgd)
-        if sgd_has_r1:
-            sgd = apply_r1(sgd, r1_inputs)
+        r1_crossing_labels = has_r1(sgd)
+        if len(r1_crossing_labels) > 0:
+            sgd = apply_r1(sgd, r1_crossing_labels[0])
             r1_count += 1
+        else:
+            sgd_has_r1 = False
 
-        sgd_has_r2, r2_inputs = has_r2(sgd)
-        if sgd_has_r2:
-            sgd = apply_r2(sgd, r2_inputs)
+        r2_crossing_labels = has_r2(sgd)
+        if len(r2_crossing_labels) > 0:
+            sgd = apply_r2(sgd, r2_crossing_labels[0])
             r2_count += 1
+        else:
+            sgd_has_r2 = False
 
         if i > max_iter:
             raise ValueError(f"R1 and R2 simplification has been looping for {i} times. This is likely an error.")
@@ -428,6 +432,7 @@ def reidemeister_simplify(sgd, n_tries=10):
             total_r1_count += r1_count
             total_r2_count += r2_count
         else:
+            # TODO WHY DOES IT BREAK PREMATURELY SOMETIMES?
             break
 
     return sgd, total_r1_count, total_r2_count, total_r3_count

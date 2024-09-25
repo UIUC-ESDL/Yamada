@@ -150,14 +150,14 @@ def draw_graph(grid, cube_corners, edge_paths):
     plotter.show()
 
 # Example usage
-n = 12  # Size of the grid
-m = 5  # Size of the cube
-k = 2  # Number of waypoints
-l = 3  # Minimum distance from the original path nodes
-# n = 10  # Size of the grid
-# m = 4  # Size of the cube
-# k = 1  # Number of waypoints
-# l = 2  # Minimum distance from the original path nodes
+# n = 12  # Size of the grid
+# m = 5  # Size of the cube
+# k = 2  # Number of waypoints
+# l = 3  # Minimum distance from the original path nodes
+n = 10  # Size of the grid
+m = 4  # Size of the cube
+k = 1  # Number of waypoints
+l = 2  # Minimum distance from the original path nodes
 # n = 10  # Size of the grid
 # m = 4  # Size of the cube
 # k = 1  # Number of waypoints
@@ -184,7 +184,7 @@ edge_paths = create_cube_paths(grid, cube_corners, reference_paths, k, l)
 # draw_graph(grid, cube_corners, edge_paths_ref)
 
 # Draw the graph with waypoints
-draw_graph(grid, cube_corners, edge_paths)
+# draw_graph(grid, cube_corners, edge_paths)
 
 # Define nodes, edges, and node positions of the cube nodes and paths
 node_labels = {tuple(node): str(idx) for idx, node in enumerate(set(itertools.chain(*[path for _, path in edge_paths])))}
@@ -209,7 +209,7 @@ sg = SpatialGraph(nodes=nodes,
 
 # Plot the Spatial Graph in 3D and the projected 2D plane to see what's going on. Crossings will be circled in red.
 # Note: Crossings occur when two edges that do not intersect, but appear to when they are projected onto a 2D plane.
-sg.plot()
+# sg.plot()
 
 # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
 sgd = sg.create_spatial_graph_diagram()
@@ -218,7 +218,7 @@ print(f"Crossings Before Reidemeister Simplification: {len(sgd.crossings)}")
 
 t1 = time_ns()
 
-sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=200)
+sgd, r1_count, r2_count, r3_count = reidemeister_simplify(sgd, n_tries=2000)
 
 t2 = time_ns()
 
