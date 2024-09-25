@@ -56,14 +56,6 @@ class SpatialGraph:
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
 
-    def node_degree(self, node: str) -> int:
-        """
-        Returns the degree of a node.
-
-        The node degree is the number of edges that are incident to the node.
-        """
-        return len([edge for edge in self.edges if node in edge])
-
     def get_adjacent_nodes(self, reference_node: str) -> list[str]:
         adjacent_nodes = []
 
@@ -783,33 +775,23 @@ class SpatialGraph:
                     elif crossing_position is np.inf:
                         raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                # Third, Check nonadjacent edge pairs for validity.
-                # Since nonadjacent segments are straight lines, they should only intersect at zero or one points.
-                # Since adjacent segments should only overlap at endpoints, nonadjacent segments should only overlap
-                # between endpoints.
-                # TODO Implement
-                # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
-
                 # If all are satisfied
                 break
 
             except ValueError:
                 continue
 
-        # raise Exception('Could not find a valid rotation after {} iterations'.format(max_iter))
-
         rotated_node_positions = rotate(node_positions, rotation)
         return rotated_node_positions
 
     def create_spatial_graph_diagram(self):
-        """
-        Create a diagram of the spatial graph.
-        """
 
         nodes_and_crossings = self.nodes + self.crossings
 
         # Create the vertex and crossing objects
-        vertices = [Vertex(self.node_degree(node), 'node_' + node) for node in self.nodes]
+        # len([edge for edge in self.edges if node in edge])
+        vertex_node_degrees = [len([edge for edge in self.edges if node in edge]) for node in self.nodes]
+        vertices = [Vertex(degree, 'node_' + node) for node, degree in zip(self.nodes,vertex_node_degrees)]
         if self.crossing_positions is not None:
             crossings = [Crossing('crossing_object_' + str(i)) for i in range(len(self.crossing_positions))]
         else:

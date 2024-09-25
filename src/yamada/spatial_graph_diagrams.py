@@ -50,6 +50,16 @@ from yamada.utilities import get_coefficients_and_exponents
 from yamada.diagram_elements import Vertex, Edge, Crossing
 
 
+# def __init__(self,
+#              edges=None,
+#              crossings=None,
+#              vertices=None,
+#              check=True):
+#     # Initialize the diagram
+#     self.edges = edges
+#     self.crossings = crossings
+#     self.vertices = vertices
+
 class SpatialGraphDiagram:
     """
 
@@ -75,23 +85,6 @@ class SpatialGraphDiagram:
 
         if check:
             self._check()
-
-    def _merge_edges(self):
-        """
-        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
-        calculations but do not add any information.
-        """
-
-        edges = [edge for edge in self.edges]
-        for edge in edges:
-
-            A, i = edge.adjacent[0]
-            B, j = edge.adjacent[1]
-
-            if A != edge and B != edge:
-                A[i] = B[j]
-                self.edges.remove(edge)
-                self.data.pop(edge.label)
 
     def faces(self):
         """
@@ -204,17 +197,6 @@ class SpatialGraphDiagram:
         self.data[vertex.label] = vertex
 
 
-    def add_edge(self, E, A, i, B, j):
-        """
-        Adds an edge to the diagram.
-        """
-
-        E[0] = (A, i)
-        E[1] = (B, j)
-
-        self.edges.append(E)
-        self.data[E.label] = E
-
     def remove_edge(self, edge):
         """Removes an edge from the diagram."""
         self.edges.remove(edge)
@@ -256,7 +238,6 @@ class SpatialGraphDiagram:
             E1[j1] = E0[j0]
             E1.fuse()
             self.remove_edge(E1)
-
 
     def copy(self):
         """
