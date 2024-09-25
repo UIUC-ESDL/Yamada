@@ -5,8 +5,7 @@
 
 
 import numpy as np
-from yamada import SpatialGraph
-from yamada import normalize_yamada_polynomial
+from yamada import SpatialGraph, normalize_yamada_polynomial
 from cypari import pari
 
 np.random.seed(0)

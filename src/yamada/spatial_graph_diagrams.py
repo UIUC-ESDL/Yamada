@@ -50,16 +50,6 @@ from yamada.utilities import get_coefficients_and_exponents
 from yamada.diagram_elements import Vertex, Edge, Crossing
 
 
-# def __init__(self,
-#              edges=None,
-#              crossings=None,
-#              vertices=None,
-#              check=True):
-#     # Initialize the diagram
-#     self.edges = edges
-#     self.crossings = crossings
-#     self.vertices = vertices
-
 class SpatialGraphDiagram:
     """
 
@@ -170,6 +160,9 @@ class SpatialGraphDiagram:
 
         self.edges = edges
 
+    def get_object(self, label):
+        return self.data[label]
+
 
     def _merge_vertices(self):
         """
@@ -220,6 +213,8 @@ class SpatialGraphDiagram:
         else:
             obj_1[idx] = obj_2[jdx]
 
+    def reverse_crossing_over_under(self, crossing):
+        pass
 
     def short_cut(self, crossing, i0):
         """
@@ -302,11 +297,14 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
+    def alexander_polynomial(self):
+
+        # TODO Implement
+
+        pass
 
     def yamada_polynomial(self, check_pieces=False):
-        """
-        Return the non-normalized Yamada polynomial of the knot.
-        """
+
         A = pari('A')
 
         if len(self.crossings) == 0:
@@ -354,6 +352,7 @@ class SpatialGraphDiagram:
 
         return A * Y_plus + (A ** -1) * Y_minus + Y_0
 
+
     def normalized_yamada_polynomial(self):
         """normalized_yamada_polynomial"""
 
@@ -385,7 +384,6 @@ def normalize_yamada_polynomial(yamada_polynomial):
     normalized_yamada_polynomial = min([ans1, ans2], key=list)
 
     return normalized_yamada_polynomial
-
 
 def reverse_poly(poly):
     """

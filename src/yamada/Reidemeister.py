@@ -36,7 +36,7 @@ def apply_r1(sgd, crossing_label):
     sgd = sgd.copy()
 
     # Find the crossing object given the label
-    crossing = [crossing for crossing in sgd.crossings if crossing.label == crossing_label][0]
+    crossing = sgd.get_object(crossing_label)
 
     # Connect the opposing crossing corners and remove the crossing
     A, i = crossing.adjacent[0]
@@ -95,8 +95,8 @@ def apply_r2(sgd, crossing_labels):
     crossing_1_label, crossing_2_label = crossing_labels
 
     # Find the objects given the labels
-    crossing_1 = [crossing for crossing in sgd.crossings if crossing.label == crossing_1_label][0]
-    crossing_2 = [crossing for crossing in sgd.crossings if crossing.label == crossing_2_label][0]
+    crossing_1 = sgd.get_object(crossing_1_label)
+    crossing_2 = sgd.get_object(crossing_2_label)
 
     # Remove crossing 1
     c1_a0, c1_a0_i = crossing_1.adjacent[0]
@@ -321,16 +321,6 @@ def find_common_edge(crossing1, crossing2):
             if adjacent1[0] == adjacent2[0]:
                 return adjacent1[0]
     raise Exception('Common edge not found in crossings')
-
-
-def find_common_edges(crossing1, crossing2):
-    common_edges = []
-    for adjacent1 in crossing1.adjacent:
-        for adjacent2 in crossing2.adjacent:
-            if adjacent1[0] == adjacent2[0]:
-                common_edges.append(adjacent1[0])
-
-    return common_edges
 
 
 def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
