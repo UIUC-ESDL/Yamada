@@ -184,7 +184,7 @@ edge_paths = create_cube_paths(grid, cube_corners, reference_paths, k, l)
 # draw_graph(grid, cube_corners, edge_paths_ref)
 
 # Draw the graph with waypoints
-# draw_graph(grid, cube_corners, edge_paths)
+draw_graph(grid, cube_corners, edge_paths)
 
 # Define nodes, edges, and node positions of the cube nodes and paths
 node_labels = {tuple(node): str(idx) for idx, node in enumerate(set(itertools.chain(*[path for _, path in edge_paths])))}

@@ -19,7 +19,7 @@ def test_r1_1():
     
     a = pari('A')
 
-    yp_ground_truth = -a**2 - a -1
+    yp_ground_truth = -a**2 - a - 1
 
     x1 = Crossing('x1')
     x1[1], x1[3] = x1[2], x1[0]
