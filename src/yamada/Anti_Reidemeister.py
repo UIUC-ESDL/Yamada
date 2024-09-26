@@ -31,8 +31,6 @@ def apply_anti_reidemeister_move(sgd, crossing_label):
     X[2] = B[j]
     X[3] = C[k]
 
-
-
     return sgd
 
 
