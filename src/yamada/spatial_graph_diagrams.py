@@ -189,6 +189,11 @@ class SpatialGraphDiagram:
         self.vertices.append(vertex)
         self.data[vertex.label] = vertex
 
+    def add_crossing(self, crossing):
+        """Adds a crossing to the diagram. TODO Unchecked"""
+        self.crossings.append(crossing)
+        self.data[crossing.label] = crossing
+
 
     def remove_edge(self, edge):
         """Removes an edge from the diagram."""

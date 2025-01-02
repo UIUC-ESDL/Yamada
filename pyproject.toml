@@ -23,12 +23,13 @@ dependencies = [
     "networkx~=2.8.5",
     "matplotlib",
     "numpy",
-    "cypari~=2.4.1",
+    "cypari",
     "jupyter",
     "nbconvert",
     "numba",
     "nbmake",
     "pyvista",
+    "scipy",
 ]
 
 [project.optional-dependencies]
