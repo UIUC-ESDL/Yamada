@@ -68,9 +68,6 @@ class SpatialGraphDiagram:
         self.vertices = [d for d in data if isinstance(d, Vertex)]
         self.edges = [d for d in data if isinstance(d, Edge)]
 
-        # TODO Uncomment?
-        # self._merge_vertices()
-
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
 
@@ -165,36 +162,10 @@ class SpatialGraphDiagram:
         return self.data[label]
 
 
-    def _merge_vertices(self):
-        """
-        Removes 2-valent vertices from the diagram. These vertices increase the complexity and runtime of
-        calculations but do not add any information.
-        """
-
-        degree_two = [vertex for vertex in self.vertices if vertex.degree == 2]
-
-        for vertex in degree_two:
-
-            if len(self.vertices) <= 2:
-                break
-
-            A, i = vertex.adjacent[0]
-            B, j = vertex.adjacent[1]
-            if A != vertex and B != vertex:
-                A[i] = B[j]
-                self.vertices.remove(vertex)
-                self.data.pop(vertex.label)
-
     def add_vertex(self, vertex):
         """Adds a vertex to the diagram."""
         self.vertices.append(vertex)
         self.data[vertex.label] = vertex
-
-    def add_crossing(self, crossing):
-        """Adds a crossing to the diagram. TODO Unchecked"""
-        self.crossings.append(crossing)
-        self.data[crossing.label] = crossing
-
 
     def remove_edge(self, edge):
         """Removes an edge from the diagram."""
@@ -218,9 +189,6 @@ class SpatialGraphDiagram:
 
         else:
             obj_1[idx] = obj_2[jdx]
-
-    def reverse_crossing_over_under(self, crossing):
-        pass
 
     def short_cut(self, crossing, i0):
         """
@@ -303,11 +271,6 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
-    def alexander_polynomial(self):
-
-        # TODO Implement
-
-        pass
 
     def yamada_polynomial(self, check_pieces=False):
 

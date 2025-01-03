@@ -144,7 +144,7 @@ def spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
                         for signs in itertools.product((0, 1), repeat=num_cross - 1):
                             signs = (0,) + signs
                             D = shadow.spatial_graph_diagram(signs=signs, check=False)
-                            D_has_r2, _ = has_r2(D)
+                            D_has_r2 = has_r2(D)
                             if not D_has_r2:
                                 yield D
 
