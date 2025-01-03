@@ -8,7 +8,7 @@ def has_r1(sgd):
     """
     Criteria:
     1. The diagram must have a crossing.
-    2. Two adjacent corners of the crossing must share the same exact edge
+    2. Two adjacent corners of the crossing must share the same exact edge OR strand of edges.
        (i.e., the edge forms a loop and nothing is over-laying, under-laying, or poking through that loop).
 
     Note: Applying the R1 move monotonically simplifies the diagram. Further, since applying the R1 move will change
@@ -16,10 +16,38 @@ def has_r1(sgd):
     This function may be called multiple times to simplify the diagram.
     """
 
+    def is_a_loop(e1, i1, e2, i2):
+        # TODO Verify logic
+        # TODO Make this a general helper function
+
+        # Otherwise, check if the edges form a loop
+        current_object = e1
+        index_of_next_object = (i1 + 1) % 2
+        max_iter = 1000
+        for i in range(max_iter):
+
+            # If we reach the other edge, then it is a loop
+            if current_object == e2:
+                return True
+
+            # Check if the adjacent object is also 2-valent
+            next_object, next_object_index = current_object.adjacent[index_of_next_object]
+
+            if len(next_object.adjacent) != 2:
+                return False
+            else:
+                current_object = next_object
+                index_of_next_object = (next_object_index + 1) % 2
+
+
     r1_crossing_labels = []
     for crossing in sgd.crossings:
         (A, i), (B, j), (C, k), (D, l) = crossing.adjacent
-        if A == B or B == C or C == D or D == A:
+        cond_1 = is_a_loop(A, i, B, j)
+        cond_2 = is_a_loop(B, j, C, k)
+        cond_3 = is_a_loop(C, k, D, l)
+        cond_4 = is_a_loop(D, l, A, i)
+        if cond_1 or cond_2 or cond_3 or cond_4:
             r1_crossing_labels.append(crossing.label)
 
     return r1_crossing_labels

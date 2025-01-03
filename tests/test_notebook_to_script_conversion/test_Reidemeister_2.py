@@ -7,6 +7,8 @@
 from cypari import pari
 from yamada import SpatialGraphDiagram, Vertex, Crossing, Edge, has_r2, apply_r2
 
+# TODO Verify swapping order of apply (x,y) vs (y,x) has no effect on the result
+
 
 # ## Reidemeister 2
 # 

@@ -23,9 +23,7 @@ def apply_anti_reidemeister_move(sgd, crossing_label):
 
     (A, i), (B, j), (C, k), (D, l) = X.adjacent
 
-    # Currently X[0] = A[i], X[1] = B[j], X[2] = C[k], X[3] = D[l]
-    # Increment the edge ordering by one
-
+    # Swap the under-crossing strand and over-crossing strand
     X[0] = D[l]
     X[1] = A[i]
     X[2] = B[j]

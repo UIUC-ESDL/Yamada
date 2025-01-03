@@ -68,7 +68,8 @@ class SpatialGraphDiagram:
         self.vertices = [d for d in data if isinstance(d, Vertex)]
         self.edges = [d for d in data if isinstance(d, Edge)]
 
-        self._merge_vertices()
+        # TODO Uncomment?
+        # self._merge_vertices()
 
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
