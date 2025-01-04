@@ -19,6 +19,7 @@ def has_r1(sgd):
     def is_a_loop(e1, i1, e2, i2):
         # TODO Verify logic
         # TODO Make this a general helper function
+        # TODO Write unit tests...
 
         # Otherwise, check if the edges form a loop
         current_object = e1

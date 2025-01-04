@@ -90,20 +90,22 @@ def edges_form_a_strand(edge_1, edge_2):
         index_of_next_object = direction_index
 
         # Loop through the strand until the second edge is reached or the strand ends
+        strand = [current_object.label]
         max_iter = 1000
         for i in range(max_iter):
 
             # Identify the next object and the index it assigns to the current object
             next_object, next_object_index = current_object.adjacent[index_of_next_object]
+            strand + [next_object.label]
 
             # If the next object is the second edge, then the edges form a strand
             if next_object == e2:
-                return True
+                return True, strand
 
             # If the next object is not the second edge and is also not 2-valent,
             # then the strand ends and the edges do not form a strand.
             elif next_object.degree != 2:
-                return False
+                return False, strand
 
             # If not the next object is admissible, then continue moving along the strand
             else:
@@ -114,12 +116,14 @@ def edges_form_a_strand(edge_1, edge_2):
                 # Since this is a 2-valent vertex, the index of the next object is the opposite of the current index
                 index_of_next_object = (next_object_index + 1) % 2
 
-        return False
+        return False, strand
 
     # Check if the edges form a strand in either direction
-    cond_1 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 0)
-    cond_2 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 1)
-    return cond_1 or cond_2
+    cond_1, strand_dir1 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 0)
+    cond_2, strand_dir2 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 1)
+    does_form_strand = cond_1 or cond_2
+    strands_checked = [strand_dir1, strand_dir2]
+    return does_form_strand, strands_checked
 
 
 def extract_graph_from_json_file(filename):
