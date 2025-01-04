@@ -77,6 +77,51 @@ def split_edges(edges):
     return new_edges
 
 
+def edges_form_a_strand(edge_1, edge_2):
+    """
+    Check whether two edges are form part, or a whole, of a strand.
+    A strand is a series of edges and 2-valent vertices that are connected in a line.
+    """
+
+    def edges_form_a_strand_along_a_direction(e1, e2, direction_index):
+
+        # Initialize the current object and the index of the next object
+        current_object = e1
+        index_of_next_object = direction_index
+
+        # Loop through the strand until the second edge is reached or the strand ends
+        max_iter = 1000
+        for i in range(max_iter):
+
+            # Identify the next object and the index it assigns to the current object
+            next_object, next_object_index = current_object.adjacent[index_of_next_object]
+
+            # If the next object is the second edge, then the edges form a strand
+            if next_object == e2:
+                return True
+
+            # If the next object is not the second edge and is also not 2-valent,
+            # then the strand ends and the edges do not form a strand.
+            elif next_object.degree != 2:
+                return False
+
+            # If not the next object is admissible, then continue moving along the strand
+            else:
+                # Set the next object as the current object
+                current_object = next_object
+
+                # Set the index of the next object
+                # Since this is a 2-valent vertex, the index of the next object is the opposite of the current index
+                index_of_next_object = (next_object_index + 1) % 2
+
+        return False
+
+    # Check if the edges form a strand in either direction
+    cond_1 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 0)
+    cond_2 = edges_form_a_strand_along_a_direction(edge_1, edge_2, 1)
+    return cond_1 or cond_2
+
+
 def extract_graph_from_json_file(filename):
     """
     Reads a json file and returns a networkx graph

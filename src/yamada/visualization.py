@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms.planar_drawing import triangulate_embedding
 import numpy as np
@@ -135,5 +136,23 @@ def position_spatial_graphs_in_3d(ust_dict, z_height=20):
         sg_inputs.append((nodes, node_positions, edges))
 
     return sg_inputs
+
+def plot_spatial_graph(nodes, node_positions, edges):
+
+    # Create a 3D plot
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot nodes
+    for node, position in node_positions.items():
+        ax.scatter(*position, label=node)
+
+    # Plot edges
+    for edge in edges:
+        edge_positions = [node_positions[node] for node in edge]
+        edge_positions = np.array(edge_positions)
+        ax.plot(edge_positions[:, 0], edge_positions[:, 1], edge_positions[:, 2])
+
+    plt.show()
 
 

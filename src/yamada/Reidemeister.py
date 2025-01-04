@@ -35,9 +35,9 @@ def has_r1(sgd):
 
             if len(next_object.adjacent) != 2:
                 return False
-            else:
-                current_object = next_object
-                index_of_next_object = (next_object_index + 1) % 2
+
+
+            index_of_next_object = (next_object_index + 1) % 2
 
 
     r1_crossing_labels = []
