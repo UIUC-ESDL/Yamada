@@ -1,3 +1,8 @@
+"""
+Most tests are written in Jupyter Notebooks to include explanations and visualizations.
+To run these tests with pytest, we must extract the test cells from the notebooks.
+"""
+
 import pytest
 import nbformat
 from pathlib import Path
