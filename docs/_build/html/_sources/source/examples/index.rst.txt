@@ -1,8 +1,0 @@
-My Title
-*********
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-   Example 1 <https://github.com/SPI2Py/Yamada/blob/main/examples/calculate_yamada_polynomial_manual/demo.ipynb>

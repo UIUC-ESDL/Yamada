@@ -1,31 +1,60 @@
-import os
-import subprocess
+import pytest
+import nbformat
+from pathlib import Path
 
-def pytest_sessionstart(session):
+
+def pytest_collect_file(file_path, parent):
+    """
+    Automatically discover and include Jupyter Notebooks (.ipynb) in pytest.
+    """
+    # Ensure the path is a pathlib.Path object
+    path = Path(file_path)
+    if path.suffix == ".ipynb":
+        return NotebookFile.from_parent(parent, path=path)
 
 
-    test_directory = os.path.join(os.getcwd(), 'tests')
-    output_directory = os.path.join(test_directory, 'test_notebook_to_script_conversion')
+class NotebookFile(pytest.File):
+    """
+    Custom Pytest collector for Jupyter Notebooks.
+    """
+    def __init__(self, path: Path, parent, **kwargs):
+        super().__init__(path=path, parent=parent, **kwargs)
+        self.path = path
 
-    # Empty the output directory of Python scripts, except __init__.py
-    for item in os.listdir(output_directory):
-        item_path = os.path.join(output_directory, item)
-        if item.endswith(".py") and item != "__init__.py":
-            os.remove(item_path)
+    def collect(self):
+        """
+        Collect test cells from the Jupyter notebook.
+        """
+        with self.path.open("r", encoding="utf-8") as f:
+            notebook = nbformat.read(f, as_version=4)
 
-    # Get the filepaths of all notebooks in the test directory and its subdirectories
-    filepaths = []
-    for dirpath, dirnames, filenames in os.walk(test_directory):
-        filepaths += [os.path.join(dirpath, filename) for filename in filenames if filename.endswith('.ipynb')]
+        for i, cell in enumerate(notebook.cells):
+            if cell.cell_type == "code" and "def test_" in cell.source:
+                yield NotebookTest.from_parent(self, name=f"cell_{i}", cell=cell)
 
-    # Convert the notebooks to scripts
-    for filepath in filepaths:
-        nb_command = ["jupyter", "nbconvert", "--output-dir=" + output_directory, "--to", "python", filepath]
-        try:
-            result = subprocess.run(nb_command, check=True, capture_output=True)
-            print(result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Error converting:", filepath)
-            print(e.stderr.decode())
 
-    print('Conversion Done!')
+class NotebookTest(pytest.Item):
+    """
+    Pytest item representing an individual test cell from a notebook.
+    """
+    def __init__(self, name, parent, cell, **kwargs):
+        super().__init__(name=name, parent=parent, **kwargs)
+        self.cell = cell
+
+    def runtest(self):
+        """
+        Execute the test cell in a global namespace.
+        """
+        exec(self.cell.source, globals())
+
+    def repr_failure(self, excinfo):
+        """
+        Customize the error message when a test fails.
+        """
+        return f"Test failed in notebook cell:\n{self.cell.source}\n{excinfo.value}"
+
+    def reportinfo(self):
+        """
+        Return information for reporting test results.
+        """
+        return self.path, 0, f"notebook test: {self.name}"
