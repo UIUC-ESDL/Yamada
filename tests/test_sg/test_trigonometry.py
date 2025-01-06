@@ -1,5 +1,5 @@
 import numpy as np
-from yamada.geometry import compute_counter_clockwise_angle
+from yamada.sg.geometry import compute_counter_clockwise_angle
 
 def test_calculate_counter_clockwise_angle():
 

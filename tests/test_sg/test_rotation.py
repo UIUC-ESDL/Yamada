@@ -1,5 +1,6 @@
 import numpy as np
-from yamada.geometry import rotate
+from yamada.sg.geometry import rotate
+
 
 def test_rotation_at_origin_zero():
 
