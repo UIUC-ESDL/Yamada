@@ -1,5 +1,5 @@
 import numpy as np
-from yamada import SpatialGraph, normalize_yamada_polynomial
+from yamada import SpatialGraph, normalize_poly
 from cypari import pari
 
 np.random.seed(0)
@@ -20,7 +20,7 @@ def test_unknot():
 
         sgd = sg.create_spatial_graph_diagram()
 
-        assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+        assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 
 def test_unknot_single_twist():
@@ -40,7 +40,7 @@ def test_unknot_single_twist():
 
         sgd = sg.create_spatial_graph_diagram()
 
-        assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+        assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 def test_unknot_double_twist():
 
@@ -59,7 +59,7 @@ def test_unknot_double_twist():
 
         sgd1 = sg1.create_spatial_graph_diagram()
 
-        assert sgd1.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+        assert sgd1.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 def test_unknot_four_crossings():
 
@@ -81,7 +81,7 @@ def test_unknot_four_crossings():
 
     a = pari('A')
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 def test_double_crossing_single_edge():
     # TODO Implement this test.

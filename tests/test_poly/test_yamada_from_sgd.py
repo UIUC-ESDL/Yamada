@@ -1,7 +1,7 @@
 import networkx as nx
 from cypari import pari
 from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
-    Crossing, normalize_yamada_polynomial
+    Crossing, normalize_poly
 
 def test_spatial_graph_diagram_unknotted_theta_graph_1():
 
@@ -52,7 +52,7 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
 
     assert sgd.yamada_polynomial() == h_poly(t)
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
 def test_yamada_polynomial_unknotted_theta_graph_2():
 
@@ -70,7 +70,7 @@ def test_yamada_polynomial_unknotted_theta_graph_2():
 
     sgd = SpatialGraphDiagram([va, vb, vc, vd])
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
 def test_unknot_single_twist_1():
 
@@ -82,7 +82,7 @@ def test_unknot_single_twist_1():
 
     sgd = SpatialGraphDiagram([x1])
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 def test_unknot_single_twist_2():
 
@@ -94,7 +94,7 @@ def test_unknot_single_twist_2():
 
     sgd = SpatialGraphDiagram([x1])
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(-a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
 
 def test_yamada_polynomial_theta_2_graph():
     """
@@ -115,7 +115,7 @@ def test_yamada_polynomial_theta_2_graph():
 
     assert nx.is_isomorphic(g, t)
 
-    assert sgd.normalized_yamada_polynomial() == normalize_yamada_polynomial(
+    assert sgd.normalized_yamada_polynomial() == normalize_poly(
         a ** 12 - a ** 8 - a ** 6 - a ** 4 - a ** 3 - a ** 2 - a - 1)
 
 # TODO FIX NUMBER ORDER 3 NODE
@@ -140,6 +140,6 @@ def test_yamada_polynomial_omega_2_graph():
     assert nx.is_isomorphic(g, nx.complete_graph(4))
 
     expected_normalized_yamada_polynomial = \
-        normalize_yamada_polynomial(a**-5 + a**-4 + a**-3 + a**-2 + a**-1 -1 + a - 2*a**2+a**3-a**4+a**5+a**6+a**8)
+        normalize_poly(a**-5 + a**-4 + a**-3 + a**-2 + a**-1 -1 + a - 2*a**2+a**3-a**4+a**5+a**6+a**8)
 
     assert sgd.normalized_yamada_polynomial() == expected_normalized_yamada_polynomial

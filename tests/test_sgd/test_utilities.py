@@ -1,5 +1,22 @@
 import numpy as np
 from yamada import SpatialGraph
+from yamada.sgd.utilities import edges_form_a_strand
+
+# %% Strands
+
+def test_forms_a_strand_unknot_1e_1v(unknot_1e_1v):
+
+    e1 = unknot_1e_1v.edges[0]
+    v1 = unknot_1e_1v.vertices[0]
+
+    forms_a_strand = edges_form_a_strand(e1, v1)
+
+    assert forms_a_strand == True
+
+
+
+
+
 
 
 def test_get_sub_edges():

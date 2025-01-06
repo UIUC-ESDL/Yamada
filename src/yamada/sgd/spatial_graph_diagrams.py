@@ -45,8 +45,9 @@ rather than directly calculate Yamada polynomials in this script (you'll get err
 import networkx as nx
 import pickle
 from cypari import pari
+
 from yamada.poly.H_polynomial import h_poly
-from yamada.utils.utilities import get_coefficients_and_exponents
+from yamada.poly.utilities import get_coefficients_and_exponents
 from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 
@@ -272,7 +273,7 @@ class SpatialGraphDiagram:
         return G
 
 
-    def yamada_polynomial(self, check_pieces=False):
+    def yamada_polynomial(self, check_pieces=False, normalize=True):
 
         A = pari('A')
 
@@ -337,22 +338,6 @@ class SpatialGraphDiagram:
         normalized_yamada_polynomial = min([ans1, ans2], key=list)
 
         return normalized_yamada_polynomial
-
-
-def normalize_yamada_polynomial(yamada_polynomial):
-    """normalized_yamada_polynomial
-    """
-
-    A = pari('A')
-
-    _, exps = get_coefficients_and_exponents(yamada_polynomial)
-    a, b = min(exps), max(exps)
-    ans1 = (-A) ** (-a) * yamada_polynomial
-    ans2 = (-A) ** b * reverse_poly(yamada_polynomial)
-
-    normalized_yamada_polynomial = min([ans1, ans2], key=list)
-
-    return normalized_yamada_polynomial
 
 def reverse_poly(poly):
     """

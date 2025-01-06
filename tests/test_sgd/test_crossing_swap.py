@@ -1,7 +1,7 @@
 from cypari import pari
 from yamada import Edge, Crossing, SpatialGraphDiagram
-from yamada.sgd.Reidemeister import has_r1, apply_r1, has_r2, apply_r2
-from yamada.sgd.crossing_swap import anti_reidemeister_moves, apply_anti_reidemeister_move
+from yamada.sgd.reidemeister import has_r1, apply_r1, has_r2, apply_r2
+from yamada.sgd.utilities import available_crossing_swaps, apply_crossing_swap
 
 
 def create_unknot_1():
@@ -40,13 +40,13 @@ def create_unknot_2():
     return sgd
 
 
-def test_anti_reidemeister_1():
+def test_anti_reidemeister_1(unknot_infinity_1_2e_1c, unknot_infinity_2_2e_1c):
     a = pari('A')
 
     yp_ground_truth = -a ** 2 - a - 1
 
-    sgd_1 = create_unknot_1()
-    sgd_2 = create_unknot_2()
+    sgd_1 = unknot_infinity_1_2e_1c
+    sgd_2 = unknot_infinity_2_2e_1c
 
     # Ensure both unknots have the same Yamada polynomial
     sgd_1_yp = sgd_1.normalized_yamada_polynomial()
@@ -55,12 +55,12 @@ def test_anti_reidemeister_1():
     assert sgd_2_yp == yp_ground_truth
 
     # There should only be one possible crossing swap
-    arm = anti_reidemeister_moves(sgd_1)
+    arm = available_crossing_swaps(sgd_1)
     assert len(arm) == 1
-    assert arm[0] == 'x1'
+    assert arm[0] == 'c1'
 
     # Ensure the crossing swap is correct
-    sgd_cs = apply_anti_reidemeister_move(sgd_1, arm[0])
+    sgd_cs = apply_crossing_swap(sgd_1, arm[0])
 
     sgd_cs_yp = sgd_cs.normalized_yamada_polynomial()
     assert sgd_cs_yp == yp_ground_truth
@@ -96,14 +96,14 @@ def test_anti_reidemeister_2():
     # TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial
     assert yp_before != yp_ground_truth
 
-    arm = anti_reidemeister_moves(sgd)
+    arm = available_crossing_swaps(sgd)
 
     # There should be 3 possible crossing swaps
     assert len(arm) == 3
     assert set(arm) == {'x1', 'x2', 'x3'}
 
     # Ensure the crossing swap is correct
-    sgd = apply_anti_reidemeister_move(sgd, 'x1')
+    sgd = apply_crossing_swap(sgd, 'x1')
     yp_after = sgd.normalized_yamada_polynomial()
     assert yp_after == yp_ground_truth
 
