@@ -14,7 +14,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Tests Documentation" href="spatial_graph_diagrams/spatial_graph_diagrams.html" />
+    <link rel="next" title="Spatial Graph Diagrams" href="spatial_graph_diagrams/index.html" />
     <link rel="prev" title="yamada documentation" href="../index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -36,18 +36,105 @@
   <section id="test-documentation">
 <h1>Test Documentation<a class="headerlink" href="#test-documentation" title="Link to this heading">¶</a></h1>
 <p>This section contains documentation for all tests, categorized by their functionality.</p>
+</section>
+<section id="yamada-package">
+<h1>yamada package<a class="headerlink" href="#yamada-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="yamada-calculation-module">
+<h2>yamada.calculation module<a class="headerlink" href="#yamada-calculation-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="yamada-data-module">
+<h2>yamada.data module<a class="headerlink" href="#yamada-data-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-yamada.enumeration">
+<span id="yamada-enumeration-module"></span><h2>yamada.enumeration module<a class="headerlink" href="#module-yamada.enumeration" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="yamada.enumeration.Shadow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">Shadow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_codes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#Shadow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.Shadow" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="yamada.enumeration.Shadow.spatial_graph_diagram">
+<span class="sig-name descname"><span class="pre">spatial_graph_diagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#Shadow.spatial_graph_diagram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.Shadow.spatial_graph_diagram" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.enumerate_yamada_classes">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">enumerate_yamada_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plantri_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_crossings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#enumerate_yamada_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.enumerate_yamada_classes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.enumerate_yamada_classes_multicore">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">enumerate_yamada_classes_multicore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_crossings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#enumerate_yamada_classes_multicore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.enumerate_yamada_classes_multicore" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.num_automorphisms">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">num_automorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#num_automorphisms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.num_automorphisms" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.read_edge_code">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">read_edge_code</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#read_edge_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.read_edge_code" title="Link to this definition">¶</a></dt>
+<dd><p>Read 1 byte form of edge code</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.shadows_via_plantri_by_ascii">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">shadows_via_plantri_by_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plantri_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_tri_verts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_crossings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#shadows_via_plantri_by_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.shadows_via_plantri_by_ascii" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.shadows_via_plantri_by_edge_codes">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">shadows_via_plantri_by_edge_codes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plantri_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_tri_verts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_crossings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#shadows_via_plantri_by_edge_codes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.shadows_via_plantri_by_edge_codes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.spatial_graph_diagrams_fixed_crossings">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">spatial_graph_diagrams_fixed_crossings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plantri_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">G</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crossings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#spatial_graph_diagrams_fixed_crossings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.spatial_graph_diagrams_fixed_crossings" title="Link to this definition">¶</a></dt>
+<dd><p>Let’s start with the theta graph</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">T</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">spatial_graph_diagrams_fixed_crossings</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="yamada.enumeration.to_poly">
+<span class="sig-prename descclassname"><span class="pre">yamada.enumeration.</span></span><span class="sig-name descname"><span class="pre">to_poly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diagram</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/yamada/enumeration.html#to_poly"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#yamada.enumeration.to_poly" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="yamada-visualization-module">
+<h2>yamada.visualization module<a class="headerlink" href="#yamada-visualization-module" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+<section id="id1">
+<h1>Test Documentation<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Test Categories</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html">Tests Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_1"><code class="docutils literal notranslate"><span class="pre">test_r1_1()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_2"><code class="docutils literal notranslate"><span class="pre">test_r1_2()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_3"><code class="docutils literal notranslate"><span class="pre">test_r1_3()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_4"><code class="docutils literal notranslate"><span class="pre">test_r1_4()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#specific-test-example">Specific Test Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spatial_graph_diagrams/index.html">Spatial Graph Diagrams</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html">Placeholder</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_1"><code class="docutils literal notranslate"><span class="pre">test_r1_1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_2"><code class="docutils literal notranslate"><span class="pre">test_r1_2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_3"><code class="docutils literal notranslate"><span class="pre">test_r1_3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#tests.test_spatial_graph_diagrams.test_R1_move.test_r1_4"><code class="docutils literal notranslate"><span class="pre">test_r1_4()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html#specific-test-example">Specific Test Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="spatial_graph_diagrams/test_R1_move.html">R1 Move Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/test_R1_move.html">R1 Move Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/test_R2_move.html">R2 Move Tests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/test_R3_move.html">R3 Move Tests</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -80,9 +167,29 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Test Documentation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/spatial_graph_diagrams.html">Tests Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/test_R1_move.html">R1 Move Tests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Test Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#yamada-package">yamada package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#yamada-calculation-module">yamada.calculation module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#yamada-data-module">yamada.data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-yamada.enumeration">yamada.enumeration module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.Shadow"><code class="docutils literal notranslate"><span class="pre">Shadow</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.enumerate_yamada_classes"><code class="docutils literal notranslate"><span class="pre">enumerate_yamada_classes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.enumerate_yamada_classes_multicore"><code class="docutils literal notranslate"><span class="pre">enumerate_yamada_classes_multicore()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.num_automorphisms"><code class="docutils literal notranslate"><span class="pre">num_automorphisms()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.read_edge_code"><code class="docutils literal notranslate"><span class="pre">read_edge_code()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.shadows_via_plantri_by_ascii"><code class="docutils literal notranslate"><span class="pre">shadows_via_plantri_by_ascii()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.shadows_via_plantri_by_edge_codes"><code class="docutils literal notranslate"><span class="pre">shadows_via_plantri_by_edge_codes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.spatial_graph_diagrams_fixed_crossings"><code class="docutils literal notranslate"><span class="pre">spatial_graph_diagrams_fixed_crossings()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#yamada.enumeration.to_poly"><code class="docutils literal notranslate"><span class="pre">to_poly()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#yamada-visualization-module">yamada.visualization module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id1">Test Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="spatial_graph_diagrams/index.html">Spatial Graph Diagrams</a></li>
 </ul>
 </li>
 </ul>
@@ -92,7 +199,7 @@
 <ul>
   <li><a href="../index.html">Documentation overview</a><ul>
       <li>Previous: <a href="../index.html" title="previous chapter">yamada documentation</a></li>
-      <li>Next: <a href="spatial_graph_diagrams/spatial_graph_diagrams.html" title="next chapter">Tests Documentation</a></li>
+      <li>Next: <a href="spatial_graph_diagrams/index.html" title="next chapter">Spatial Graph Diagrams</a></li>
   </ul></li>
 </ul>
 </div>

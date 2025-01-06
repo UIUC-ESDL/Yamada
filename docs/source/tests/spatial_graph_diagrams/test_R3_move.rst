@@ -1,12 +1,9 @@
-
-\subsubsection{Reidemeister 3}
-
-# The Reidemeister 3 Move
+R3 Move Tests
+=============
 
 # Prerequisites:
 1. The SGD has at least one face whose 3 vertices are crossings.
 2. The candidate face has at least one edge that pass completely under or over the other two edges.
-
 
 # Algorithm:
 1. Identify the candidate face for the R3 move.
@@ -36,16 +33,35 @@
 
 First, we will define the knot before performing the R3.
 
-\includegraphics[scale=0.25]{test_spatial_graph_diagrams/images/r3_before_move}
-\lstinputlisting[linerange={5-51}]{test_spatial_graph_diagrams/test_R3_move.py}
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R3_move.py
+   :language: python
+   :lines: 5-51
+   :linenos:
+   :caption: Example Test Function
+
+.. image:: images/r3_before_move.png
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
 
 Then we will define the ground truth of the R3 move.
 
-\includegraphics[scale=0.25]{test_spatial_graph_diagrams/images/r3_after_move}
-\lstinputlisting[linerange={54-105}]{test_spatial_graph_diagrams/test_R3_move.py}
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R3_move.py
+   :language: python
+   :lines: 54-105
+   :linenos:
+   :caption: Example Test Function
+
+.. image:: images/r3_after_move.png
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
 
 Now we will perform the test
 
-\lstinputlisting[linerange={108-141}]{test_spatial_graph_diagrams/test_R3_move.py}
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R3_move.py
+   :language: python
+   :lines: 108-141
+   :linenos:
+   :caption: Example Test Function
 
-\subsubsection{Reidemeister Simplification}

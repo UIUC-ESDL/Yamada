@@ -1,10 +1,36 @@
-\subsubsection{Reidemeister 2}
+R2 Move Tests
+=============
 
-\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r2_1}
-\lstinputlisting[linerange={5-33}]{test_spatial_graph_diagrams/test_R2_move.py}
 
-\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r2_double_loop_same}
-\lstinputlisting[linerange={36-107}]{test_spatial_graph_diagrams/test_R2_move.py}
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+   :language: python
+   :lines: 5-33
+   :linenos:
+   :caption: Example Test Function
 
-\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r2_double_loop_opposite}
-\lstinputlisting[linerange={110-180}]{test_spatial_graph_diagrams/test_R2_move.py}
+.. image:: images/r2_1.png
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
+
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+   :language: python
+   :lines: 36-107
+   :linenos:
+   :caption: Example Test Function
+
+.. image:: images/r2_double_loop_same.jpg
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
+
+.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+   :language: python
+   :lines: 110-180
+   :linenos:
+   :caption: Example Test Function
+
+.. image:: images/r2_double_loop_opposite.jpg
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
