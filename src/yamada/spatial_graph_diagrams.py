@@ -46,7 +46,7 @@ import networkx as nx
 import pickle
 from cypari import pari
 from yamada.H_polynomial import h_poly
-from yamada.utilities import get_coefficients_and_exponents
+from yamada.utils import get_coefficients_and_exponents
 from yamada.diagram_elements import Vertex, Edge, Crossing
 
 

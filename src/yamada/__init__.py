@@ -8,5 +8,5 @@ from .spatial_graphs import SpatialGraph
 from .spatial_graph_diagrams import SpatialGraphDiagram, reverse_poly, normalize_yamada_polynomial
 
 from .enumeration import enumerate_yamada_classes
-from .utilities import extract_graph_from_json_file
+from .utils import extract_graph_from_json_file
 

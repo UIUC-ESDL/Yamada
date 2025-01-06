@@ -2,7 +2,7 @@ R2 Move Tests
 =============
 
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R2_move.py
    :language: python
    :lines: 5-33
    :linenos:
@@ -13,7 +13,7 @@ R2 Move Tests
    :align: center
    :width: 500px
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R2_move.py
    :language: python
    :lines: 36-107
    :linenos:
@@ -24,7 +24,7 @@ R2 Move Tests
    :align: center
    :width: 500px
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R2_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R2_move.py
    :language: python
    :lines: 110-180
    :linenos:

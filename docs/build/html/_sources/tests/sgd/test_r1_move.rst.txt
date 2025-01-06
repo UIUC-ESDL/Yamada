@@ -5,7 +5,7 @@ This section documents tests for the R1 move functionality.
 
 Reidemeister 1
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R1_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R1_move.py
    :language: python
    :lines: 5-22
    :linenos:
@@ -16,7 +16,7 @@ Reidemeister 1
    :align: center
    :width: 500px
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R1_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R1_move.py
    :language: python
    :lines: 36-59
    :linenos:
@@ -27,7 +27,7 @@ Reidemeister 1
    :align: center
    :width: 500px
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R1_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R1_move.py
    :language: python
    :lines: 62-112
    :linenos:
@@ -38,7 +38,7 @@ Reidemeister 1
    :align: center
    :width: 500px
 
-.. literalinclude:: ../../../../tests/test_spatial_graph_diagrams/test_R1_move.py
+.. literalinclude:: ../../../../tests/test_sgd/test_R1_move.py
    :language: python
    :lines: 115-165
    :linenos:
