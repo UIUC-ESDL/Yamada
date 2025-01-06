@@ -2,8 +2,6 @@ import networkx as nx
 import matplotlib
 import matplotlib.pyplot as plt
 from yamada import Edge, Crossing, Vertex, SpatialGraphDiagram
-from yamada.visualization import position_spatial_graph_in_3d, plot_spatial_graph
-
 
 matplotlib.use('TkAgg')
 

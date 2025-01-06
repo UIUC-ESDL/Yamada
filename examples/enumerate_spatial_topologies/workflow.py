@@ -12,9 +12,7 @@ It is a C program, so you will need to compile it yourself. It is supported for 
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from yamada import SpatialGraph, enumerate_yamada_classes
-from yamada.visualization import position_spatial_graphs_in_3d
-
+from yamada import enumerate_yamada_classes
 
 # %% Define the System Architecture and Component Geometries
 

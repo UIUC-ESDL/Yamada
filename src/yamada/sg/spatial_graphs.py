@@ -10,17 +10,16 @@ import itertools
 from itertools import combinations
 import pyvista as pv
 import matplotlib.colors as mcolors
-from matplotlib import cm
 from scipy.stats import qmc
 
-from .geometry import (rotate,
-                       compute_line_segment_intersection,
-                       compute_intermediate_y_position,
-                       compute_3D_intersection,
-                       compute_counter_clockwise_angle)
+from yamada.sg.geometry import (rotate,
+                                compute_line_segment_intersection,
+                                compute_intermediate_y_position,
+                                compute_3D_intersection,
+                                compute_counter_clockwise_angle)
 
-from yamada.diagram_elements import Vertex, Crossing
-from yamada.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.sgd.diagram_elements import Vertex, Crossing
+from yamada.sgd.spatial_graph_diagrams import SpatialGraphDiagram
 
 
 class SpatialGraph:

@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 import json
 from yamada import SpatialGraph
-from yamada.Reidemeister import *
+from yamada.sgd.Reidemeister import *
 
 # set the random seed for reproducibility
 np.random.seed(0)

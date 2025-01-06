@@ -1,7 +1,3 @@
-from yamada import SpatialGraph
-from yamada.Reidemeister import reidemeister_simplify
-
-
 def test_reidemeister_simplify():
     node_labels = ["0", "1", "2", "3", "4", "5", "6", "7",
                    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r"]
@@ -90,7 +86,7 @@ def test_reidemeister_simplify():
 
 # %%
 from yamada import SpatialGraph
-from yamada.Reidemeister import reidemeister_simplify
+from yamada.sgd.Reidemeister import reidemeister_simplify
 
 
 # %%

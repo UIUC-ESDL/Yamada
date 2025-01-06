@@ -4,9 +4,9 @@ import itertools
 import subprocess
 import io
 import time
-from yamada.diagram_elements import Vertex, Crossing, Edge
-from yamada.spatial_graph_diagrams import SpatialGraphDiagram
-from yamada.Reidemeister import has_r2, has_r6
+from yamada.sgd.diagram_elements import Vertex, Crossing, Edge
+from yamada.sgd.spatial_graph_diagrams import SpatialGraphDiagram
+from yamada.sgd.Reidemeister import has_r2, has_r6
 
 
 def shadows_via_plantri_by_ascii(plantri_directory, num_tri_verts, num_crossings):

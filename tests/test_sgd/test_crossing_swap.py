@@ -1,6 +1,6 @@
 from cypari import pari
-from yamada import Edge, Crossing, Vertex, SpatialGraphDiagram
-from yamada.Reidemeister import has_r1, apply_r1, has_r2, apply_r2
+from yamada import Edge, Crossing, SpatialGraphDiagram
+from yamada.sgd.Reidemeister import has_r1, apply_r1, has_r2, apply_r2
 from yamada.Anti_Reidemeister import anti_reidemeister_moves, apply_anti_reidemeister_move
 
 

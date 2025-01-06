@@ -7,7 +7,6 @@ The anti-Reidemeister moves are as follows:
 ...
 """
 
-from yamada.diagram_elements import Vertex, Edge, Crossing
 
 # %% Anti-Reidemeister Move
 

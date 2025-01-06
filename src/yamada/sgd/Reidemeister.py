@@ -1,5 +1,4 @@
-from itertools import combinations
-from yamada.diagram_elements import Vertex, Edge, Crossing
+from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 
 # %% Reidemeister 1

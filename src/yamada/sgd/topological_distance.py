@@ -1,9 +1,6 @@
 from collections import deque
 import time
-from .diagram_elements import Edge, Crossing, Vertex
-from .spatial_graph_diagrams import SpatialGraphDiagram
-from .Reidemeister import reidemeister_simplify
-from .Anti_Reidemeister import apply_anti_reidemeister_move
+from yamada.Anti_Reidemeister import apply_anti_reidemeister_move
 
 
 def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):

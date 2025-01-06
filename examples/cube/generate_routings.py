@@ -1,9 +1,7 @@
 import itertools
-import numpy as np
 import random
 import networkx as nx
 import pyvista as pv
-from networkx.algorithms.approximation import traveling_salesman_problem
 from time import time_ns
 
 # TODO Replace random, but use a seed for reproducibility for now
@@ -200,7 +198,7 @@ print("Node positions:", node_positions)
 
 
 from yamada import SpatialGraph
-from yamada.Reidemeister import *
+from yamada.sgd.Reidemeister import *
 
 # Instantiate the SpatialGraph object
 sg = SpatialGraph(nodes=nodes,
