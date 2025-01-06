@@ -1,0 +1,26 @@
+
+Reidemeister 1
+
+.. literalinclude:: ../../../tests/test_spatial_graph_diagrams/test_R1_move.py
+   :language: python
+   :lines: 5-15
+   :linenos:
+   :caption: Example Test Function
+
+.. image:: images/r1_1.png
+   :alt: Test result explanation
+   :align: center
+   :width: 500px
+
+
+\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r1_1}
+\lstinputlisting[linerange={5-22}]{test_spatial_graph_diagrams/test_R1_move.py}
+
+\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r1_2}
+\lstinputlisting[linerange={36-59}]{test_spatial_graph_diagrams/test_R1_move.py}
+
+\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r1_double_loop_same_orientation}
+\lstinputlisting[linerange={62-112}]{test_spatial_graph_diagrams/test_R1_move.py}
+
+\includegraphics[scale=0.5]{test_spatial_graph_diagrams/images/r1_double_loop_opposite_orientation}
+\lstinputlisting[linerange={115-165}]{test_spatial_graph_diagrams/test_R1_move.py}

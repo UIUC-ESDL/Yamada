@@ -38,6 +38,7 @@ test = [
 ]
 doc = [
     "sphinx",
+    "sphinx_rtd_theme",
 ]
 
 
