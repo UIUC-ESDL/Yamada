@@ -61,7 +61,7 @@ x3[3] = e6[1]
 
 sgd = SpatialGraphDiagram([e1, e2, e3, e4, e5, e6, x1, x2, x3])
 
-yp_before = sgd.normalized_yamada_polynomial()
+yp_before = sgd.yamada_polynomial()
 # TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial
 assert yp_before != yp_ground_truth
 
@@ -73,14 +73,14 @@ assert set(arm) == {'x1', 'x2', 'x3'}
 
 # Ensure the crossing swap is correct
 sgd = apply_anti_reidemeister_move(sgd, 'x1')
-yp_after = sgd.normalized_yamada_polynomial()
+yp_after = sgd.yamada_polynomial()
 assert yp_after == yp_ground_truth
 
 # Ensure the R2 move is correct
 sgd_has_r2 = has_r2(sgd)
 assert len(sgd_has_r2) > 0
 sgd = apply_r2(sgd, ("x2", "x3"))
-yp_after_r2 = sgd.normalized_yamada_polynomial()
+yp_after_r2 = sgd.yamada_polynomial()
 assert yp_after_r2 == yp_ground_truth
 # sgd_has_r1 = has_r1(sgd)
 # assert len(sgd_has_r1) > 0

@@ -17,7 +17,7 @@ def test_r1_1():
 
     sgd = SpatialGraphDiagram([x1, e0, e1])
 
-    yp_before_r1 = sgd.normalized_yamada_polynomial()
+    yp_before_r1 = sgd.yamada_polynomial()
 
     assert yp_before_r1 == yp_ground_truth
 
@@ -28,7 +28,7 @@ def test_r1_1():
 
     sgd = apply_r1(sgd, 'x1')
 
-    yp_after_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_r1 = sgd.yamada_polynomial()
 
     assert yp_after_r1 == yp_ground_truth
 
@@ -43,7 +43,7 @@ def test_r1_2():
 
     sgd = SpatialGraphDiagram([x1])
 
-    yp_before_r1 = sgd.normalized_yamada_polynomial()
+    yp_before_r1 = sgd.yamada_polynomial()
 
     assert yp_before_r1 == yp_ground_truth
 
@@ -54,7 +54,7 @@ def test_r1_2():
 
     sgd = apply_r1(sgd, 'x1')
 
-    yp_after_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_r1 = sgd.yamada_polynomial()
 
     assert yp_after_r1 == yp_ground_truth
 
@@ -81,7 +81,7 @@ def test_r1_3():
 
     sgd = SpatialGraphDiagram([x1, x2, e1, e2, e3, e4])
 
-    yp_before_r1s = sgd.normalized_yamada_polynomial()
+    yp_before_r1s = sgd.yamada_polynomial()
 
     assert yp_before_r1s == yp_ground_truth
 
@@ -92,7 +92,7 @@ def test_r1_3():
 
     sgd = apply_r1(sgd, 'x1')
 
-    yp_after_first_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_first_r1 = sgd.yamada_polynomial()
 
     assert yp_after_first_r1 == yp_ground_truth
 
@@ -103,7 +103,7 @@ def test_r1_3():
 
     sgd = apply_r1(sgd, 'x2')
 
-    yp_after_second_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_second_r1 = sgd.yamada_polynomial()
 
     assert yp_after_second_r1 == yp_ground_truth
 
@@ -134,7 +134,7 @@ def test_r1_4():
 
     sgd = SpatialGraphDiagram([x1, x2, e1, e2, e3, e4])
 
-    yp_before_r1s = sgd.normalized_yamada_polynomial()
+    yp_before_r1s = sgd.yamada_polynomial()
 
     assert yp_before_r1s == yp_ground_truth
 
@@ -145,7 +145,7 @@ def test_r1_4():
 
     sgd = apply_r1(sgd, 'x1')
 
-    yp_after_first_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_first_r1 = sgd.yamada_polynomial()
 
     assert yp_after_first_r1 == yp_ground_truth
 
@@ -156,7 +156,7 @@ def test_r1_4():
 
     sgd = apply_r1(sgd, 'x2')
 
-    yp_after_second_r1 = sgd.normalized_yamada_polynomial()
+    yp_after_second_r1 = sgd.yamada_polynomial()
 
     assert yp_after_second_r1 == yp_ground_truth
 

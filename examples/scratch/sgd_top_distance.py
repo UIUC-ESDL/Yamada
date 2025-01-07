@@ -120,7 +120,7 @@ sgd_double_knot = create_double_knot()
 
 sgd_double_knot_mod = apply_anti_reidemeister_move(sgd_double_knot, "x2")
 sgd_double_knot_mod = apply_anti_reidemeister_move(sgd_double_knot_mod, "x5")
-assert sgd_double_knot_mod.normalized_yamada_polynomial() == yp_unknot
+assert sgd_double_knot_mod.yamada_polynomial() == yp_unknot
 
 # Pass
 assert compute_min_distance(sgd_knot, sgd_knot_pcs, 2, 10) == 1

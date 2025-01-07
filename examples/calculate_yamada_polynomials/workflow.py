@@ -52,7 +52,7 @@ sgd = sg.create_spatial_graph_diagram()
 
 # Calculate the Yamada polynomial
 # We use the normalized version because it is more useful for comparing polynomials
-yamada_polynomial = sgd.normalized_yamada_polynomial()
+yamada_polynomial = sgd.yamada_polynomial()
 print("Yamada Polynomial: ", yamada_polynomial)
 
 

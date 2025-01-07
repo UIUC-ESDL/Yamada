@@ -17,7 +17,7 @@ def test_r2():
 
     sgd = SpatialGraphDiagram([x1, x2])
 
-    yp_before = sgd.normalized_yamada_polynomial()
+    yp_before = sgd.yamada_polynomial()
 
     assert yp_before == yp_ground_truth
 
@@ -28,7 +28,7 @@ def test_r2():
 
     sgd = apply_r2(sgd, ('x1', 'x2'))
 
-    yp_after = sgd.normalized_yamada_polynomial()
+    yp_after = sgd.yamada_polynomial()
 
     assert yp_after == yp_ground_truth
 
@@ -71,7 +71,7 @@ def test_r2_2():
 
     sgd = SpatialGraphDiagram([x1, x2, x3, x4, e1, e2, e3, e4, e5, e6, e7, e8])
 
-    yp_before_r2s = sgd.normalized_yamada_polynomial()
+    yp_before_r2s = sgd.yamada_polynomial()
 
     assert yp_before_r2s == yp_ground_truth
 
@@ -85,7 +85,7 @@ def test_r2_2():
 
     sgd = apply_r2(sgd, ('x1', 'x2'))
 
-    yp_after_first_r2 = sgd.normalized_yamada_polynomial()
+    yp_after_first_r2 = sgd.yamada_polynomial()
 
     assert yp_after_first_r2 == yp_ground_truth
 
@@ -98,7 +98,7 @@ def test_r2_2():
 
     sgd = apply_r2(sgd, ('x3', 'x4'))
 
-    yp_after_second_r2 = sgd.normalized_yamada_polynomial()
+    yp_after_second_r2 = sgd.yamada_polynomial()
 
     assert yp_after_second_r2 == yp_ground_truth
 
@@ -145,7 +145,7 @@ def test_r2_3():
 
     sgd = SpatialGraphDiagram([x1, x2, x3, x4, e1, e2, e3, e4, e5, e6, e7, e8])
 
-    yp_before_r2s = sgd.normalized_yamada_polynomial()
+    yp_before_r2s = sgd.yamada_polynomial()
 
     assert yp_before_r2s == yp_ground_truth
 
@@ -158,7 +158,7 @@ def test_r2_3():
 
     sgd = apply_r2(sgd, ('x1', 'x2'))
 
-    yp_after_first_r2 = sgd.normalized_yamada_polynomial()
+    yp_after_first_r2 = sgd.yamada_polynomial()
 
     assert yp_after_first_r2 == yp_ground_truth
 
@@ -171,7 +171,7 @@ def test_r2_3():
 
     sgd = apply_r2(sgd, ('x3', 'x4'))
 
-    yp_after_second_r2 = sgd.normalized_yamada_polynomial()
+    yp_after_second_r2 = sgd.yamada_polynomial()
 
     assert yp_after_second_r2 == yp_ground_truth
 

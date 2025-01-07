@@ -110,7 +110,7 @@ def test_r3():
 
     sgd = pre_r3()
 
-    yp1 = sgd.normalized_yamada_polynomial()
+    yp1 = sgd.yamada_polynomial()
 
     pre_r3_has_r3, _ = has_r3(sgd)
     assert pre_r3_has_r3
@@ -133,7 +133,7 @@ def test_r3():
 
     sgd_r3 = apply_r3(sgd, r3_input)
 
-    yp2 = sgd_r3.normalized_yamada_polynomial()
+    yp2 = sgd_r3.yamada_polynomial()
 
     assert yp1 == yp2
 

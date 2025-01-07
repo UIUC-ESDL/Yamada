@@ -154,7 +154,7 @@ def enumerate_yamada_classes(plantri_directory, G, max_crossings):
     polys = dict()
     for crossings in range(0, max_crossings + 1):
         for D in spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
-            p = D.normalized_yamada_polynomial()
+            p = D.yamada_polynomial()
             if p not in polys:
                 polys[p] = D
             examined += 1
@@ -162,7 +162,7 @@ def enumerate_yamada_classes(plantri_directory, G, max_crossings):
 
 
 def to_poly(diagram):
-    p = diagram.normalized_yamada_polynomial()
+    p = diagram.yamada_polynomial()
     return p, diagram
 
 

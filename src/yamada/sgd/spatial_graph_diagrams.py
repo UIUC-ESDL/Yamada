@@ -47,7 +47,7 @@ import pickle
 from cypari import pari
 
 from yamada.poly.H_polynomial import h_poly
-from yamada.poly.utilities import get_coefficients_and_exponents
+from yamada.poly.utilities import get_coefficients_and_exponents, normalize_poly
 from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 
@@ -273,7 +273,7 @@ class SpatialGraphDiagram:
         return G
 
 
-    def yamada_polynomial(self, check_pieces=False):
+    def calculate_yamada_polynomial(self, check_pieces=False):
 
         A = pari('A')
 
@@ -316,42 +316,21 @@ class SpatialGraphDiagram:
         if check_pieces:
             S_0._check()
 
-        Y_plus  = S_plus.yamada_polynomial()
-        Y_minus = S_minus.yamada_polynomial()
-        Y_0     = S_0.yamada_polynomial()
+        Y_plus  = S_plus.calculate_yamada_polynomial()
+        Y_minus = S_minus.calculate_yamada_polynomial()
+        Y_0     = S_0.calculate_yamada_polynomial()
+        Y_new   = A * Y_plus + (A ** -1) * Y_minus + Y_0
 
-        return A * Y_plus + (A ** -1) * Y_minus + Y_0
+        return Y_new
 
-
-    def normalized_yamada_polynomial(self):
+    def yamada_polynomial(self, normalize=True):
         """normalized_yamada_polynomial"""
 
-        yamada_polynomial = self.yamada_polynomial()
+        yamada_polynomial = self.calculate_yamada_polynomial()
 
-        A = pari('A')
+        if normalize:
+            yamada_polynomial =  normalize_poly(yamada_polynomial)
 
-        _, exps = get_coefficients_and_exponents(yamada_polynomial)
-        a, b = min(exps), max(exps)
-        ans1 = (-A) ** (-a) * yamada_polynomial
-        ans2 = (-A) ** b * reverse_poly(yamada_polynomial)
-
-        normalized_yamada_polynomial = min([ans1, ans2], key=list)
-
-        return normalized_yamada_polynomial
-
-def reverse_poly(poly):
-    """
-    """
-
-    A = pari('A')
-
-    coeffs, exps = get_coefficients_and_exponents(poly)
-
-    ans = pari(0)
-
-    for c, e in zip(coeffs, exps):
-        ans += c * A ** (-e)
-
-    return ans
+        return yamada_polynomial
 
 

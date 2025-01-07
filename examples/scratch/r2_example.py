@@ -92,17 +92,17 @@ a = pari('A')
 yp_unknot = -a ** 2 - a - 1
 
 # Verify the original knot is not the unknot
-assert sgd_knot.normalized_yamada_polynomial() != yp_unknot
+assert sgd_knot.yamada_polynomial() != yp_unknot
 
 # Perform the crossing swap
 sgd_knot = apply_anti_reidemeister_move(sgd_knot, "x2")
-assert sgd_knot.normalized_yamada_polynomial() == yp_unknot
+assert sgd_knot.yamada_polynomial() == yp_unknot
 
 # Perform the R2 move
 sgd_has_r2 = has_r2(sgd_knot)
 assert len(sgd_has_r2) == 2
 sgd_knot = apply_r2(sgd_knot, ("x2", "x3"))
-assert sgd_knot.normalized_yamada_polynomial() == yp_unknot
+assert sgd_knot.yamada_polynomial() == yp_unknot
 
 print(sgd_knot.crossings[0].adjacent)
 

@@ -9,11 +9,11 @@ def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
     # Initialize BFS queues and visited polynomial sets
     queue1 = deque([(diagram1, 0)])
     queue2 = deque([(diagram2, 0)])
-    polynomials1 = {diagram1.normalized_yamada_polynomial(): 0}
-    polynomials2 = {diagram2.normalized_yamada_polynomial(): 0}
+    polynomials1 = {diagram1.yamada_polynomial(): 0}
+    polynomials2 = {diagram2.yamada_polynomial(): 0}
 
     # Quick check if already matching
-    if diagram1.normalized_yamada_polynomial() == diagram2.normalized_yamada_polynomial():
+    if diagram1.yamada_polynomial() == diagram2.yamada_polynomial():
         return 0
 
     while queue1 or queue2:
@@ -28,7 +28,7 @@ def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
             if depth1 < max_depth:
                 for crossing in current_diagram1.crossings:
                     new_diagram = apply_anti_reidemeister_move(current_diagram1, crossing.label)
-                    yamada_poly = new_diagram.normalized_yamada_polynomial()
+                    yamada_poly = new_diagram.yamada_polynomial()
                     if yamada_poly not in polynomials1:
                         polynomials1[yamada_poly] = depth1 + 1
                         queue1.append((new_diagram, depth1 + 1))
@@ -43,7 +43,7 @@ def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
             if depth2 < max_depth:
                 for crossing in current_diagram2.crossings:
                     new_diagram = apply_anti_reidemeister_move(current_diagram2, crossing.label)
-                    yamada_poly = new_diagram.normalized_yamada_polynomial()
+                    yamada_poly = new_diagram.yamada_polynomial()
                     if yamada_poly not in polynomials2:
                         polynomials2[yamada_poly] = depth2 + 1
                         queue2.append((new_diagram, depth2 + 1))

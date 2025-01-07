@@ -225,7 +225,7 @@ print(f"Crossings After Reidemeister Simplification: {len(sgd.crossings)}; R1s: 
 print(f"Simplify time: {(t2 - t1) / 1e9} seconds")
 
 if len(sgd.crossings) <= 8:
-    yp = sgd.normalized_yamada_polynomial()
+    yp = sgd.yamada_polynomial()
     print(yp)
 
 

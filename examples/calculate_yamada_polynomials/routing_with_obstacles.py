@@ -61,6 +61,6 @@ sg = SpatialGraph(nodes=['a', 'b', 'c', 'd','e','f','g','h'],
 
 sgd = sg.create_spatial_graph_diagram()
 
-print(sgd.normalized_yamada_polynomial())
+print(sgd.yamada_polynomial())
 
 sg.plot()

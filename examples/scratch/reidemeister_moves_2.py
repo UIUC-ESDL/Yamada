@@ -59,7 +59,7 @@ for i, graph in enumerate(graphs):
 
 
     print(f"R1: {r1_count}, R2: {r2_count}, R3: {r3_count}, Remaining Crossings: {len(sgd.crossings)}")
-    yp = sgd.normalized_yamada_polynomial()
+    yp = sgd.yamada_polynomial()
     print(yp)
 
     # Only calculate the Yamada polynomial for graphs with up to max # crossings

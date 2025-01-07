@@ -10,8 +10,8 @@ def test_crossing_swap_1(unknot_yamada_poly, unknot_infinity_1_2e_1c, unknot_inf
     sgd_2 = unknot_infinity_2_2e_1c
 
     # Ensure both unknots have the same Yamada polynomial
-    sgd_1_yp = sgd_1.normalized_yamada_polynomial()
-    sgd_2_yp = sgd_2.normalized_yamada_polynomial()
+    sgd_1_yp = sgd_1.yamada_polynomial()
+    sgd_2_yp = sgd_2.yamada_polynomial()
     assert sgd_1_yp == unknot_yamada_poly
     assert sgd_2_yp == unknot_yamada_poly
 
@@ -23,7 +23,7 @@ def test_crossing_swap_1(unknot_yamada_poly, unknot_infinity_1_2e_1c, unknot_inf
     # Ensure the crossing swap is correct
     sgd_cs = apply_crossing_swap(sgd_1, arm[0])
 
-    sgd_cs_yp = sgd_cs.normalized_yamada_polynomial()
+    sgd_cs_yp = sgd_cs.yamada_polynomial()
     assert sgd_cs_yp == unknot_yamada_poly
 
 
@@ -48,7 +48,7 @@ def test_crossing_swap_2(unknot_yamada_poly):
 
     sgd = SpatialGraphDiagram([e1, e2, e3, e4, e5, e6, x1, x2, x3])
 
-    yp_before = sgd.normalized_yamada_polynomial()
+    yp_before = sgd.yamada_polynomial()
     # TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial
     assert yp_before != unknot_yamada_poly
 
@@ -60,14 +60,14 @@ def test_crossing_swap_2(unknot_yamada_poly):
 
     # Ensure the crossing swap is correct
     sgd = apply_crossing_swap(sgd, 'x1')
-    yp_after = sgd.normalized_yamada_polynomial()
+    yp_after = sgd.yamada_polynomial()
     assert yp_after == unknot_yamada_poly
 
     # Ensure the R2 move is correct
     sgd_has_r2 = has_r2(sgd)
     assert len(sgd_has_r2) > 0
     sgd = apply_r2(sgd, ("x2", "x3"))
-    yp_after_r2 = sgd.normalized_yamada_polynomial()
+    yp_after_r2 = sgd.yamada_polynomial()
     assert yp_after_r2 == unknot_yamada_poly
 
     # Ensure the R1 move is correct
