@@ -1,4 +1,4 @@
-R3 Move Tests
+Reidemeister 3 Move
 =============
 
 # Prerequisites:

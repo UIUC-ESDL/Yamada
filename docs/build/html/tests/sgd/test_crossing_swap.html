@@ -14,8 +14,8 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="../sg/index.html" />
-    <link rel="prev" title="R3 Move Tests" href="test_R3_move.html" />
+    <link rel="next" title="Spatial Graphs" href="../sg/index.html" />
+    <link rel="prev" title="Reidemeister Simplification" href="test_R_simplify.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
@@ -38,44 +38,95 @@
 <p># Anti-Reidemeister Moves</p>
 <p>## Check one: Unknot-to-unknot</p>
 <p>If we take an unknot and twist it to form an infinity symbol then it will have one crossing. If we untwist it, and then twist it in the opposite direction we will also get an infinity symbol with one crossing. Swapping the crossing order should switch between the two. All three should have the unknot Yamada polynomial</p>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Example Test Function</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
-<span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="k">def</span> <span class="nf">create_unknot_1</span><span class="p">():</span>
-<span class="linenos"> 4</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinity symbol&quot;&quot;&quot;</span>
-<span class="linenos"> 5</span>
-<span class="linenos"> 6</span>    <span class="n">a</span> <span class="o">=</span> <span class="n">pari</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="linenos"> 7</span>
-<span class="linenos"> 8</span>    <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="linenos"> 9</span>    <span class="n">x1</span> <span class="o">=</span> <span class="n">Crossing</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
-<span class="linenos">10</span>
-<span class="linenos">11</span>    <span class="n">e1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
 <a class="reference internal image-reference" href="../../_images/unknot_to_unknot_crossing_swap.jpg"><img alt="Test result explanation" class="align-center" src="../../_images/unknot_to_unknot_crossing_swap.jpg" style="width: 500px;" />
 </a>
-<p>## Check two: knot-to-unknot</p>
-<p>We define a circle with a figure-eight knot in it. If we apply a crossing swap to the middle crossing, then It should become the unknot. Applying the crossing swap should also make an R2 and then an R1 move possible (which wouldn’t affect the Yamada polynomial, but we should make sure that it still is detected and can  be correctly applied)</p>
-<div class="literal-block-wrapper docutils container" id="id2">
-<div class="code-block-caption"><span class="caption-text">Example Test Function</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example Test Function</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span> <span class="nf">test_crossing_swap_1</span><span class="p">(</span><span class="n">unknot_yamada_poly</span><span class="p">,</span> <span class="n">unknot_infinity_1_2e_1c</span><span class="p">,</span> <span class="n">unknot_infinity_2_2e_1c</span><span class="p">):</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="k">def</span> <span class="nf">create_unknot_1</span><span class="p">():</span>
-<span class="linenos"> 4</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinity symbol&quot;&quot;&quot;</span>
+<span class="linenos"> 3</span>    <span class="n">sgd_1</span> <span class="o">=</span> <span class="n">unknot_infinity_1_2e_1c</span>
+<span class="linenos"> 4</span>    <span class="n">sgd_2</span> <span class="o">=</span> <span class="n">unknot_infinity_2_2e_1c</span>
 <span class="linenos"> 5</span>
-<span class="linenos"> 6</span>    <span class="n">a</span> <span class="o">=</span> <span class="n">pari</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
-<span class="linenos"> 7</span>
-<span class="linenos"> 8</span>    <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="linenos"> 9</span>    <span class="n">x1</span> <span class="o">=</span> <span class="n">Crossing</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">)</span>
-<span class="linenos">10</span>
-<span class="linenos">11</span>    <span class="n">e1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="linenos"> 6</span>    <span class="c1"># Ensure both unknots have the same Yamada polynomial</span>
+<span class="linenos"> 7</span>    <span class="n">sgd_1_yp</span> <span class="o">=</span> <span class="n">sgd_1</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos"> 8</span>    <span class="n">sgd_2_yp</span> <span class="o">=</span> <span class="n">sgd_2</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos"> 9</span>    <span class="k">assert</span> <span class="n">sgd_1_yp</span> <span class="o">==</span> <span class="n">unknot_yamada_poly</span>
+<span class="linenos">10</span>    <span class="k">assert</span> <span class="n">sgd_2_yp</span> <span class="o">==</span> <span class="n">unknot_yamada_poly</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span>    <span class="c1"># There should only be one possible crossing swap</span>
+<span class="linenos">13</span>    <span class="n">arm</span> <span class="o">=</span> <span class="n">available_crossing_swaps</span><span class="p">(</span><span class="n">sgd_1</span><span class="p">)</span>
+<span class="linenos">14</span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="linenos">15</span>    <span class="k">assert</span> <span class="n">arm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;c1&#39;</span>
+<span class="linenos">16</span>
+<span class="linenos">17</span>    <span class="c1"># Ensure the crossing swap is correct</span>
+<span class="linenos">18</span>    <span class="n">sgd_cs</span> <span class="o">=</span> <span class="n">apply_crossing_swap</span><span class="p">(</span><span class="n">sgd_1</span><span class="p">,</span> <span class="n">arm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>    <span class="n">sgd_cs_yp</span> <span class="o">=</span> <span class="n">sgd_cs</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">21</span>    <span class="k">assert</span> <span class="n">sgd_cs_yp</span> <span class="o">==</span> <span class="n">unknot_yamada_poly</span>
 </pre></div>
 </div>
 </div>
-<a class="reference internal image-reference" href="../../_images/knot_to_unknot_crossing_swap.jpg"><img alt="Test result explanation" class="align-center" src="../../_images/knot_to_unknot_crossing_swap.jpg" style="width: 500px;" />
+<p>## Check two: knot-to-unknot</p>
+<p>We define a circle with a figure-eight knot in it. If we apply a crossing swap to the middle crossing, then It should become the unknot. Applying the crossing swap should also make an R2 and then an R1 move possible (which wouldn’t affect the Yamada polynomial, but we should make sure that it still is detected and can  be correctly applied)</p>
+<a class="reference internal image-reference" href="../../_images/knot_to_unknot_crossing_swap.jpg"><img alt="Test result explanation" class="align-center" src="../../_images/knot_to_unknot_crossing_swap.jpg" style="width: 750px;" />
 </a>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">Example Test Function</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">def</span> <span class="nf">test_crossing_swap_2</span><span class="p">():</span>
+<span class="linenos"> 2</span>    <span class="n">a</span> <span class="o">=</span> <span class="n">pari</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span>    <span class="n">yp_ground_truth</span> <span class="o">=</span> <span class="o">-</span><span class="n">a</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">a</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span>    <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">,</span> <span class="n">e6</span> <span class="o">=</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">Edge</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span>    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span> <span class="o">=</span> <span class="n">Crossing</span><span class="p">(</span><span class="s2">&quot;x1&quot;</span><span class="p">),</span> <span class="n">Crossing</span><span class="p">(</span><span class="s2">&quot;x2&quot;</span><span class="p">),</span> <span class="n">Crossing</span><span class="p">(</span><span class="s2">&quot;x3&quot;</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>    <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">e2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">11</span>    <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">12</span>    <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">e4</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">13</span>    <span class="n">x1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">e3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span>    <span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">e6</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">16</span>    <span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">17</span>    <span class="n">x2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">e3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">18</span>    <span class="n">x2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">e5</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>    <span class="n">x3</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">e5</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">21</span>    <span class="n">x3</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">e4</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">22</span>    <span class="n">x3</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">e1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">23</span>    <span class="n">x3</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">e6</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">SpatialGraphDiagram</span><span class="p">([</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">,</span> <span class="n">e6</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">])</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>    <span class="n">yp_before</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">28</span>    <span class="c1"># TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial</span>
+<span class="linenos">29</span>    <span class="k">assert</span> <span class="n">yp_before</span> <span class="o">!=</span> <span class="n">yp_ground_truth</span>
+<span class="linenos">30</span>
+<span class="linenos">31</span>    <span class="n">arm</span> <span class="o">=</span> <span class="n">available_crossing_swaps</span><span class="p">(</span><span class="n">sgd</span><span class="p">)</span>
+<span class="linenos">32</span>
+<span class="linenos">33</span>    <span class="c1"># There should be 3 possible crossing swaps</span>
+<span class="linenos">34</span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+<span class="linenos">35</span>    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">arm</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">,</span> <span class="s1">&#39;x3&#39;</span><span class="p">}</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="c1"># Ensure the crossing swap is correct</span>
+<span class="linenos">38</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_crossing_swap</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="s1">&#39;x1&#39;</span><span class="p">)</span>
+<span class="linenos">39</span>    <span class="n">yp_after</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">40</span>    <span class="k">assert</span> <span class="n">yp_after</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
+<span class="linenos">41</span>
+<span class="linenos">42</span>    <span class="c1"># Ensure the R2 move is correct</span>
+<span class="linenos">43</span>    <span class="n">sgd_has_r2</span> <span class="o">=</span> <span class="n">has_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">)</span>
+<span class="linenos">44</span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sgd_has_r2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="linenos">45</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x2&quot;</span><span class="p">,</span> <span class="s2">&quot;x3&quot;</span><span class="p">))</span>
+<span class="linenos">46</span>    <span class="n">yp_after_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">47</span>    <span class="k">assert</span> <span class="n">yp_after_r2</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
+<span class="linenos">48</span>    <span class="n">sgd_has_r1</span> <span class="o">=</span> <span class="n">has_r1</span><span class="p">(</span><span class="n">sgd</span><span class="p">)</span>
+<span class="linenos">49</span>    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sgd_has_r1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="linenos">50</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r1</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="s2">&quot;x1&quot;</span><span class="p">)</span>
+<span class="linenos">51</span>    <span class="n">yp_after_r1</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">52</span>    <span class="k">assert</span> <span class="n">yp_after_r1</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
+</pre></div>
+</div>
+</div>
 </section>
 
 
@@ -106,15 +157,18 @@
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Test Documentation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#yamada-package">yamada package</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html#id1">Test Documentation</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Test Documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Spatial Graph Diagrams</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="test_R2_move.html">R2 Move Tests</a></li>
-<li class="toctree-l3"><a class="reference internal" href="test_R3_move.html">R3 Move Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test_R1_move.html">Reidemeister 1 Move</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test_R2_move.html">Reidemeister 2 Move</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test_R3_move.html">Reidemeister 3 Move</a></li>
+<li class="toctree-l3"><a class="reference internal" href="test_R_simplify.html">Reidemeister Simplification</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Crossing Swap</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="../sg/index.html">Spatial Graphs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../poly/index.html">Polynomials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">Utilities</a></li>
 </ul>
 </li>
 </ul>
@@ -125,8 +179,8 @@
   <li><a href="../../index.html">Documentation overview</a><ul>
   <li><a href="../index.html">Test Documentation</a><ul>
   <li><a href="index.html">Spatial Graph Diagrams</a><ul>
-      <li>Previous: <a href="test_R3_move.html" title="previous chapter">R3 Move Tests</a></li>
-      <li>Next: <a href="../sg/index.html" title="next chapter">&lt;no title&gt;</a></li>
+      <li>Previous: <a href="test_R_simplify.html" title="previous chapter">Reidemeister Simplification</a></li>
+      <li>Next: <a href="../sg/index.html" title="next chapter">Spatial Graphs</a></li>
   </ul></li>
   </ul></li>
   </ul></li>

@@ -82,7 +82,7 @@ def test_unknot_single_twist_1():
 
     sgd = SpatialGraphDiagram([x1])
 
-    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == (-a ** 2 - a - 1)
 
 def test_unknot_single_twist_2():
 
@@ -94,7 +94,7 @@ def test_unknot_single_twist_2():
 
     sgd = SpatialGraphDiagram([x1])
 
-    assert sgd.normalized_yamada_polynomial() == normalize_poly(-a ** 2 - a - 1)
+    assert sgd.normalized_yamada_polynomial() == (-a ** 2 - a - 1)
 
 def test_yamada_polynomial_theta_2_graph():
     """

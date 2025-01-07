@@ -55,7 +55,7 @@ def unknot_infinity_2_2e_1c():
 def unknot_infinity_1_4e_2v_1c():
     e1, e2, e3, e4 = Edge(1), Edge(2), Edge(3), Edge(4)
     v1, v2 = Vertex(2, 'v1'), Vertex(2, 'v2')
-    c1 = Crossing(1)
+    c1 = Crossing('c1')
     e1[0] = c1[2]
     e1[1] = v1[0]
     v1[1] = e3[0]

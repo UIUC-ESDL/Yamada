@@ -4,14 +4,56 @@ from yamada.sgd.utilities import edges_form_a_strand
 
 # %% Strands
 
-def test_forms_a_strand_unknot_1e_1v(unknot_1e_1v):
 
+def test_forms_a_strand_unknot_1e_1v(unknot_1e_1v):
     e1 = unknot_1e_1v.edges[0]
     v1 = unknot_1e_1v.vertices[0]
+    forms_a_strand = edges_form_a_strand(e1, e1)
+    assert forms_a_strand is True
 
-    forms_a_strand = edges_form_a_strand(e1, v1)
 
-    assert forms_a_strand == True
+def test_forms_a_strand_unknot_1e_2v(unknot_2e_2v):
+    e1, e2 = unknot_2e_2v.edges
+    forms_a_strand = edges_form_a_strand(e1, e2)
+    assert forms_a_strand is True
+
+
+def test_forms_a_strand_unknot_infinity_1_2e_1c(unknot_infinity_1_2e_1c):
+    e1, e2 = unknot_infinity_1_2e_1c.edges
+    c1 = unknot_infinity_1_2e_1c.crossings[0]
+
+    check_1 = edges_form_a_strand(e1, e1)
+    assert check_1 is True
+
+    check_2 = edges_form_a_strand(e2, e2)
+    assert check_2 is True
+
+    check_3 = edges_form_a_strand(e1, e2)
+    assert check_3 is False
+
+    check_4 = edges_form_a_strand(e2, e1)
+    assert check_4 is False
+
+    # TODO Implement this (both arguments must be edges)
+    # check_5 = edges_form_a_strand(e1, c1)
+    # assert check_5 is False
+    # check_6 = edges_form_a_strand(e2, c1)
+    # assert check_6 is False
+
+
+# def test_forms_a_strand_unknot_infinity_1_4e_2v_1c(unknot_infinity_1_4e_2v_1c):
+#     e1, e2, e3, e4 = unknot_infinity_1_4e_2v_1c.edges
+#     v1, v2 = unknot_infinity_1_4e_2v_1c.vertices
+#     c1 = unknot_infinity_1_4e_2v_1c.crossings[0]
+#
+#     check_1 = edges_form_a_strand(e1, e1)
+#     assert check_1 is True
+#
+#     check_2 = edges_form_a_strand(e1, e3)
+#     assert check_2 is True
+#
+#     check_3 = edges_form_a_strand(e1, e4)
+#     assert check_3 is False
 
 
 

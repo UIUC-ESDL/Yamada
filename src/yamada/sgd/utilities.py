@@ -28,6 +28,8 @@ def split_edges(edges):
 
 def edges_form_a_strand_along_a_direction(e1, e2, direction_index):
 
+    # TODO Ensure that both edges are Edge objects
+
     # Initialize the current object and the index of the next object
     current_object = e1
     index_of_next_object = direction_index
@@ -37,9 +39,13 @@ def edges_form_a_strand_along_a_direction(e1, e2, direction_index):
     max_iter = 1000
     for i in range(max_iter):
 
+        # If the current object is the second edge, then the edges form a strand
+        if current_object == e2:
+            return True, strand
+
         # Identify the next object and the index it assigns to the current object
         next_object, next_object_index = current_object.adjacent[index_of_next_object]
-        strand + [next_object.label]
+        strand.append(next_object.label)
 
         # If the next object is the second edge, then the edges form a strand
         if next_object == e2:
@@ -72,7 +78,7 @@ def edges_form_a_strand(e1, e2):
     cond_1, strand_dir1 = edges_form_a_strand_along_a_direction(e1, e2, 0)
     cond_2, strand_dir2 = edges_form_a_strand_along_a_direction(e1, e2, 1)
     does_form_strand = cond_1 or cond_2
-    strands_checked = [strand_dir1, strand_dir2]  # Debugging
+    strands_checked = [strand_dir1, strand_dir2]  # For Debugging
     return does_form_strand
 
 

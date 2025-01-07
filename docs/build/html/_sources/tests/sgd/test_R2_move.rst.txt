@@ -1,4 +1,4 @@
-R2 Move Tests
+Reidemeister 2 Move
 =============
 
 

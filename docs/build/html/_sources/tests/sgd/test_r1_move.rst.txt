@@ -1,4 +1,4 @@
-R1 Move Tests
+Reidemeister 1 Move
 =============
 
 This section documents tests for the R1 move functionality.

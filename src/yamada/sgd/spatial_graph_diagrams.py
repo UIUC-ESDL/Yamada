@@ -273,7 +273,7 @@ class SpatialGraphDiagram:
         return G
 
 
-    def yamada_polynomial(self, check_pieces=False, normalize=True):
+    def yamada_polynomial(self, check_pieces=False):
 
         A = pari('A')
 

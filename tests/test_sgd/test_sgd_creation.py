@@ -1,6 +1,14 @@
 # TODO Add
 
 
+def test_create_unknot_infinity_1_4e_2v_1c(unknot_infinity_1_4e_2v_1c):
+
+    e1, e2, e3, e4 = unknot_infinity_1_4e_2v_1c.edges
+    v1, v2 = unknot_infinity_1_4e_2v_1c.vertices
+    c1 = unknot_infinity_1_4e_2v_1c.crossings[0]
+
+
+
 # e1, e2, e3, e4, e5, e6 = Edge(1), Edge(2), Edge(3), Edge(4), Edge(5), Edge(6)
 #
 # v1 = Vertex(degree=2, label="v1")
