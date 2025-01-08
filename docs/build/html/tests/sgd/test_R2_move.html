@@ -52,7 +52,7 @@
 <span class="linenos">13</span>
 <span class="linenos">14</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">SpatialGraphDiagram</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">])</span>
 <span class="linenos">15</span>
-<span class="linenos">16</span>    <span class="n">yp_before</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">16</span>    <span class="n">yp_before</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">17</span>
 <span class="linenos">18</span>    <span class="k">assert</span> <span class="n">yp_before</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">19</span>
@@ -63,7 +63,7 @@
 <span class="linenos">24</span>
 <span class="linenos">25</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">))</span>
 <span class="linenos">26</span>
-<span class="linenos">27</span>    <span class="n">yp_after</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">27</span>    <span class="n">yp_after</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">28</span>
 <span class="linenos">29</span>    <span class="k">assert</span> <span class="n">yp_after</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 </pre></div>
@@ -111,7 +111,7 @@
 <span class="linenos">36</span>
 <span class="linenos">37</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">SpatialGraphDiagram</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span><span class="p">,</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">,</span> <span class="n">e6</span><span class="p">,</span> <span class="n">e7</span><span class="p">,</span> <span class="n">e8</span><span class="p">])</span>
 <span class="linenos">38</span>
-<span class="linenos">39</span>    <span class="n">yp_before_r2s</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">39</span>    <span class="n">yp_before_r2s</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">40</span>
 <span class="linenos">41</span>    <span class="k">assert</span> <span class="n">yp_before_r2s</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">42</span>
@@ -125,7 +125,7 @@
 <span class="linenos">50</span>
 <span class="linenos">51</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">))</span>
 <span class="linenos">52</span>
-<span class="linenos">53</span>    <span class="n">yp_after_first_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">53</span>    <span class="n">yp_after_first_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">54</span>
 <span class="linenos">55</span>    <span class="k">assert</span> <span class="n">yp_after_first_r2</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">56</span>
@@ -138,7 +138,7 @@
 <span class="linenos">63</span>
 <span class="linenos">64</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span> <span class="s1">&#39;x4&#39;</span><span class="p">))</span>
 <span class="linenos">65</span>
-<span class="linenos">66</span>    <span class="n">yp_after_second_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">66</span>    <span class="n">yp_after_second_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">67</span>
 <span class="linenos">68</span>    <span class="k">assert</span> <span class="n">yp_after_second_r2</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">69</span>
@@ -190,7 +190,7 @@
 <span class="linenos">36</span>
 <span class="linenos">37</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">SpatialGraphDiagram</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span><span class="p">,</span> <span class="n">x4</span><span class="p">,</span> <span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="n">e3</span><span class="p">,</span> <span class="n">e4</span><span class="p">,</span> <span class="n">e5</span><span class="p">,</span> <span class="n">e6</span><span class="p">,</span> <span class="n">e7</span><span class="p">,</span> <span class="n">e8</span><span class="p">])</span>
 <span class="linenos">38</span>
-<span class="linenos">39</span>    <span class="n">yp_before_r2s</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">39</span>    <span class="n">yp_before_r2s</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">40</span>
 <span class="linenos">41</span>    <span class="k">assert</span> <span class="n">yp_before_r2s</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">42</span>
@@ -203,7 +203,7 @@
 <span class="linenos">49</span>
 <span class="linenos">50</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="s1">&#39;x2&#39;</span><span class="p">))</span>
 <span class="linenos">51</span>
-<span class="linenos">52</span>    <span class="n">yp_after_first_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">52</span>    <span class="n">yp_after_first_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">53</span>
 <span class="linenos">54</span>    <span class="k">assert</span> <span class="n">yp_after_first_r2</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">55</span>
@@ -216,7 +216,7 @@
 <span class="linenos">62</span>
 <span class="linenos">63</span>    <span class="n">sgd</span> <span class="o">=</span> <span class="n">apply_r2</span><span class="p">(</span><span class="n">sgd</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;x3&#39;</span><span class="p">,</span> <span class="s1">&#39;x4&#39;</span><span class="p">))</span>
 <span class="linenos">64</span>
-<span class="linenos">65</span>    <span class="n">yp_after_second_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">normalized_yamada_polynomial</span><span class="p">()</span>
+<span class="linenos">65</span>    <span class="n">yp_after_second_r2</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">yamada_polynomial</span><span class="p">()</span>
 <span class="linenos">66</span>
 <span class="linenos">67</span>    <span class="k">assert</span> <span class="n">yp_after_second_r2</span> <span class="o">==</span> <span class="n">yp_ground_truth</span>
 <span class="linenos">68</span>

@@ -1,5 +1,5 @@
 from cypari import pari
-from yamada import SpatialGraphDiagram, Vertex, Crossing, Edge, has_r2, apply_r2
+from yamada import SpatialGraphDiagram, Crossing, Edge, has_r2, apply_r2
 
 
 def test_r2():

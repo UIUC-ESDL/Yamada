@@ -1,6 +1,9 @@
 from cypari import pari
-from yamada import SpatialGraphDiagram, Crossing, Edge, has_r1, apply_r1
+from yamada import SpatialGraphDiagram, Edge, Crossing, has_r1, apply_r1
 
+
+
+# %% Test the R1 move on unknots
 
 def test_r1_1():
     a = pari('A')

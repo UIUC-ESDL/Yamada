@@ -1,6 +1,5 @@
-from cypari import pari
 from yamada import Edge, Crossing, SpatialGraphDiagram
-from yamada.sgd.reidemeister import has_r1, apply_r1, has_r2, apply_r2
+from yamada.sgd.reidemeister import has_r1, has_r2, apply_r2
 from yamada.sgd.utilities import available_crossing_swaps, apply_crossing_swap
 
 
