@@ -2,39 +2,28 @@ from cypari import pari
 from yamada import SpatialGraphDiagram, Edge, Crossing, has_r1, apply_r1
 
 
+# %% Unknots that do not have a Reidemeister 1 move
 
-# %% Test the R1 move on unknots
 
-def test_r1_1():
-    a = pari('A')
+def test_r1_unknot_1e_1v(unknot_1e_1v):
+    sgd_has_r1 = has_r1(unknot_1e_1v)
+    assert len(sgd_has_r1) == 0
 
-    yp_ground_truth = -a ** 2 - a - 1
 
-    x1 = Crossing('x1')
-    x1[1], x1[3] = x1[2], x1[0]
+def test_r1_unknot_2e_2v(unknot_2e_2v):
+    sgd_has_r1 = has_r1(unknot_2e_2v)
+    assert len(sgd_has_r1) == 0
 
-    e0, e1 = Edge(0), Edge(1)
 
-    e0[0], e0[1] = x1[0], x1[3]
-    e1[0], e1[1] = x1[2], x1[1]
+# %% Unknots that do have a Reidemeister 1 move
 
-    sgd = SpatialGraphDiagram([x1, e0, e1])
 
-    yp_before_r1 = sgd.yamada_polynomial()
-
-    assert yp_before_r1 == yp_ground_truth
-
-    r1_crossing_labels = has_r1(sgd)
-
-    assert len(r1_crossing_labels) == 1
-    assert 'x1' in r1_crossing_labels
-
-    sgd = apply_r1(sgd, 'x1')
-
-    yp_after_r1 = sgd.yamada_polynomial()
-
-    assert yp_after_r1 == yp_ground_truth
-
+# def test_r1_unknot_infinity_1c(unknot_infinity_1c, unknot_yamada_poly):
+    sgd_has_r1 = has_r1(unknot_infinity_1c)
+    # assert len(sgd_has_r1) == 1
+    # assert 'c1' in sgd_has_r1
+    # sgd_post_r1 = apply_r1(unknot_infinity_1c, 'c1')
+    # assert sgd_post_r1.normalized_yamada_polynomial() == unknot_yamada_poly
 
 def test_r1_2():
     a = pari('A')

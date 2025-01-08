@@ -4,7 +4,10 @@ from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing
 
 @pytest.fixture
 def unknot_1e():
-    # TODO Should raise error...
+    """
+    A circle formed by one edge that is connected to itself.
+    TODO SGD Should fix this by adding a vertex to the edge.
+    """
     e1 = Edge(1)
     e1[0] = e1[1]
     sgd = SpatialGraphDiagram([e1])
@@ -35,10 +38,14 @@ def unknot_2e_2v():
 
 @pytest.fixture
 def unknot_infinity_1c():
-    """An infinity symbol formed by one self-connected crossing."""
+    """
+    An infinity symbol formed by one self-connected crossing.
+    TODO SGD should fix this by adding edges to self-connected crossings.
+    """
     c1 = Crossing("c1")
     sgd = SpatialGraphDiagram([c1])
     return sgd
+
 
 @pytest.fixture
 def unknot_infinity_1e_1c():
