@@ -69,7 +69,7 @@ class SpatialGraphDiagram:
         self.vertices = [d for d in data if isinstance(d, Vertex)]
         self.edges = [d for d in data if isinstance(d, Edge)]
 
-        #
+        # En
 
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
@@ -140,6 +140,81 @@ class SpatialGraphDiagram:
             assert all(not isinstance(v, Edge) for v, j in E.adjacent)
         assert self.is_planar()
 
+
+    def _create_edge(self, A, i, B, j):
+        """Creates and adds an edge to the diagram."""
+
+        # Create a new edge
+        edge_label = 'e' + str(len(self.edges) + 1)
+        edge = Edge(edge_label)
+
+        # Add the edge to the diagram
+        self._add_edge(edge)
+
+        # Connect the edge to the diagram elements
+        self.connect_diagram_elements(A, i, edge, 0)
+        self.connect_diagram_elements(B, j, edge, 1)
+
+    def _create_vertex(self, *args):
+        """Creates and adds an n-valent vertex to the diagram. Each argument is a tuple (A,i), (B, j), etc."""
+
+        # Create a new vertex
+        vertex_label = 'v' + str(len(self.vertices) + 1)
+        vertex = Vertex(len(args), vertex_label)
+
+        # Add the vertex to the diagram
+        self._add_vertex(vertex)
+
+        # Connect the vertex to the diagram elements
+        for i, (obj, idx) in enumerate(args):
+            self.connect_diagram_elements(obj, idx, vertex, i)
+
+    def _create_crossing(self, A, i, B, j, C, k, D, l):
+        """Creates and adds a crossing to the diagram."""
+
+        # Create a new crossing
+        crossing_label = 'c' + str(len(self.crossings) + 1)
+        crossing = Crossing(crossing_label)
+
+        # Add the crossing to the diagram
+        self._add_crossing(crossing)
+
+        # Connect the crossing to the diagram elements
+        self.connect_diagram_elements(A, i, crossing, 0)
+        self.connect_diagram_elements(B, j, crossing, 1)
+        self.connect_diagram_elements(C, k, crossing, 2)
+        self.connect_diagram_elements(D, l, crossing, 3)
+
+    def _add_edge(self, edge):
+        """Adds an edge to the diagram."""
+        self.edges.append(edge)
+        self.data[edge.label] = edge
+
+    def _add_vertex(self, vertex):
+        """Adds a vertex to the diagram."""
+        self.vertices.append(vertex)
+        self.data[vertex.label] = vertex
+
+    def _add_crossing(self, crossing):
+        """Adds a crossing to the diagram."""
+        self.crossings.append(crossing)
+        self.data[crossing.label] = crossing
+
+    def _remove_edge(self, edge):
+        """Removes an edge from the diagram."""
+        self.edges.remove(edge)
+        self.data.pop(edge.label)
+
+    def _remove_vertex(self, vertex):
+        """Removes a vertex from the diagram."""
+        self.vertices.remove(vertex)
+        self.data.pop(vertex.label)
+
+    def _remove_crossing(self, crossing):
+        """Removes a crossing from the diagram."""
+        self.crossings.remove(crossing)
+        self.data.pop(crossing.label)
+
     def _inflate_edges(self):
         """
         Creates and inserts an edge for each pair of crossings and/or vertices.
@@ -161,37 +236,35 @@ class SpatialGraphDiagram:
 
         self.edges = edges
 
+    def _merge_edges(self, E0, E1):
+        """
+        Merges two edges into a single edge. Keeps the label with the lowest value.
+        """
+
+        if E0.label < E1.label:
+            keep_edge = E0
+            remove_edge = E1
+        elif E0.label > E1.label:
+            keep_edge = E1
+            remove_edge = E0
+        else:
+            raise ValueError('Edges must have distinct labels.')
+
     def get_object(self, label):
         return self.data[label]
 
+    def connect_diagram_elements(self, A, i, B, j):
 
-    def add_vertex(self, vertex):
-        """Adds a vertex to the diagram."""
-        self.vertices.append(vertex)
-        self.data[vertex.label] = vertex
-
-    def remove_edge(self, edge):
-        """Removes an edge from the diagram."""
-        self.edges.remove(edge)
-        self.data.pop(edge.label)
-
-    def remove_crossing(self, crossing):
-        """Removes a crossing from the diagram."""
-        self.crossings.remove(crossing)
-        self.data.pop(crossing.label)
-
-    def connect(self, obj_1, idx, obj_2, jdx):
-
-        both_are_edges = isinstance(obj_1, Edge) and isinstance(obj_2, Edge)
+        both_are_edges = isinstance(A, Edge) and isinstance(B, Edge)
 
         if both_are_edges:
             V = Vertex(2, 'v' + str(len(self.vertices) + 1))
-            self.add_vertex(V)
-            obj_1[idx] = V[0]
-            obj_2[jdx] = V[1]
+            self._create_vertex(V)
+            A[i] = V[0]
+            B[j] = V[1]
 
         else:
-            obj_1[idx] = obj_2[jdx]
+            A[i] = B[j]
 
     def short_cut(self, crossing, i0):
         """
@@ -203,13 +276,13 @@ class SpatialGraphDiagram:
         E1, j1 = crossing.adjacent[i1]
         if E0 == E1:
             V0 = Vertex(2, repr(E0) + '_stopper')
-            self.add_vertex(V0)
+            self._add_vertex(V0)
             V0[0] = E0[j0]
             V0[1] = E1[j1]
         else:
             E1[j1] = E0[j0]
             E1.fuse()
-            self.remove_edge(E1)
+            self._remove_edge(E1)
 
     def copy(self):
         """
@@ -288,7 +361,7 @@ class SpatialGraphDiagram:
         # S_plus
         S_plus = self.copy()
         C_plus = S_plus.data[c]
-        S_plus.remove_crossing(C_plus)
+        S_plus._remove_crossing(C_plus)
         S_plus.short_cut(C_plus, 0)
         S_plus.short_cut(C_plus, 2)
         if check_pieces:
@@ -297,7 +370,7 @@ class SpatialGraphDiagram:
         # S_minus
         S_minus = self.copy()
         C_minus = S_minus.data[c]
-        S_minus.remove_crossing(C_minus)
+        S_minus._remove_crossing(C_minus)
         S_minus.short_cut(C_minus, 1)
         S_minus.short_cut(C_minus, 3)
         if check_pieces:
@@ -306,10 +379,10 @@ class SpatialGraphDiagram:
         # S_0
         S_0 = self.copy()
         C_0 = S_0.data[c]
-        S_0.remove_crossing(C_0)
+        S_0._remove_crossing(C_0)
 
         V = Vertex(4, repr(C_0) + '_smushed')
-        S_0.add_vertex(V)
+        S_0._add_vertex(V)
 
         for i in range(4):
             B, j = C_0.adjacent[i]

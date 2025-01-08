@@ -48,9 +48,9 @@ def apply_r1(sgd, crossing_label):
     B, j = crossing.adjacent[1]
     C, k = crossing.adjacent[2]
     D, l = crossing.adjacent[3]
-    sgd.connect(A, i, C, k)
-    sgd.connect(B, j, D, l)
-    sgd.remove_crossing(crossing)
+    sgd.connect_diagram_elements(A, i, C, k)
+    sgd.connect_diagram_elements(B, j, D, l)
+    sgd._remove_crossing(crossing)
 
     return sgd
 
@@ -108,18 +108,18 @@ def apply_r2(sgd, crossing_labels):
     c1_a1, c1_a1_i = crossing_1.adjacent[1]
     c1_a2, c1_a2_i = crossing_1.adjacent[2]
     c1_a3, c1_a3_i = crossing_1.adjacent[3]
-    sgd.connect(c1_a0, c1_a0_i, c1_a2, c1_a2_i)
-    sgd.connect(c1_a1, c1_a1_i, c1_a3, c1_a3_i)
-    sgd.remove_crossing(crossing_1)
+    sgd.connect_diagram_elements(c1_a0, c1_a0_i, c1_a2, c1_a2_i)
+    sgd.connect_diagram_elements(c1_a1, c1_a1_i, c1_a3, c1_a3_i)
+    sgd._remove_crossing(crossing_1)
 
     # Remove crossing 2
     c2_a0, c2_a0_i = crossing_2.adjacent[0]
     c2_a1, c2_a1_i = crossing_2.adjacent[1]
     c2_a2, c2_a2_i = crossing_2.adjacent[2]
     c2_a3, c2_a3_i = crossing_2.adjacent[3]
-    sgd.connect(c2_a0, c2_a0_i, c2_a2, c2_a2_i)
-    sgd.connect(c2_a1, c2_a1_i, c2_a3, c2_a3_i)
-    sgd.remove_crossing(crossing_2)
+    sgd.connect_diagram_elements(c2_a0, c2_a0_i, c2_a2, c2_a2_i)
+    sgd.connect_diagram_elements(c2_a1, c2_a1_i, c2_a3, c2_a3_i)
+    sgd._remove_crossing(crossing_2)
 
     return sgd
 
