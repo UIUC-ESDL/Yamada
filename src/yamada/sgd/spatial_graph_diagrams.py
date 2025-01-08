@@ -259,7 +259,7 @@ class SpatialGraphDiagram:
 
         if both_are_edges:
             V = Vertex(2, 'v' + str(len(self.vertices) + 1))
-            self._create_vertex(V)
+            self._add_vertex(V)
             A[i] = V[0]
             B[j] = V[1]
 
