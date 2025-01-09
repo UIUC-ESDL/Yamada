@@ -45,7 +45,7 @@ def test_crossing_swap_2(unknot_yamada_poly):
     x3[2] = e1[1]
     x3[3] = e6[1]
 
-    sgd = SpatialGraphDiagram([e1, e2, e3, e4, e5, e6, x1, x2, x3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6], crossings=[x1, x2, x3])
 
     yp_before = sgd.yamada_polynomial()
     # TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial

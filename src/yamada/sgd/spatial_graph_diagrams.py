@@ -56,27 +56,14 @@ class SpatialGraphDiagram:
 
     """
 
-    def __init__(self, edges=None, vertices=None, crossings=None):
+    def __init__(self, edges=[], vertices=[], crossings=[], check=True):
 
-        # Assign the inputs
-        self.edges = edges
-        self.vertices = vertices
-        self.crossings = crossings
-
-        # Validate the inputs
+        self.edges = None
+        self.crossings = None
+        self.vertices = None
 
         # Need labels of vertices/crossings to be unique and hashable
-        # data = edges + vertices + crossings
-
-        # Combine the lists of edges, vertices, and crossings
-        data = []
-        if edges is not None:
-            data += edges
-        if vertices is not None:
-            data += vertices
-        if crossings is not None:
-            data += crossings
-
+        data = [] + edges + vertices + crossings
         self.data = {d.label: d for d in data}
         assert len(data) == len(self.data)
         self.crossings = [d for d in data if isinstance(d, Crossing)]
@@ -89,8 +76,92 @@ class SpatialGraphDiagram:
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
 
+        if check:
+            self._check()
 
-        self._check()
+        # # # Assign the inputs
+        # # self.edges = edges
+        # # self.vertices = vertices
+        # # self.crossings = crossings
+        # self.edges = None
+        # self.vertices = None
+        # self.crossings = None
+        #
+        # data = [] + edges + vertices + crossings
+        # self.data = {d.label: d for d in data}
+        #
+        #
+        # # Normalize the labels of the diagram elements
+        # # self._normalize_labels()
+        #
+        #
+        # # Initialize counters based on existing objects
+        # # self.edge_counter = self._initialize_counter(self.edges, prefix="e")
+        # # self.vertex_counter = self._initialize_counter(self.vertices, prefix="v")
+        # # self.crossing_counter = self._initialize_counter(self.crossings, prefix="c")
+        #
+        # # Need labels of vertices/crossings to be unique and hashable
+        # # Combine the lists of edges, vertices, and crossings
+        #
+        #
+        #
+        # assert len(data) == len(self.data)
+        # self.crossings = [d for d in data if isinstance(d, Crossing)]
+        # self.vertices = [d for d in data if isinstance(d, Vertex)]
+        # self.edges = [d for d in data if isinstance(d, Edge)]
+        #
+        # # TODO Update to make sure each object is connected by edges... preprocess
+        # if len(self.edges) == 0 and len(data) > 0:
+        #     self._inflate_edges()
+        #
+        # if check:
+        #     self._check()
+
+
+    # def _initialize_counter(self, items, prefix):
+    #     """
+    #     Initializes the counter based on the existing items' labels.
+    #     """
+    #     if not items:
+    #         return 0
+    #     # Extract numeric parts of labels with the given prefix
+    #     max_label = max(
+    #         int(item.label[len(prefix):]) for item in items if item.label.startswith(prefix)
+    #     )
+    #     return max_label + 1
+
+    def _normalize_labels(self):
+        """
+        Renumbers labels for edges, vertices, and crossings sequentially.
+        """
+        # Renumber edges
+        for i, edge in enumerate(self.edges, start=1):
+            old_label = edge.label
+            new_label = f"e{i}"
+            edge.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = edge
+
+        # Renumber vertices
+        for i, vertex in enumerate(self.vertices, start=1):
+            old_label = vertex.label
+            new_label = f"v{i}"
+            vertex.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = vertex
+
+        # Renumber crossings
+        for i, crossing in enumerate(self.crossings, start=1):
+            old_label = crossing.label
+            new_label = f"c{i}"
+            crossing.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = crossing
+
+        # Update counters
+        self.edge_counter = len(self.edges)
+        self.vertex_counter = len(self.vertices)
+        self.crossing_counter = len(self.crossings)
 
     def faces(self):
         """
@@ -140,12 +211,6 @@ class SpatialGraphDiagram:
         """
         return self.euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
 
-    def _preprocess(self):
-        """
-        Preprocesses the diagram.
-        """
-
-        pass
 
     def _check(self):
         """
@@ -167,7 +232,9 @@ class SpatialGraphDiagram:
         """Creates and adds an edge to the diagram."""
 
         # Create a new edge
-        edge_label = 'e' + str(len(self.edges) + 1)
+        # self.edge_counter += 1
+        # edge_label = f'e{self.edge_counter}'
+        edge_label = len(self.edges)
         edge = Edge(edge_label)
 
         # Add the edge to the diagram
@@ -181,7 +248,9 @@ class SpatialGraphDiagram:
         """Creates and adds an n-valent vertex to the diagram. Each argument is a tuple (A,i), (B, j), etc."""
 
         # Create a new vertex
-        vertex_label = 'v' + str(len(self.vertices) + 1)
+        # self.vertex_counter += 1
+        # vertex_label = f'v{self.vertex_counter}'
+        vertex_label = len(self.vertices)
         vertex = Vertex(len(args), vertex_label)
 
         # Add the vertex to the diagram
@@ -195,7 +264,9 @@ class SpatialGraphDiagram:
         """Creates and adds a crossing to the diagram."""
 
         # Create a new crossing
-        crossing_label = 'c' + str(len(self.crossings) + 1)
+        # self.crossing_counter += 1
+        # crossing_label = f'c{self.crossing_counter}'
+        crossing_label = len(self.crossings)
         crossing = Crossing(crossing_label)
 
         # Add the crossing to the diagram

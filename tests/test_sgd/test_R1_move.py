@@ -33,7 +33,7 @@ def test_r1_2():
     x1 = Crossing('x1')
     x1[1], x1[3] = x1[2], x1[0]
 
-    sgd = SpatialGraphDiagram(edges=None, vertices=None, crossings=[x1])
+    sgd = SpatialGraphDiagram(crossings=[x1])
 
     yp_before_r1 = sgd.yamada_polynomial()
 
@@ -71,7 +71,7 @@ def test_r1_3():
     x1[0] = e3[1]
     x1[3] = e3[0]
 
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], vertices=None, crossings=[x1, x2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[x1, x2])
 
     yp_before_r1s = sgd.yamada_polynomial()
 
@@ -124,7 +124,7 @@ def test_r1_4():
     x1[0] = e3[1]
     x1[3] = e3[0]
 
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], vertices=None, crossings=[x1, x2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[x1, x2])
 
     yp_before_r1s = sgd.yamada_polynomial()
 

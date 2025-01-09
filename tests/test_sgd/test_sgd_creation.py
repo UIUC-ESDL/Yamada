@@ -18,8 +18,8 @@ def test_unknot_infinity_1c(unknot_infinity_1c):
     assert unknot_infinity_1c
 
 
-# def test_unknot_infinity_1e_1c(unknot_infinity_1e_1c):
-#     assert unknot_infinity_1e_1c
+def test_unknot_infinity_1e_1c(unknot_infinity_1e_1c):
+    assert unknot_infinity_1e_1c
 
 
 def test_unknot_infinity_1_2e_1c(unknot_infinity_1_2e_1c):

@@ -822,8 +822,6 @@ class SpatialGraph:
             else:
                 raise ValueError('The vertices are already assigned.')
 
-        # inputs = vertices + crossings
-        # sgd = SpatialGraphDiagram(inputs)
 
         sgd = SpatialGraphDiagram(vertices=vertices, crossings=crossings)
 
