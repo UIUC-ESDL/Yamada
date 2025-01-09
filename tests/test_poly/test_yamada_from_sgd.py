@@ -9,7 +9,7 @@ def test_spatial_graph_diagram_unknotted_theta_graph_1():
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
-    sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
+    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb], crossings=None)
 
     assert len(sgd.crossings) == 0
     assert len(sgd.vertices) == 2
@@ -28,7 +28,7 @@ def test_spatial_graph_diagram_unknotted_theta_graph_2():
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
 
-    sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
+    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb], crossings=None)
 
     g = sgd.projection_graph()
     t = nx.MultiGraph(3 * [(0, 1)])
@@ -46,7 +46,7 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
 
-    sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
+    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb], crossings=None)
 
     t = nx.MultiGraph(3 * [(0, 1)])
 
@@ -68,7 +68,7 @@ def test_yamada_polynomial_unknotted_theta_graph_2():
     vb[0] = vc[1]
     vb[2] = vd[1]
 
-    sgd = SpatialGraphDiagram([va, vb, vc, vd])
+    sgd = SpatialGraphDiagram(edges=None, vertices=[va, vb, vc, vd], crossings=None)
 
     assert sgd.yamada_polynomial() == normalize_poly(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
@@ -92,7 +92,7 @@ def test_unknot_single_twist_2():
 
     x1[1], x1[3] = x1[2], x1[0]
 
-    sgd = SpatialGraphDiagram([x1])
+    sgd = SpatialGraphDiagram(edges=None, vertices=None, crossings=[x1])
 
     assert sgd.yamada_polynomial() == (-a ** 2 - a - 1)
 
@@ -134,7 +134,7 @@ def test_yamada_polynomial_omega_2_graph():
     vd[1] = z[1]
     x[0], x[1] = y[3], y[2]
     y[0], y[1] = z[3], z[2]
-    sgd = SpatialGraphDiagram([va, vb, vc, vd, x, y, z])
+    sgd = SpatialGraphDiagram(edges=None, vertices=[va, vb, vc, vd, ], crossings=[x, y, z])
     g = sgd.underlying_graph()
 
     assert nx.is_isomorphic(g, nx.complete_graph(4))

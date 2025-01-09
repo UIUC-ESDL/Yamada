@@ -56,13 +56,27 @@ class SpatialGraphDiagram:
 
     """
 
-    def __init__(self, data, check=True):
+    def __init__(self, edges=None, vertices=None, crossings=None):
 
-        self.edges = None
-        self.crossings = None
-        self.vertices = None
+        # Assign the inputs
+        self.edges = edges
+        self.vertices = vertices
+        self.crossings = crossings
+
+        # Validate the inputs
 
         # Need labels of vertices/crossings to be unique and hashable
+        # data = edges + vertices + crossings
+
+        # Combine the lists of edges, vertices, and crossings
+        data = []
+        if edges is not None:
+            data += edges
+        if vertices is not None:
+            data += vertices
+        if crossings is not None:
+            data += crossings
+
         self.data = {d.label: d for d in data}
         assert len(data) == len(self.data)
         self.crossings = [d for d in data if isinstance(d, Crossing)]
@@ -75,8 +89,8 @@ class SpatialGraphDiagram:
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
 
-        if check:
-            self._check()
+
+        self._check()
 
     def faces(self):
         """
@@ -392,6 +406,12 @@ class SpatialGraphDiagram:
 
         V = Vertex(4, repr(C_0) + '_smushed')
         S_0._add_vertex(V)
+
+        # (A, i), (B, j), (C, k), (D, l) = C_0.adjacent
+        # S_0._create_vertex((A, i), (B, j), (C, k), (D, l))
+
+        # for i, (B, j) in enumerate(C_0.adjacent):
+        #     V[i] = B[j]
 
         for i in range(4):
             B, j = C_0.adjacent[i]

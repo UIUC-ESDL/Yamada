@@ -46,7 +46,7 @@ def pre_r3():
     x4[2] = e7[0]
     x4[3] = e3[1]
 
-    sgd = SpatialGraphDiagram([x0, x1, x2, x3, x4, e0, e1, e2, e3, e4, e5, e6, e7, e8, e9])
+    sgd = SpatialGraphDiagram(edges=[e0, e1, e2, e3, e4, e5, e6, e7, e8, e9], crossings=[x0, x1, x2, x3, x4])
 
     return sgd
 
@@ -100,7 +100,7 @@ def post_r3():
     e1[1] = e8[1]
     e2[1] = e9[1]
 
-    sgd = SpatialGraphDiagram([x0, x1, x2, x3, x4, e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, er1, er2])
+    sgd = SpatialGraphDiagram(edges=[e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, er1, er2], crossings=[x0, x1, x2, x3, x4])
 
     return sgd
 

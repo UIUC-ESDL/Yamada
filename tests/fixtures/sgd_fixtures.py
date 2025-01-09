@@ -10,7 +10,7 @@ def unknot_1e():
     """
     e1 = Edge(1)
     e1[0] = e1[1]
-    sgd = SpatialGraphDiagram([e1])
+    sgd = SpatialGraphDiagram(edges=[e1])
     return sgd
 
 
@@ -21,7 +21,7 @@ def unknot_1e_1v():
     v1 = Vertex(2, label='v1')
     e1[0] = v1[0]
     e1[1] = v1[1]
-    sgd = SpatialGraphDiagram([e1, v1])
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1])
     return sgd
 
 
@@ -32,7 +32,7 @@ def unknot_2e_2v():
     v1, v2 = Vertex(2, 'v1'), Vertex(2, 'v2')
     e1[0], e1[1] = v1[0], v2[0]
     e2[0], e2[1] = v1[1], v2[1]
-    sgd = SpatialGraphDiagram([e1, e2, v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
     return sgd
 
 
@@ -45,7 +45,7 @@ def unknot_infinity_1c():
     c1 = Crossing("c1")
     c1[1] = c1[2]
     c1[3] = c1[0]
-    sgd = SpatialGraphDiagram([c1])
+    sgd = SpatialGraphDiagram(crossings=[c1])
     return sgd
 
 
@@ -58,7 +58,7 @@ def unknot_infinity_1e_1c():
     e1[0] = c1[2]
     e1[1] = c1[1]
     c1[0] = c1[3]
-    sgd = SpatialGraphDiagram([e1, c1])
+    sgd = SpatialGraphDiagram(edges=[e1], crossings=[c1])
     return sgd
 
 
@@ -68,7 +68,7 @@ def unknot_infinity_1_2e_1c():
     c1 = Crossing("c1")
     e1[0], e1[1] = c1[2], c1[3]
     e2[0], e2[1] = c1[1], c1[0]
-    sgd = SpatialGraphDiagram([e1, e2, c1])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1])
     return sgd
 
 
@@ -81,7 +81,7 @@ def unknot_infinity_2_2e_1c():
     c1 = Crossing("c1")
     e1[0], e1[1] = c1[3], c1[0]
     e2[0], e2[1] = c1[2], c1[1]
-    sgd = SpatialGraphDiagram([e1, e2, c1])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1])
     return sgd
 
 
@@ -102,13 +102,15 @@ def unknot_infinity_1_4e_2v_1c():
     e2[1] = v2[0]
     v2[1] = e4[0]
     e4[1] = c1[0]
-    sgd = SpatialGraphDiagram([e1, e2, e3, e4, v1, v2, c1])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], vertices=[v1, v2], crossings=[c1])
     return sgd
+
 
 @pytest.fixture
 def unknot_double_loop_same_4e_2c():
     """An unknot with two loops that share the same crossing orientations."""
     pass
+
 
 @pytest.fixture
 def unknot_double_loop_opposite_4e_2c():
@@ -122,5 +124,5 @@ def unknotted_theta_graph_1():
     e0, e1, e2 = Edge(0), Edge(1), Edge(2)
     va[0], va[1], va[2] = e0[0], e1[0], e2[0]
     vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
-    sgd = SpatialGraphDiagram([va, vb, e0, e1, e2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[va, vb, e0])
     return sgd
