@@ -43,6 +43,8 @@ def unknot_infinity_1c():
     TODO SGD should fix this by adding edges to self-connected crossings.
     """
     c1 = Crossing("c1")
+    c1[1] = c1[2]
+    c1[3] = c1[0]
     sgd = SpatialGraphDiagram([c1])
     return sgd
 
@@ -52,8 +54,10 @@ def unknot_infinity_1e_1c():
     """An infinity symbol formed with a crossing that had two corners self-connected and the other two connected by an edge."""
     e1 = Edge(1)
     c1 = Crossing("c1")
-    e1[0], e1[1] = c1[2], c1[3]
-    c1[0] = c1[1]
+
+    e1[0] = c1[2]
+    e1[1] = c1[1]
+    c1[0] = c1[3]
     sgd = SpatialGraphDiagram([e1, c1])
     return sgd
 

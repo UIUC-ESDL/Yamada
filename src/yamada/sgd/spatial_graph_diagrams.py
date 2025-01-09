@@ -71,6 +71,7 @@ class SpatialGraphDiagram:
 
         # En
 
+        # TODO Update to make sure each object is connected by edges... preprocess
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
 
@@ -125,6 +126,13 @@ class SpatialGraphDiagram:
         """
         return self.euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
 
+    def _preprocess(self):
+        """
+        Preprocesses the diagram.
+        """
+
+        pass
+
     def _check(self):
         """
         Checks that the diagram is valid.
@@ -152,8 +160,8 @@ class SpatialGraphDiagram:
         self._add_edge(edge)
 
         # Connect the edge to the diagram elements
-        self.connect_diagram_elements(A, i, edge, 0)
-        self.connect_diagram_elements(B, j, edge, 1)
+        self.connect(A, i, edge, 0)
+        self.connect(B, j, edge, 1)
 
     def _create_vertex(self, *args):
         """Creates and adds an n-valent vertex to the diagram. Each argument is a tuple (A,i), (B, j), etc."""
@@ -167,7 +175,7 @@ class SpatialGraphDiagram:
 
         # Connect the vertex to the diagram elements
         for i, (obj, idx) in enumerate(args):
-            self.connect_diagram_elements(obj, idx, vertex, i)
+            self.connect(obj, idx, vertex, i)
 
     def _create_crossing(self, A, i, B, j, C, k, D, l):
         """Creates and adds a crossing to the diagram."""
@@ -180,10 +188,10 @@ class SpatialGraphDiagram:
         self._add_crossing(crossing)
 
         # Connect the crossing to the diagram elements
-        self.connect_diagram_elements(A, i, crossing, 0)
-        self.connect_diagram_elements(B, j, crossing, 1)
-        self.connect_diagram_elements(C, k, crossing, 2)
-        self.connect_diagram_elements(D, l, crossing, 3)
+        self.connect(A, i, crossing, 0)
+        self.connect(B, j, crossing, 1)
+        self.connect(C, k, crossing, 2)
+        self.connect(D, l, crossing, 3)
 
     def _add_edge(self, edge):
         """Adds an edge to the diagram."""
@@ -253,18 +261,23 @@ class SpatialGraphDiagram:
     def get_object(self, label):
         return self.data[label]
 
-    def connect_diagram_elements(self, A, i, B, j):
+    def connect(self, A, i, B, j):
 
-        both_are_edges = isinstance(A, Edge) and isinstance(B, Edge)
+        A_is_edge = isinstance(A, Edge)
+        B_is_edge = isinstance(B, Edge)
 
-        if both_are_edges:
-            V = Vertex(2, 'v' + str(len(self.vertices) + 1))
-            self._add_vertex(V)
-            A[i] = V[0]
-            B[j] = V[1]
+        # If both diagram elements are edges, then connect them with a vertex.
+        if A_is_edge and B_is_edge:
+            self._create_vertex((A, i), (B, j))
 
-        else:
+        # If only one diagram element is an edge, then connect them directly.
+        elif (A_is_edge and not B_is_edge) or (not A_is_edge and B_is_edge):
             A[i] = B[j]
+
+        # If neither diagram element is an edge, then connect them with an edge.
+        else:
+            self._create_edge(A, i, B, j)
+
 
     def short_cut(self, crossing, i0):
         """
@@ -275,14 +288,10 @@ class SpatialGraphDiagram:
         E0, j0 = crossing.adjacent[i0]
         E1, j1 = crossing.adjacent[i1]
         if E0 == E1:
-            V0 = Vertex(2, repr(E0) + '_stopper')
-            self._add_vertex(V0)
-            V0[0] = E0[j0]
-            V0[1] = E1[j1]
+            self._create_vertex((E0, j0), (E1, j1))
         else:
-            E1[j1] = E0[j0]
-            E1.fuse()
-            self._remove_edge(E1)
+            self.connect(E0, j0, E1, j1)
+
 
     def copy(self):
         """

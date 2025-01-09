@@ -14,12 +14,12 @@ def test_unknot_2e_2v(unknot_2e_2v):
     assert unknot_2e_2v
 
 
-# def test_unknot_infinity_1c(unknot_infinity_1c):
-#     assert unknot_infinity_1c
+def test_unknot_infinity_1c(unknot_infinity_1c):
+    assert unknot_infinity_1c
 
 
-# def test_unknot_infinity_1e_1c(unknot_infinity_1e_1c):
-#     assert unknot_infinity_1e_1c
+def test_unknot_infinity_1e_1c(unknot_infinity_1e_1c):
+    assert unknot_infinity_1e_1c
 
 
 def test_unknot_infinity_1_2e_1c(unknot_infinity_1_2e_1c):
