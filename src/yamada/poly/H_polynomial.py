@@ -82,6 +82,10 @@ def graph_hash(graph):
     The graph hash is used to cache the results of the H polynomial computation and avoid recomputing the H polynomial.
     """
 
+    if isinstance(graph, nx.MultiGraph):
+        # Convert MultiGraph to a simple Graph (ignoring multiple edges)
+        graph = nx.Graph(graph)
+
     return nx.weisfeiler_lehman_graph_hash(graph, iterations=3)
 
 
