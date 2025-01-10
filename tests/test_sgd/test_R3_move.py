@@ -4,13 +4,12 @@ from yamada import SpatialGraphDiagram, Edge, Crossing, has_r3, apply_r3
 
 def pre_r3():
 
-    x0 = Crossing('x0')
-    x1 = Crossing('x1')
-    x2 = Crossing('x2')
-    x3 = Crossing('x3')
-    x4 = Crossing('x4')
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
+    c3 = Crossing('c3')
+    c4 = Crossing('c4')
+    c5 = Crossing('c5')
 
-    e0 = Edge('e0')
     e1 = Edge('e1')
     e2 = Edge('e2')
     e3 = Edge('e3')
@@ -20,46 +19,46 @@ def pre_r3():
     e7 = Edge('e7')
     e8 = Edge('e8')
     e9 = Edge('e9')
+    e10 = Edge('e10')
 
-    x0[0] = e0[0]
-    x0[1] = e3[0]
-    x0[2] = e2[0]
-    x0[3] = e1[0]
+    c1[0] = e1[0]
+    c1[1] = e4[0]
+    c1[2] = e3[0]
+    c1[3] = e2[0]
 
-    x1[0] = e4[1]
-    x1[1] = e0[1]
-    x1[2] = e5[0]
-    x1[3] = e8[0]
+    c2[0] = e5[1]
+    c2[1] = e1[1]
+    c2[2] = e6[0]
+    c2[3] = e9[0]
 
-    x2[0] = e5[1]
-    x2[1] = e1[1]
-    x2[2] = e6[1]
-    x2[3] = e8[1]
+    c3[0] = e6[1]
+    c3[1] = e2[1]
+    c3[2] = e7[1]
+    c3[3] = e9[1]
 
-    x3[0] = e7[1]
-    x3[1] = e9[1]
-    x3[2] = e6[0]
-    x3[3] = e2[1]
+    c4[0] = e8[1]
+    c4[1] = e10[1]
+    c4[2] = e7[0]
+    c4[3] = e3[1]
 
-    x4[0] = e4[0]
-    x4[1] = e9[0]
-    x4[2] = e7[0]
-    x4[3] = e3[1]
+    c5[0] = e5[0]
+    c5[1] = e10[0]
+    c5[2] = e8[0]
+    c5[3] = e4[1]
 
-    sgd = SpatialGraphDiagram(edges=[e0, e1, e2, e3, e4, e5, e6, e7, e8, e9], crossings=[x0, x1, x2, x3, x4])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10], crossings=[c1, c2, c3, c4, c5])
 
     return sgd
 
 
 def post_r3():
 
-    x0 = Crossing('x0')
-    x1 = Crossing('x1')
-    x2 = Crossing('x2')
-    x3 = Crossing('x3')
-    x4 = Crossing('x4')
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
+    c3 = Crossing('c3')
+    c4 = Crossing('c4')
+    c5 = Crossing('c5')
 
-    e0 = Edge('e0')
     e1 = Edge('e1')
     e2 = Edge('e2')
     e3 = Edge('e3')
@@ -69,38 +68,39 @@ def post_r3():
     e7 = Edge('e7')
     e8 = Edge('e8')
     e9 = Edge('e9')
-    er1 = Edge('er1')
-    er2 = Edge('er2')
+    e10 = Edge('e10')
+    e11 = Edge('e11')
+    e12 = Edge('e12')
 
-    x0[0] = er1[0]
-    x0[1] = er2[0]
-    x0[2] = e2[0]
-    x0[3] = e1[0]
+    c1[0] = e11[0]
+    c1[1] = e12[0]
+    c1[2] = e3[0]
+    c1[3] = e2[0]
 
-    x1[0] = e4[1]
-    x1[1] = e0[1]
-    x1[2] = e5[0]
-    x1[3] = e8[0]
+    c2[0] = e5[1]
+    c2[1] = e1[1]
+    c2[2] = e6[0]
+    c2[3] = e9[0]
 
-    x2[0] = e5[1]
-    x2[1] = e0[0]
-    x2[2] = e6[1]
-    x2[3] = er1[1]
+    c3[0] = e6[1]
+    c3[1] = e1[0]
+    c3[2] = e7[1]
+    c3[3] = e11[1]
 
-    x3[0] = e7[1]
-    x3[1] = er2[1]
-    x3[2] = e6[0]
-    x3[3] = e3[0]
+    c4[0] = e8[1]
+    c4[1] = e12[1]
+    c4[2] = e7[0]
+    c4[3] = e4[0]
 
-    x4[0] = e4[0]
-    x4[1] = e9[0]
-    x4[2] = e7[0]
-    x4[3] = e3[1]
+    c5[0] = e5[0]
+    c5[1] = e10[0]
+    c5[2] = e8[0]
+    c5[3] = e4[1]
 
-    e1[1] = e8[1]
     e2[1] = e9[1]
+    e3[1] = e10[1]
 
-    sgd = SpatialGraphDiagram(edges=[e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, er1, er2], crossings=[x0, x1, x2, x3, x4])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12], crossings=[c1, c2, c3, c4, c5])
 
     return sgd
 
@@ -116,12 +116,12 @@ def test_r3():
     assert pre_r3_has_r3
 
     # Hard-coded demo
-    stationary_crossing = 'x0'
-    moving_crossing_1 = 'x3'
-    moving_crossing_2 = 'x2'
-    crossing_edge = 'e6'
-    stationary_edge_1 = 'e2'
-    stationary_edge_2 = 'e1'
+    stationary_crossing = 'c1'
+    moving_crossing_1 = 'c4'
+    moving_crossing_2 = 'c3'
+    crossing_edge = 'e7'
+    stationary_edge_1 = 'e3'
+    stationary_edge_2 = 'e2'
     r3_input = {
         'stationary_crossing': stationary_crossing,
         'moving_crossing_1': moving_crossing_1,

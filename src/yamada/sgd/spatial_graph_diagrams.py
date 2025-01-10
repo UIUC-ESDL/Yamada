@@ -199,9 +199,8 @@ class SpatialGraphDiagram:
         """Creates and adds an edge to the diagram."""
 
         # Create a new edge
-        # self.edge_counter += 1
-        # edge_label = f'e{self.edge_counter}'
-        edge_label = len(self.edges)
+        self.edge_counter += 1
+        edge_label = f'e{self.edge_counter}'
         edge = Edge(edge_label)
 
         # Add the edge to the diagram
@@ -215,9 +214,8 @@ class SpatialGraphDiagram:
         """Creates and adds an n-valent vertex to the diagram. Each argument is a tuple (A,i), (B, j), etc."""
 
         # Create a new vertex
-        # self.vertex_counter += 1
-        # vertex_label = f'v{self.vertex_counter}'
-        vertex_label = len(self.vertices)
+        self.vertex_counter += 1
+        vertex_label = f'v{self.vertex_counter}'
         vertex = Vertex(len(args), vertex_label)
 
         # Add the vertex to the diagram
@@ -231,9 +229,8 @@ class SpatialGraphDiagram:
         """Creates and adds a crossing to the diagram."""
 
         # Create a new crossing
-        # self.crossing_counter += 1
-        # crossing_label = f'c{self.crossing_counter}'
-        crossing_label = len(self.crossings)
+        self.crossing_counter += 1
+        crossing_label = f'c{self.crossing_counter}'
         crossing = Crossing(crossing_label)
 
         # Add the crossing to the diagram

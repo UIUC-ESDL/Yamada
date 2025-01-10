@@ -30,10 +30,10 @@ def test_r1_2():
 
     yp_ground_truth = -a ** 2 - a - 1
 
-    x1 = Crossing('x1')
-    x1[1], x1[3] = x1[2], x1[0]
+    c1 = Crossing('c1')
+    c1[1], c1[3] = c1[2], c1[0]
 
-    sgd = SpatialGraphDiagram(crossings=[x1])
+    sgd = SpatialGraphDiagram(crossings=[c1])
 
     yp_before_r1 = sgd.yamada_polynomial()
 
@@ -42,9 +42,9 @@ def test_r1_2():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 1
-    assert 'x1' in r1_crossing_labels
+    assert 'c1' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, 'x1')
+    sgd = apply_r1(sgd, 'c1')
 
     yp_after_r1 = sgd.yamada_polynomial()
 
@@ -56,22 +56,22 @@ def test_r1_3():
 
     yp_ground_truth = -a ** 2 - a - 1
 
-    x1 = Crossing('x1')
-    x2 = Crossing('x2')
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
 
     e1, e2, e3, e4 = Edge(1), Edge(2), Edge(3), Edge(4)
 
-    x2[3] = e1[0]
-    x2[0] = e1[1]
-    x2[1] = e2[0]
-    x2[2] = e4[1]
+    c2[3] = e1[0]
+    c2[0] = e1[1]
+    c2[1] = e2[0]
+    c2[2] = e4[1]
 
-    x1[2] = e2[1]
-    x1[1] = e4[0]
-    x1[0] = e3[1]
-    x1[3] = e3[0]
+    c1[2] = e2[1]
+    c1[1] = e4[0]
+    c1[0] = e3[1]
+    c1[3] = e3[0]
 
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[x1, x2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[c1, c2])
 
     yp_before_r1s = sgd.yamada_polynomial()
 
@@ -80,9 +80,9 @@ def test_r1_3():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 2
-    assert 'x1' in r1_crossing_labels and 'x2' in r1_crossing_labels
+    assert 'c1' in r1_crossing_labels and 'c2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, 'x1')
+    sgd = apply_r1(sgd, 'c1')
 
     yp_after_first_r1 = sgd.yamada_polynomial()
 
@@ -91,9 +91,9 @@ def test_r1_3():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 1
-    assert 'x2' in r1_crossing_labels
+    assert 'c2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, 'x2')
+    sgd = apply_r1(sgd, 'c2')
 
     yp_after_second_r1 = sgd.yamada_polynomial()
 
@@ -109,22 +109,22 @@ def test_r1_4():
 
     yp_ground_truth = -a ** 2 - a - 1
 
-    x1 = Crossing('x1')
-    x2 = Crossing('x2')
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
 
     e1, e2, e3, e4 = Edge(1), Edge(2), Edge(3), Edge(4)
 
-    x2[3] = e4[1]
-    x2[0] = e1[0]
-    x2[1] = e1[1]
-    x2[2] = e2[0]
+    c2[3] = e4[1]
+    c2[0] = e1[0]
+    c2[1] = e1[1]
+    c2[2] = e2[0]
 
-    x1[2] = e2[1]
-    x1[1] = e4[0]
-    x1[0] = e3[1]
-    x1[3] = e3[0]
+    c1[2] = e2[1]
+    c1[1] = e4[0]
+    c1[0] = e3[1]
+    c1[3] = e3[0]
 
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[x1, x2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4], crossings=[c1, c2])
 
     yp_before_r1s = sgd.yamada_polynomial()
 
@@ -133,9 +133,9 @@ def test_r1_4():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 2
-    assert 'x1' in r1_crossing_labels and 'x2' in r1_crossing_labels
+    assert 'c1' in r1_crossing_labels and 'c2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, 'x1')
+    sgd = apply_r1(sgd, 'c1')
 
     yp_after_first_r1 = sgd.yamada_polynomial()
 
@@ -144,9 +144,9 @@ def test_r1_4():
     r1_crossing_labels = has_r1(sgd)
 
     assert len(r1_crossing_labels) == 1
-    assert 'x2' in r1_crossing_labels
+    assert 'c2' in r1_crossing_labels
 
-    sgd = apply_r1(sgd, 'x2')
+    sgd = apply_r1(sgd, 'c2')
 
     yp_after_second_r1 = sgd.yamada_polynomial()
 
