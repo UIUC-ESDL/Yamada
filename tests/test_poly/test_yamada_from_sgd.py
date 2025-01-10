@@ -5,11 +5,11 @@ from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGra
 
 def test_spatial_graph_diagram_unknotted_theta_graph_1():
 
-    va, vb = Vertex(3, 'a'), Vertex(3, 'b')
-    e0, e1, e2 = Edge(0), Edge(1), Edge(2)
-    va[0], va[1], va[2] = e0[0], e1[0], e2[0]
-    vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
-    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb])
+    v1, v2 = Vertex(3, 'v1'), Vertex(3, 'v2')
+    e1, e2, e3 = Edge(1), Edge(2), Edge(3)
+    v1[0], v1[1], v1[2] = e1[0], e2[0], e3[0]
+    v2[0], v2[1], v2[2] = e1[1], e3[1], e2[1]
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
 
     assert len(sgd.crossings) == 0
     assert len(sgd.vertices) == 2
@@ -21,14 +21,14 @@ def test_spatial_graph_diagram_unknotted_theta_graph_1():
 
 def test_spatial_graph_diagram_unknotted_theta_graph_2():
 
-    va, vb = Vertex(3, 'a'), Vertex(3, 'b')
+    v1, v2 = Vertex(3, 'v1'), Vertex(3, 'v2')
 
-    e0, e1, e2 = Edge(0), Edge(1), Edge(2)
+    e1, e2, e3 = Edge(1), Edge(2), Edge(3)
 
-    va[0], va[1], va[2] = e0[0], e1[0], e2[0]
-    vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
+    v1[0], v1[1], v1[2] = e1[0], e2[0], e3[0]
+    v2[0], v2[1], v2[2] = e1[1], e3[1], e2[1]
 
-    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
 
     g = sgd.projection_graph()
     t = nx.MultiGraph(3 * [(0, 1)])
@@ -39,14 +39,14 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
 
     a = pari('A')
 
-    va, vb = Vertex(3, 'a'), Vertex(3, 'b')
+    v1, v2 = Vertex(3, 'v1'), Vertex(3, 'v2')
 
-    e0, e1, e2 = Edge(0), Edge(1), Edge(2)
+    e1, e2, e3 = Edge(1), Edge(2), Edge(3)
 
-    va[0], va[1], va[2] = e0[0], e1[0], e2[0]
-    vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
+    v1[0], v1[1], v1[2] = e1[0], e2[0], e3[0]
+    v2[0], v2[1], v2[2] = e1[1], e3[1], e2[1]
 
-    sgd = SpatialGraphDiagram(edges=[e0, e1, e2], vertices=[va, vb])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
 
     t = nx.MultiGraph(3 * [(0, 1)])
 
@@ -58,17 +58,19 @@ def test_yamada_polynomial_unknotted_theta_graph_2():
 
     a = pari('A')
 
-    va, vb = Vertex(3, 'A'), Vertex(3, 'B')
-    vc, vd = Vertex(2, 'C'), Vertex(2, 'D')
+    v1 = Vertex(3, 'v1')
+    v2 = Vertex(3, 'v2')
+    v3 = Vertex(2, 'v3')
+    v4 = Vertex(2, 'v4')
 
-    va[1] = vc[0]
-    va[0] = vb[1]
-    va[2] = vd[0]
+    v1[1] = v3[0]
+    v1[0] = v2[1]
+    v1[2] = v4[0]
 
-    vb[0] = vc[1]
-    vb[2] = vd[1]
+    v2[0] = v3[1]
+    v2[2] = v4[1]
 
-    sgd = SpatialGraphDiagram(vertices=[va, vb, vc, vd])
+    sgd = SpatialGraphDiagram(vertices=[v1, v2, v3, v4])
 
     assert sgd.yamada_polynomial() == normalize_poly(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 
@@ -76,11 +78,11 @@ def test_unknot_single_twist_1():
 
     a = pari('A')
 
-    x1 = Crossing('X')
+    c1 = Crossing('c1')
 
-    x1[0], x1[2] = x1[1], x1[3]
+    c1[0], c1[2] = c1[1], c1[3]
 
-    sgd = SpatialGraphDiagram([x1])
+    sgd = SpatialGraphDiagram(crossings=[c1])
 
     assert sgd.yamada_polynomial() == (-a ** 2 - a - 1)
 
@@ -88,11 +90,11 @@ def test_unknot_single_twist_2():
 
     a = pari('A')
 
-    x1 = Crossing('X')
+    c1 = Crossing('c1')
 
-    x1[1], x1[3] = x1[2], x1[0]
+    c1[1], c1[3] = c1[2], c1[0]
 
-    sgd = SpatialGraphDiagram(crossings=[x1])
+    sgd = SpatialGraphDiagram(crossings=[c1])
 
     assert sgd.yamada_polynomial() == (-a ** 2 - a - 1)
 
@@ -103,13 +105,19 @@ def test_yamada_polynomial_theta_2_graph():
 
     a = pari('A')
 
-    va, vb = Vertex(3, 'a'), Vertex(3, 'b')
-    x, y, z = [Crossing(L) for L in 'XYZ']
-    va[0], va[1], va[2] = x[0], vb[2], y[1]
-    vb[0], vb[1] = x[3], z[0]
-    x[1], x[2] = y[0], z[1]
-    y[2], y[3] = z[3], z[2]
-    sgd = SpatialGraphDiagram([va, vb, x, y, z])
+    v1 = Vertex(3, 'v1')
+    v2 = Vertex(3, 'v2')
+
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
+    c3 = Crossing('c3')
+
+    v1[0], v1[1], v1[2] = c1[0], v2[2], c2[1]
+    v2[0], v2[1] = c1[3], c3[0]
+
+    c1[1], c1[2] = c2[0], c3[1]
+    c2[2], c2[3] = c3[3], c3[2]
+    sgd = SpatialGraphDiagram(vertices=[v1, v2], crossings=[c1, c2, c3])
     g = sgd.underlying_graph()
     t = nx.MultiGraph(3 * [(0, 1)])
 
@@ -126,15 +134,20 @@ def test_yamada_polynomial_omega_2_graph():
 
     a = pari('A')
 
-    va, vb, vc, vd = [Vertex(3, L) for L in 'abcd']
-    x, y, z = [Crossing(L) for L in 'XYZ']
-    va[0], va[1], va[2] = vd[0], vb[2], x[2]
-    vb[0], vb[1] = vc[0], x[3]
-    vc[1], vc[2] = vd[2], z[0]
-    vd[1] = z[1]
-    x[0], x[1] = y[3], y[2]
-    y[0], y[1] = z[3], z[2]
-    sgd = SpatialGraphDiagram(vertices=[va, vb, vc, vd, ], crossings=[x, y, z])
+    v1 = Vertex(3, 'v1')
+    v2 = Vertex(3, 'v2')
+    v3 = Vertex(3, 'v3')
+    v4 = Vertex(3, 'v4')
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
+    c3 = Crossing('c3')
+    v1[0], v1[1], v1[2] = v4[0], v2[2], c1[2]
+    v2[0], v2[1] = v3[0], c1[3]
+    v3[1], v3[2] = v4[2], c3[0]
+    v4[1] = c3[1]
+    c1[0], c1[1] = c2[3], c2[2]
+    c2[0], c2[1] = c3[3], c3[2]
+    sgd = SpatialGraphDiagram(vertices=[v1, v2, v3, v4], crossings=[c1, c2, c3])
     g = sgd.underlying_graph()
 
     assert nx.is_isomorphic(g, nx.complete_graph(4))

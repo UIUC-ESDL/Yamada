@@ -120,9 +120,9 @@ def unknot_double_loop_opposite_4e_2c():
 
 @pytest.fixture
 def unknotted_theta_graph_1():
-    va, vb = Vertex(3, 'a'), Vertex(3, 'b')
-    e0, e1, e2 = Edge(0), Edge(1), Edge(2)
-    va[0], va[1], va[2] = e0[0], e1[0], e2[0]
-    vb[0], vb[1], vb[2] = e0[1], e2[1], e1[1]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[va, vb, e0])
+    v1, v2 = Vertex(3, 'v1'), Vertex(3, 'v2')
+    e1, e2, e3 = Edge(1), Edge(2), Edge(3)
+    v1[0], v1[1], v1[2] = e1[0], e2[0], e3[0]
+    v2[0], v2[1], v2[2] = e1[1], e3[1], e2[1]
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
     return sgd

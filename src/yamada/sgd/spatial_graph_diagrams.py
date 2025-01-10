@@ -53,82 +53,49 @@ from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 class SpatialGraphDiagram:
     """
-
+    TODO: Fix labels. Normalize them, and make sure they are unique (both currently, and going forward)
     """
 
-    def __init__(self, edges=[], vertices=[], crossings=[], check=True):
+    def __init__(self, *, edges=None, vertices=None, crossings=None, check=True):
 
-        self.edges = None
-        self.crossings = None
-        self.vertices = None
+        # Ensure inputs are lists (avoid mutable default arguments)
+        edges = edges or []
+        vertices = vertices or []
+        crossings = crossings or []
 
-        # Need labels of vertices/crossings to be unique and hashable
-        data = [] + edges + vertices + crossings
+        # Combine all elements into a single list
+        data = edges + vertices + crossings
+
+        # Ensure labels are unique by creating a dictionary
         self.data = {d.label: d for d in data}
-        assert len(data) == len(self.data)
-        self.crossings = [d for d in data if isinstance(d, Crossing)]
-        self.vertices = [d for d in data if isinstance(d, Vertex)]
-        self.edges = [d for d in data if isinstance(d, Edge)]
 
-        # En
+        # Validate label uniqueness
+        if len(data) != len(self.data):
+            raise ValueError("Labels must be unique across all diagram elements.")
+
+        # Categorize elements by type
+        self.edges = [d for d in data if isinstance(d, Edge)]
+        self.vertices = [d for d in data if isinstance(d, Vertex)]
+        self.crossings = [d for d in data if isinstance(d, Crossing)]
+
+        # Optional: Validate categorization
+        if len(self.edges) != len(edges):
+            raise ValueError("Some edges are incorrectly classified.")
+        if len(self.vertices) != len(vertices):
+            raise ValueError("Some vertices are incorrectly classified.")
+        if len(self.crossings) != len(crossings):
+            raise ValueError("Some crossings are incorrectly classified.")
+
+        # Normalize labels
+        self._normalize_labels()
 
         # TODO Update to make sure each object is connected by edges... preprocess
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
 
+        # Optionally run additional checks
         if check:
             self._check()
-
-        # # # Assign the inputs
-        # # self.edges = edges
-        # # self.vertices = vertices
-        # # self.crossings = crossings
-        # self.edges = None
-        # self.vertices = None
-        # self.crossings = None
-        #
-        # data = [] + edges + vertices + crossings
-        # self.data = {d.label: d for d in data}
-        #
-        #
-        # # Normalize the labels of the diagram elements
-        # # self._normalize_labels()
-        #
-        #
-        # # Initialize counters based on existing objects
-        # # self.edge_counter = self._initialize_counter(self.edges, prefix="e")
-        # # self.vertex_counter = self._initialize_counter(self.vertices, prefix="v")
-        # # self.crossing_counter = self._initialize_counter(self.crossings, prefix="c")
-        #
-        # # Need labels of vertices/crossings to be unique and hashable
-        # # Combine the lists of edges, vertices, and crossings
-        #
-        #
-        #
-        # assert len(data) == len(self.data)
-        # self.crossings = [d for d in data if isinstance(d, Crossing)]
-        # self.vertices = [d for d in data if isinstance(d, Vertex)]
-        # self.edges = [d for d in data if isinstance(d, Edge)]
-        #
-        # # TODO Update to make sure each object is connected by edges... preprocess
-        # if len(self.edges) == 0 and len(data) > 0:
-        #     self._inflate_edges()
-        #
-        # if check:
-        #     self._check()
-
-
-    # def _initialize_counter(self, items, prefix):
-    #     """
-    #     Initializes the counter based on the existing items' labels.
-    #     """
-    #     if not items:
-    #         return 0
-    #     # Extract numeric parts of labels with the given prefix
-    #     max_label = max(
-    #         int(item.label[len(prefix):]) for item in items if item.label.startswith(prefix)
-    #     )
-    #     return max_label + 1
 
     def _normalize_labels(self):
         """

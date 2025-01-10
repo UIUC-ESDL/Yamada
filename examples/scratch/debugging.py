@@ -11,7 +11,11 @@ from yamada import SpatialGraph
 # sgd = SpatialGraphDiagram([e1, c1])
 
 
+x1 = Crossing('X')
 
+x1[0], x1[2] = x1[1], x1[3]
+
+sgd = SpatialGraphDiagram(crossings=[x1])
 
 
 # sg1 = SpatialGraph(nodes=['a', 'b', 'c', 'd', 'e', 'f'],
