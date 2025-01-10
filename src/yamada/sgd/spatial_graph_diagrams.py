@@ -469,17 +469,17 @@ class SpatialGraphDiagram:
 
     def underlying_planar_embedding(self):
         """
-        Creates a planar embedding of the spatial graph diagram by introducing intermediate nodes
-        and labeling intermediate edges.
+        Creates a planar embedding of the spatial graph diagram by introducing intermediate nodes.
 
+        Args:
+            sgd: SpatialGraphDiagram object containing vertices, crossings, and edges.
         Returns:
             G: Planar-friendly NetworkX graph.
-            edge_labels: Dictionary of labels for intermediate edges.
         """
         G = nx.Graph()
-        edge_labels = {}
+        intermediate_labels = {}
 
-        # Add nodes for vertices, crossings, and edges with their type
+        # Add nodes for vertices, crossings, and edges
         for crossing in self.crossings:
             G.add_node(crossing.label, type="Crossing")
         for vertex in self.vertices:
@@ -487,41 +487,36 @@ class SpatialGraphDiagram:
         for edge in self.edges:
             G.add_node(edge.label, type="Edge")
 
-        # Add intermediate nodes and label intermediate edges
+        # Add intermediate nodes and edges
         intermediate_counter = 0
         for edge in self.edges:
             for i, (connected_obj, index) in enumerate(edge.adjacent):
-                # Create an intermediate node
+                # Create intermediate node
                 intermediate_node = f"int_{intermediate_counter}"
                 intermediate_counter += 1
+                assignment_label = f"{edge.label}[{i}]={connected_obj.label}[{index}]"
+                intermediate_labels[intermediate_node] = assignment_label
 
-                # Add intermediate node with its type
+                # Add intermediate node
                 G.add_node(intermediate_node, type="Intermediate")
 
-                # Create labeled edges
-                intermediate_edge_1 = f"{edge.label}[{i}]"
-                intermediate_edge_2 = f"{connected_obj.label}[{index}]"
+                # Connect intermediate node to edge and connected object
+                G.add_edge(edge.label, intermediate_node)
+                G.add_edge(intermediate_node, connected_obj.label)
 
-                # Connect intermediate edges with intermediate node
-                G.add_edge(edge.label, intermediate_node, label=intermediate_edge_1)
-                G.add_edge(intermediate_node, connected_obj.label, label=intermediate_edge_2)
-
-                # Save labels for intermediate edges
-                edge_labels[(edge.label, intermediate_node)] = intermediate_edge_1
-                edge_labels[(intermediate_node, connected_obj.label)] = intermediate_edge_2
-
-        return G, edge_labels
+        return G, intermediate_labels
 
     def plot(self):
 
         # Step 1: Create the planar-friendly graph
-        planar_graph, edge_labels = self.underlying_planar_embedding()
+        planar_graph, intermediate_labels = self.underlying_planar_embedding()
 
         # Step 2: Generate the planar embedding
         is_planar, embedding = nx.check_planarity(planar_graph)
         if not is_planar:
             raise ValueError("The graph is not planar!")
         pos = nx.planar_layout(embedding)
+
 
         # Step 3: Separate node types
         regular_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] != "Intermediate"]
@@ -542,9 +537,10 @@ class SpatialGraphDiagram:
             pos,
             labels={n: n for n in regular_nodes},
             font_size=10,
+            font_color="green",
         )
 
-        # Step 5: Draw intermediate nodes (invisible structural nodes)
+        # Step 5: Draw intermediate nodes
         nx.draw_networkx_nodes(
             planar_graph,
             pos,
@@ -553,18 +549,16 @@ class SpatialGraphDiagram:
             node_size=800,
             alpha=0,
         )
-
-        # Step 6: Draw edges
-        nx.draw_networkx_edges(planar_graph, pos)
-
-        # Step 7: Draw edge labels for intermediate edges
-        nx.draw_networkx_edge_labels(
+        nx.draw_networkx_labels(
             planar_graph,
             pos,
-            edge_labels=edge_labels,
+            labels=intermediate_labels,  # Use the custom labels for intermediate nodes
             font_size=8,
             font_color="green",
         )
+
+        # Step 6: Draw edges
+        nx.draw_networkx_edges(planar_graph, pos)
 
         # Show the plot
         plt.title("Planar Embedding of the Spatial Graph Diagram")
