@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms.planar_drawing import triangulate_embedding
 import numpy as np
-from yamada.utils import split_edges
+from yamada.sgd.utilities import split_edges
 
 
 def tutte_system(planar_graph):

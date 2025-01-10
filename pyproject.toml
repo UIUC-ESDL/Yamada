@@ -20,14 +20,11 @@ classifiers = [
 ]
 
 dependencies = [
-    "networkx~=2.8.5",
+    "networkx",
     "matplotlib",
     "numpy",
     "cypari",
-    "jupyter",
-    "nbconvert",
     "numba",
-    "nbmake",
     "pyvista",
     "scipy",
 ]

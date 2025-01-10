@@ -45,6 +45,10 @@ rather than directly calculate Yamada polynomials in this script (you'll get err
 import networkx as nx
 import pickle
 from cypari import pari
+import matplotlib
+matplotlib.use('TkAgg')   # Use a non-interactive backend
+import matplotlib.pyplot as plt
+import numpy as np
 
 from yamada.poly.H_polynomial import h_poly
 from yamada.poly.utilities import get_coefficients_and_exponents, normalize_poly
@@ -92,6 +96,7 @@ class SpatialGraphDiagram:
         # TODO Update to make sure each object is connected by edges... preprocess
         if len(self.edges) == 0 and len(data) > 0:
             self._inflate_edges()
+        # self._inflate_edges()
 
         # Optionally run additional checks
         if check:
@@ -405,6 +410,26 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
+    # def underlying_planar_embedding(self):
+    #     """
+    #     Returns the underlying planar embedding of an abstract graph.
+    #     """
+    #
+    #     G = nx.PlanarEmbedding()
+    #     parts = self.vertices + self.crossings
+    #
+    #     for A in parts:
+    #         for i in range(A.degree):
+    #             B, j = A.adjacent[i]
+    #             ref_nbr = None if i == 0 else A.adjacent[i - 1][0].label
+    #             G.add_half_edge_ccw(A.label, B.label, ref_nbr)
+    #
+    #             ref_nbr_reverse = None if j == 0 else B.adjacent[j - 1][0].label
+    #             G.add_half_edge_ccw(B.label, A.label, ref_nbr_reverse)
+    #
+    #     G.check_structure()
+    #     return G
+
 
     def calculate_yamada_polynomial(self, check_pieces=False):
 
@@ -471,5 +496,53 @@ class SpatialGraphDiagram:
             yamada_polynomial =  normalize_poly(yamada_polynomial)
 
         return yamada_polynomial
+
+    def plot(self):
+
+        G = self.underlying_planar_embedding()
+        layout = nx.planar_layout(G)
+
+
+        # Draw the base graph
+        plt.figure(figsize=(12, 10))
+        nx.draw(
+            G,
+            layout,
+            with_labels=True,
+            node_color="lightblue",
+            edge_color="gray",
+            node_size=3000,
+            font_size=10,
+        )
+
+        # Add assignment labels at connections
+        for edge in self.edges:
+            # Each edge has two connections (start and end)
+            for idx, (connected_obj, jdx) in enumerate(edge.adjacent):
+                # Calculate label position
+                edge_pos = layout[edge.label]
+                obj_pos = layout[connected_obj.label]
+                label_pos = (
+                    (edge_pos[0] + obj_pos[0]) / 2,
+                    (edge_pos[1] + obj_pos[1]) / 2,
+                )
+
+                # Create assignment label
+                assignment_label = f"{edge.label}[{idx}]={connected_obj.label}[{jdx}]"
+
+                # Annotate the graph
+                plt.text(
+                    label_pos[0],
+                    label_pos[1],
+                    assignment_label,
+                    fontsize=8,
+                    color="red",
+                    ha="center",
+                )
+
+        # Final adjustments
+        plt.title("Spatial Graph Diagram with Assignments")
+        plt.axis("off")
+        plt.show()
 
 
