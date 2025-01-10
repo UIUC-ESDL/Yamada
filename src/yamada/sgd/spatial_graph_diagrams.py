@@ -401,106 +401,6 @@ class SpatialGraphDiagram:
         if edges_used == len(self.edges):
             return G
 
-    # def underlying_planar_embedding(self):
-    #     """
-    #     Returns the underlying planar embedding of an abstract graph.
-    #     """
-    #
-    #     G = nx.PlanarEmbedding()
-    #     parts = self.vertices + self.crossings + self.edges
-    #
-    #     for A in parts:
-    #         for i in range(A.degree):
-    #             B, j = A.adjacent[i]
-    #             ref_nbr = None if i == 0 else A.adjacent[i - 1][0].label
-    #             G.add_half_edge_ccw(A.label, B.label, ref_nbr)
-    #
-    #     G.check_structure()
-    #     return G
-
-    def underlying_planar_embedding(self):
-        """
-        Returns the underlying planar embedding of an abstract graph,
-        dynamically transforming self-loops into planar-friendly structures.
-        """
-
-        G = nx.PlanarEmbedding()
-        temp_label_map = {}  # Maps original edge labels to temporary labels for self-loops
-        half_edge_tracker = {}  # Tracks half-edges connected to each node
-
-        # Function to get the last connected node as the reference
-        def get_ref_nbr(node_label):
-            return half_edge_tracker[node_label][-1] if node_label in half_edge_tracker else None
-
-        # Handle edges (including self-loops)
-        for A in self.edges:
-            (B, j), (C, k) = A.adjacent
-
-            # Detect self-loop
-            if B == C:
-                # Generate temporary labels for the split edges and vertex
-                A_label_0 = A.label + "_0"
-                A_label_1 = A.label + "_1"
-                A_label_v = A.label + "_v"
-
-                # Add the mapping for self-loop labels
-                temp_label_map[A.label] = (A_label_0, A_label_1, A_label_v)
-
-                # Add a temporary vertex for the self-loop
-                G.add_node(A_label_v)
-
-                # Add half-edges for the split self-loop
-                G.add_half_edge_ccw(B.label, A_label_0, get_ref_nbr(B.label))
-                G.add_half_edge_ccw(A_label_0, A_label_v, None)
-                G.add_half_edge_ccw(A_label_v, A_label_1, None)
-                G.add_half_edge_ccw(A_label_1, C.label, get_ref_nbr(C.label))
-
-                # Update the half-edge tracker
-                half_edge_tracker.setdefault(B.label, []).append(A_label_0)
-                half_edge_tracker.setdefault(A_label_v, []).append(A_label_1)
-
-            else:
-                # Handle regular edges
-                ref_nbr_B = get_ref_nbr(B.label)
-                ref_nbr_C = get_ref_nbr(C.label)
-                G.add_half_edge_ccw(B.label, A.label, ref_nbr_B)
-                G.add_half_edge_ccw(A.label, C.label, ref_nbr_C)
-
-                # Update the half-edge tracker
-                half_edge_tracker.setdefault(B.label, []).append(A.label)
-                half_edge_tracker.setdefault(C.label, []).append(A.label)
-
-        # Handle vertices and crossings
-        for A in self.vertices + self.crossings:
-            for i in range(A.degree):
-                B, j = A.adjacent[i]
-
-                # Check if this edge was part of a self-loop and replace labels if necessary
-                if B.label in temp_label_map:
-                    A_label_0, A_label_1, A_label_v = temp_label_map[B.label]
-                    if j == 0:
-                        ref_label = A_label_0
-                    elif j == 1:
-                        ref_label = A_label_1
-                    else:
-                        ref_label = A_label_v
-                    G.add_half_edge_ccw(A.label, ref_label, get_ref_nbr(A.label))
-                else:
-                    # Handle regular connections
-                    G.add_half_edge_ccw(A.label, B.label, get_ref_nbr(A.label))
-
-                # Update the half-edge tracker
-                half_edge_tracker.setdefault(A.label, []).append(B.label)
-
-        # Validate the embedding structure
-        try:
-            G.check_structure()
-        except nx.NetworkXException as e:
-            print("Planar embedding structure is invalid!")
-            raise e
-
-        return G
-
     def calculate_yamada_polynomial(self, check_pieces=False):
 
         A = pari('A')
@@ -567,7 +467,7 @@ class SpatialGraphDiagram:
 
         return yamada_polynomial
 
-    def create_planar_embedding(self):
+    def underlying_planar_embedding(self):
         """
         Creates a planar embedding of the spatial graph diagram by introducing intermediate nodes.
 
@@ -609,7 +509,7 @@ class SpatialGraphDiagram:
     def plot(self):
 
         # Step 1: Create the planar-friendly graph
-        planar_graph, intermediate_labels = self.create_planar_embedding()
+        planar_graph, intermediate_labels = self.underlying_planar_embedding()
 
         # Step 2: Generate the planar embedding
         is_planar, embedding = nx.check_planarity(planar_graph)
@@ -645,13 +545,15 @@ class SpatialGraphDiagram:
             pos,
             nodelist=intermediate_nodes,
             node_color="white",
-            node_size=5000,
+            node_size=800,
+            alpha=0,
         )
         nx.draw_networkx_labels(
             planar_graph,
             pos,
             labels=intermediate_labels,  # Use the custom labels for intermediate nodes
             font_size=8,
+            font_color="green",
         )
 
         # Step 6: Draw edges

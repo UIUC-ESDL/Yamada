@@ -52,7 +52,7 @@ def pre_r3():
 
 
 def post_r3():
-
+    # TODO This is no longer valid. All SGD creation should be done with fixtures and tested.
     c1 = Crossing('c1')
     c2 = Crossing('c2')
     c3 = Crossing('c3')
