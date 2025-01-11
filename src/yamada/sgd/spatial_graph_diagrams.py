@@ -281,37 +281,21 @@ class SpatialGraphDiagram:
     def _preprocess_diagram(self):
         """
         Ensures that the diagram is correctly assembled.
-        Pairs of edges must be connected by a vertex.
-        Pairs of vertices and/or crossings must be connected by an edge.
         """
 
+        # Pairs of edges must be connected by a vertex.
         for A in self.edges:
             for i in range(2):
                 B, j = A.adjacent[i]
                 if isinstance(B, Edge):
                     self._create_vertex((A, i), (B, j))
 
+        # Pairs of vertices and/or crossings must be connected by an edge.
         for A in self.crossings + self.vertices:
             for i in range(A.degree):
                 B, j = A.adjacent[i]
                 if not isinstance(B, Edge):
                     self._create_edge(A, i, B, j)
-
-    def _inflate_self_loops(self):
-
-        for edge in self.edges:
-            start_obj, start_idx = edge.adjacent[0]
-            end_obj, end_idx = edge.adjacent[1]
-
-            # Detect a self-loop (edge connects two corners of the same object)
-            if start_obj == end_obj:
-
-                # Create a new 2-valent vertex
-                self._create_vertex((start_obj, start_idx), (end_obj, end_idx))
-
-                # Create two new edges to replace the self-loop
-                self._create_edge(self.vertices[-1], 1, end_obj, end_idx)
-
 
 
     def _merge_edges(self, E0, E1):
