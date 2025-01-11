@@ -467,7 +467,7 @@ class SpatialGraphDiagram:
 
         return yamada_polynomial
 
-    def underlying_planar_embedding(self):
+    def planar_embedding(self):
         """
         Creates a planar embedding of the spatial graph diagram by introducing intermediate nodes
         and labeling intermediate edges and nodes.
@@ -517,13 +517,14 @@ class SpatialGraphDiagram:
 
         return G, node_labels, edge_labels
 
-    def plot(self):
+    def plot(self,spring_iterations=10, spring_strength=0.1):
         """
         Plots the spatial graph diagram, labeling intermediate edges with index numbers
         and intermediate nodes with full index assignments.
         """
+
         # Step 1: Create the planar-friendly graph
-        planar_graph, node_labels, edge_labels = self.underlying_planar_embedding()
+        planar_graph, node_labels, edge_labels = self.planar_embedding()
 
         # Step 2: Generate the planar embedding
         is_planar, embedding = nx.check_planarity(planar_graph)
@@ -532,14 +533,19 @@ class SpatialGraphDiagram:
         pos = nx.planar_layout(embedding)
 
         # Step 3: Separate node types
+        edges = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Edge"]
+        vertices = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Vertex"]
+        crossings = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Crossing"]
         regular_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] != "Intermediate"]
         intermediate_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Intermediate"]
 
-        # Step 4: Draw regular nodes
+        # Initialize the plot
         plt.figure(figsize=(12, 12))
+
+        # Draw the edges
         nx.draw_networkx_edges(planar_graph, pos)
 
-        # Step 5: Draw edge labels for intermediate edges
+        # Label the edges
         nx.draw_networkx_edge_labels(
             planar_graph,
             pos,
@@ -549,31 +555,58 @@ class SpatialGraphDiagram:
             rotate=False,
         )
 
-        # Step 6: Draw labels for regular nodes with shaded background
-        for node, (x, y) in pos.items():
-            if node in regular_nodes:
-                plt.text(
-                    x, y, node,
-                    fontsize=10,
-                    ha='center',
-                    va='center',
-                    bbox=dict(boxstyle="round,pad=0.3", edgecolor="none", facecolor="lightblue", alpha=0.7)
-                )
+        # Draw the nodes
+        nx.draw_networkx_nodes(
+            planar_graph,
+            pos,
+            nodelist=edges,
+            node_color="gray",
+            node_size=300,
+            alpha=0.7
+        )
 
-            # Step 7: Add legend-like text box for intermediate labels
-            intermediate_label_text = "SGD Creation \n" + "\n".join(f"{label}" for node, label in node_labels.items())
-            plt.gcf().text(
-                0.85, 0.5,  # Position the text box to the right of the plot
-                intermediate_label_text,
-                fontsize=10,
-                va="center",
-                bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="white", alpha=0.8),
-            )
+        nx.draw_networkx_nodes(
+            planar_graph,
+            pos,
+            nodelist=vertices,
+            node_color="lightgreen",
+            node_size=300,
+            alpha=0.7
+        )
 
+        nx.draw_networkx_nodes(
+            planar_graph,
+            pos,
+            nodelist=crossings,
+            node_color="lightblue",
+            node_size=300,
+            alpha=0.7
+        )
+
+        # Label the nodes
+        nx.draw_networkx_labels(
+            planar_graph,
+            pos,
+            labels={n: n for n in regular_nodes},
+            font_size=10,
+        )
+
+        # State all object-index assignments
+        intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
+        plt.gcf().text(
+            0.85, 0.5,  # Position the text box to the right of the plot
+            intermediate_label_text,
+            fontsize=10,
+            va="center",
+            bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="white", alpha=0.9),
+        )
+
+        # Step 10: Remove axis and spines
+        plt.axis("off")  # Turn off axes, ticks, and labels
+        ax = plt.gca()  # Get the current axis
+        for spine in ax.spines.values():
+            spine.set_visible(False)  # Hide all spines
 
         # Show the plot
-        plt.title("Planar Embedding of the Spatial Graph Diagram with Intermediate Labels")
+        plt.title("Planar Embedding of the Spatial Graph Diagram")
         plt.show()
-
-
-

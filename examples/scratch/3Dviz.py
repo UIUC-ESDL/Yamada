@@ -50,7 +50,7 @@ sgd_unknot = create_unknot()
 sgd_knot = create_knot()
 
 
-g = sgd_knot.underlying_planar_embedding()
+g = sgd_knot.planar_embedding()
 
 nx.draw(g, with_labels=True)
 plt.show()

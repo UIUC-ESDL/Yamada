@@ -44,7 +44,7 @@ def _position_spatial_graph_in_3d(G, z_height=20):
         L = X.label
         return repr(L) if not isinstance(L, str) else L
         
-    P = G.underlying_planar_embedding()
+    P = G.planar_embedding()
     planar_pos = tutte_embedding_positions(P)
     system_node_pos = dict()
     for V in G.vertices:

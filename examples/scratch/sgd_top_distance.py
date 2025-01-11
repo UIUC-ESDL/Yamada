@@ -133,7 +133,7 @@ assert compute_min_distance(sgd_knot, sgd_knot, 2, 10) == 0
 print(compute_min_distance(sgd_double_knot, sgd_unknot, 5, 20))
 
 
-g = sgd_knot_pcs.underlying_planar_embedding()
+g = sgd_knot_pcs.planar_embedding()
 import networkx as nx
 import matplotlib
 import matplotlib.pyplot as plt
