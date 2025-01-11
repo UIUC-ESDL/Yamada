@@ -2,8 +2,25 @@ import pytest
 from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing
 
 
-# def test_unknot_1e(unknot_1e):
-#     assert unknot_1e
+def test_unknot_1e(unknot_1e):
+    """
+    TODO: SGD should fix this by adding vertices to self-connected edges.
+    """
+    assert unknot_1e
+
+
+def test_unknot_1v(unknot_1v):
+    """
+    SGD should fix this by adding vertices to self-connected edges.
+    """
+    assert unknot_1v
+    assert len(unknot_1v.vertices) == 1
+    assert len(unknot_1v.edges) == 1
+    assert len(unknot_1v.crossings) == 0
+    assert unknot_1v.edges[0].label == 'e1'
+    assert unknot_1v.vertices[0].label == 'v1'
+
+
 
 
 def test_unknot_1e_1v(unknot_1e_1v):

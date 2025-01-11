@@ -3,13 +3,8 @@ from cypari import pari
 from yamada import has_cut_edge, remove_valence_two_vertices, h_poly, SpatialGraphDiagram, Vertex, Edge, \
     Crossing, normalize_poly
 
-def test_spatial_graph_diagram_unknotted_theta_graph_1():
-
-    v1, v2 = Vertex(3, 'v1'), Vertex(3, 'v2')
-    e1, e2, e3 = Edge(1), Edge(2), Edge(3)
-    v1[0], v1[1], v1[2] = e1[0], e2[0], e3[0]
-    v2[0], v2[1], v2[2] = e1[1], e3[1], e2[1]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
+def test_spatial_graph_diagram_unknotted_theta_graph_1(unknotted_theta_graph_1):
+    sgd = unknotted_theta_graph_1
 
     assert len(sgd.crossings) == 0
     assert len(sgd.vertices) == 2

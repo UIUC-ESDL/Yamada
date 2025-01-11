@@ -94,7 +94,7 @@ class SpatialGraphDiagram:
         self._normalize_labels()
 
         # Ensure that vertices and crossings are connected indirectly via edges
-        self._inflate_edges()
+        self._preprocess_diagram()
 
         # Add edges and 2-valent vertices where necessary to ensure that self-loops have a planar embedding
         # self._inflate_self_loops()
@@ -278,10 +278,18 @@ class SpatialGraphDiagram:
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
 
-    def _inflate_edges(self):
+    def _preprocess_diagram(self):
         """
-        Creates and inserts an edge for each pair of crossings and/or vertices.
+        Ensures that the diagram is correctly assembled.
+        Pairs of edges must be connected by a vertex.
+        Pairs of vertices and/or crossings must be connected by an edge.
         """
+
+        for A in self.edges:
+            for i in range(2):
+                B, j = A.adjacent[i]
+                if isinstance(B, Edge):
+                    self._create_vertex((A, i), (B, j))
 
         for A in self.crossings + self.vertices:
             for i in range(A.degree):
@@ -517,7 +525,7 @@ class SpatialGraphDiagram:
 
         return G, node_labels, edge_labels
 
-    def plot(self,spring_iterations=10, spring_strength=0.1):
+    def plot(self, highlight_nodes=None, highlight_labels=None):
         """
         Plots the spatial graph diagram, labeling intermediate edges with index numbers
         and intermediate nodes with full index assignments.
@@ -590,6 +598,26 @@ class SpatialGraphDiagram:
             labels={n: n for n in regular_nodes},
             font_size=10,
         )
+
+        if highlight_nodes:
+            nx.draw_networkx_nodes(
+                planar_graph,
+                pos,
+                nodelist=highlight_nodes,
+                node_color="yellow",
+                node_size=2000,
+                label="Highlighted Nodes",
+                alpha=0.4,
+                edgecolors="orange"
+            )
+            # nx.draw_networkx_labels(
+            #     planar_graph,
+            #     pos,
+            #     labels={n: highlight_labels.get(n, n) for n in highlight_nodes},
+            #     font_size=12,
+            #     font_color="white",
+            #     font_weight="bold",
+            # )
 
         # State all object-index assignments
         intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
