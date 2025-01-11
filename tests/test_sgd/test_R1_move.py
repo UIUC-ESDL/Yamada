@@ -1,3 +1,8 @@
+"""
+TODO Ensure Non-R1
+TODO Reverse R1
+"""
+
 from cypari import pari
 from yamada import SpatialGraphDiagram, Edge, Crossing, has_r1, apply_r1
 
