@@ -4,10 +4,10 @@ from yamada.sgd.sgd_analysis import available_crossing_swaps
 from yamada.sgd.sgd_modification import apply_crossing_swap
 
 
-def test_crossing_swap_1(poly_unknot, unknot_inf_cw_2e_1c, unknot_infinity_ccw_2e_1c):
+def test_crossing_swap_1(poly_unknot, unknot_inf_cw_2e_0v_1c_1, unknot_inf_ccw_2e_0v_1c_1):
 
-    sgd_1 = unknot_inf_cw_2e_1c
-    sgd_2 = unknot_infinity_ccw_2e_1c
+    sgd_1 = unknot_inf_cw_2e_0v_1c_1
+    sgd_2 = unknot_inf_ccw_2e_0v_1c_1
 
     # Ensure both unknots have the same Yamada polynomial
     sgd_1_yp = sgd_1.yamada_polynomial()
