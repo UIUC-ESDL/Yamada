@@ -1,7 +1,3 @@
-
-
-
-
 def test_unknot_infinity_1c(unknot_inf_cw_1c):
     assert unknot_inf_cw_1c
 
