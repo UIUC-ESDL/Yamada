@@ -88,8 +88,6 @@ def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
 
 def edges_form_a_strand_along_a_direction(e1, e2, direction_index):
 
-    # TODO Ensure that both edges are Edge objects
-
     # Initialize the current object and the index of the next object
     current_object = e1
     index_of_next_object = direction_index

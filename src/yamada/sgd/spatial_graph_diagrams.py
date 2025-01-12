@@ -136,54 +136,24 @@ class SpatialGraphDiagram:
         self.vertex_counter = len(self.vertices)
         self.crossing_counter = len(self.crossings)
 
-    def faces(self):
+    def _preprocess_diagram(self):
         """
-        The faces are the complementary regions of the diagram. Each
-        face is given as a list of corners of BaseVertices as one goes
-        around *clockwise*. These corners are recorded as
-        EntryPoints, where EntryPoints(c, j) denotes the corner of the
-        face abutting crossing c between strand j and j + 1.
-
-        Alternatively, the sequence of EntryPoints can be regarded as
-        the *heads* of the oriented edges of the face.
+        Ensures that the diagram is correctly assembled.
         """
 
-        entry_points = []
+        # Pairs of edges must be connected by a vertex.
+        for A in self.edges:
+            for i in range(2):
+                B, j = A.adjacent[i]
+                if isinstance(B, Edge):
+                    self._create_vertex((A, i), (B, j))
 
-        for V in self.data.values():
-            entry_points += V.entry_points()
-
-        corners = set(entry_points)
-        faces = []
-
-        while len(corners):
-            face = [corners.pop()]
-            while True:
-                next_ep = face[-1].next_corner()
-                if next_ep == face[0]:
-                    faces.append(face)
-                    break
-                else:
-                    corners.remove(next_ep)
-                    face.append(next_ep)
-
-        return faces
-
-    def euler(self):
-        """
-        Returns the Euler characteristic of the diagram.
-        """
-        v = len(self.crossings) + len(self.vertices)
-        e = len(self.edges)
-        f = len(self.faces())
-        return v - e + f
-
-    def is_planar(self):
-        """
-        Returns True if the diagram is planar.
-        """
-        return self.euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
-
+        # Pairs of vertices and/or crossings must be connected by an edge.
+        for A in self.crossings + self.vertices:
+            for i in range(A.degree):
+                B, j = A.adjacent[i]
+                if not isinstance(B, Edge):
+                    self._create_edge(A, i, B, j)
 
     def _check(self):
         """
@@ -198,7 +168,25 @@ class SpatialGraphDiagram:
             assert all(isinstance(v, Edge) for v, j in V.adjacent)
         for E in self.edges:
             assert all(not isinstance(v, Edge) for v, j in E.adjacent)
-        assert self.is_planar()
+
+        # Graph is planar
+        assert self._is_planar()
+
+    def _euler(self):
+        """
+        Returns the Euler characteristic of the diagram.
+        """
+        v = len(self.crossings) + len(self.vertices)
+        e = len(self.edges)
+        f = len(self.faces())
+        return v - e + f
+
+    def _is_planar(self):
+        """
+        Returns True if the diagram is planar.
+        """
+        return self._euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
+
 
 
     def _create_edge(self, A, i, B, j):
@@ -278,39 +266,93 @@ class SpatialGraphDiagram:
         self.crossings.remove(crossing)
         self.data.pop(crossing.label)
 
-    def _preprocess_diagram(self):
-        """
-        Ensures that the diagram is correctly assembled.
-        """
-
-        # Pairs of edges must be connected by a vertex.
-        for A in self.edges:
-            for i in range(2):
-                B, j = A.adjacent[i]
-                if isinstance(B, Edge):
-                    self._create_vertex((A, i), (B, j))
-
-        # Pairs of vertices and/or crossings must be connected by an edge.
-        for A in self.crossings + self.vertices:
-            for i in range(A.degree):
-                B, j = A.adjacent[i]
-                if not isinstance(B, Edge):
-                    self._create_edge(A, i, B, j)
-
-
     def _merge_edges(self, E0, E1):
         """
-        Merges two edges into a single edge. Keeps the label with the lowest value.
+        Merges two edges with a shared 2-valent vertex into a single edge. Keeps the label with the lowest value.
         """
 
-        if E0.label < E1.label:
+        # Ensure that the diagram elements are edges
+        assert isinstance(E0, Edge) and isinstance(E1, Edge)
+        assert E0 != E1
+
+        # Ensure the edges share a 2-valent vertex
+        assert any(adj0 == adj1 for adj0, _ in E0.adjacent for adj1, _ in E1.adjacent)
+
+        # Convert the edge labels into integers
+        E0_label = int(E0.label[1:])
+        E1_label = int(E1.label[1:])
+        if E0_label < E1_label:
             keep_edge = E0
             remove_edge = E1
-        elif E0.label > E1.label:
+        elif E0_label > E1_label:
             keep_edge = E1
             remove_edge = E0
         else:
             raise ValueError('Edges must have distinct labels.')
+
+        # Find the shared 2-valent vertex
+        (A, i), (B, j) = keep_edge.adjacent
+        (C, k), (D, l) = remove_edge.adjacent
+        if A == C:
+            keep_edge_connect_idx = 0
+            remove_vertex = C
+            remove_edge_keep_obj = D
+            remove_edge_keep_idx = l
+        elif A == D:
+            keep_edge_connect_idx = 0
+            remove_vertex = D
+            remove_edge_keep_obj = C
+            remove_edge_keep_idx = k
+        elif B == C:
+            keep_edge_connect_idx = 1
+            remove_vertex = C
+            remove_edge_keep_obj = D
+            remove_edge_keep_idx = l
+        elif B == D:
+            keep_edge_connect_idx = 1
+            remove_vertex = D
+            remove_edge_keep_obj = C
+            remove_edge_keep_idx = k
+        else:
+            raise ValueError("Edges must share a 2-valent vertex.")
+
+        # Update the diagram
+        self._remove_edge(remove_edge)
+        self._remove_vertex(remove_vertex)
+        self.connect(keep_edge, keep_edge_connect_idx, remove_edge_keep_obj, remove_edge_keep_idx)
+
+    def faces(self):
+        """
+        The faces are the complementary regions of the diagram. Each
+        face is given as a list of corners of BaseVertices as one goes
+        around *clockwise*. These corners are recorded as
+        EntryPoints, where EntryPoints(c, j) denotes the corner of the
+        face abutting crossing c between strand j and j + 1.
+
+        Alternatively, the sequence of EntryPoints can be regarded as
+        the *heads* of the oriented edges of the face.
+        """
+
+        entry_points = []
+
+        for V in self.data.values():
+            entry_points += V.entry_points()
+
+        corners = set(entry_points)
+        faces = []
+
+        while len(corners):
+            face = [corners.pop()]
+            while True:
+                next_ep = face[-1].next_corner()
+                if next_ep == face[0]:
+                    faces.append(face)
+                    break
+                else:
+                    corners.remove(next_ep)
+                    face.append(next_ep)
+
+        return faces
 
     def get_object(self, label):
         return self.data[label]
