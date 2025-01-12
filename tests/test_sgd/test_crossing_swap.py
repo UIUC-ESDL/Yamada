@@ -3,7 +3,7 @@ from yamada.sgd.reidemeister import has_r1, has_r2, apply_r2
 from yamada.sgd.utilities import available_crossing_swaps, apply_crossing_swap
 
 
-def test_crossing_swap_1(unknot_yamada_poly, unknot_inf_cw_2e_1c, unknot_infinity_ccw_2e_1c):
+def test_crossing_swap_1(poly_unknot, unknot_inf_cw_2e_1c, unknot_infinity_ccw_2e_1c):
 
     sgd_1 = unknot_inf_cw_2e_1c
     sgd_2 = unknot_infinity_ccw_2e_1c
@@ -11,8 +11,8 @@ def test_crossing_swap_1(unknot_yamada_poly, unknot_inf_cw_2e_1c, unknot_infinit
     # Ensure both unknots have the same Yamada polynomial
     sgd_1_yp = sgd_1.yamada_polynomial()
     sgd_2_yp = sgd_2.yamada_polynomial()
-    assert sgd_1_yp == unknot_yamada_poly
-    assert sgd_2_yp == unknot_yamada_poly
+    assert sgd_1_yp == poly_unknot
+    assert sgd_2_yp == poly_unknot
 
     # There should only be one possible crossing swap
     arm = available_crossing_swaps(sgd_1)
@@ -23,10 +23,10 @@ def test_crossing_swap_1(unknot_yamada_poly, unknot_inf_cw_2e_1c, unknot_infinit
     sgd_cs = apply_crossing_swap(sgd_1, arm[0])
 
     sgd_cs_yp = sgd_cs.yamada_polynomial()
-    assert sgd_cs_yp == unknot_yamada_poly
+    assert sgd_cs_yp == poly_unknot
 
 
-def test_crossing_swap_2(unknot_yamada_poly):
+def test_crossing_swap_2(poly_unknot):
     e1 = Edge(1)
     e2 = Edge(2)
     e3 = Edge(3)
@@ -57,7 +57,7 @@ def test_crossing_swap_2(unknot_yamada_poly):
 
     yp_before = sgd.yamada_polynomial()
     # TODO Calculate what the Yamada polynomial should be for the original diagram, but we at least knot it should not be the unknot Yamada polynomial
-    assert yp_before != unknot_yamada_poly
+    assert yp_before != poly_unknot
 
     arm = available_crossing_swaps(sgd)
 
@@ -68,14 +68,14 @@ def test_crossing_swap_2(unknot_yamada_poly):
     # Ensure the crossing swap is correct
     sgd = apply_crossing_swap(sgd, 'c1')
     yp_after = sgd.yamada_polynomial()
-    assert yp_after == unknot_yamada_poly
+    assert yp_after == poly_unknot
 
     # Ensure the R2 move is correct
     sgd_has_r2 = has_r2(sgd)
     assert len(sgd_has_r2) > 0
     sgd = apply_r2(sgd, ("c2", "c3"))
     yp_after_r2 = sgd.yamada_polynomial()
-    assert yp_after_r2 == unknot_yamada_poly
+    assert yp_after_r2 == poly_unknot
 
     # Ensure the R1 move is correct
     sgd_has_r1 = has_r1(sgd)

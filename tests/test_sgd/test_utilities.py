@@ -12,8 +12,8 @@ def test_forms_a_strand_unknot_1e_1v(unknot_1e_1v):
     assert forms_a_strand is True
 
 
-def test_forms_a_strand_unknot_1e_2v(unknot_2e_2v):
-    e1, e2 = unknot_2e_2v.edges
+def test_forms_a_strand_unknot_1e_2v(unknot_2e_2v_1):
+    e1, e2 = unknot_2e_2v_1.edges
     forms_a_strand = edges_form_a_strand(e1, e2)
     assert forms_a_strand is True
 

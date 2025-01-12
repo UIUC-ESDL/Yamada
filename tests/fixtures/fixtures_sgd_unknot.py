@@ -126,8 +126,31 @@ def unknot_1e_2v():
 
 
 @pytest.fixture
-def unknot_2e_2v():
-    pass
+def unknot_2e_2v_1():
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    v1 = Vertex(2, 'v1')
+    v2 = Vertex(2, 'v2')
+    v1[0] = e2[1]
+    v1[1] = e1[0]
+    e1[1] = v2[0]
+    v2[1] = e2[0]
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    return sgd
+
+
+@pytest.fixture
+def unknot_2e_2v_2():
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    v1 = Vertex(2, 'v1')
+    v2 = Vertex(2, 'v2')
+    v1[0] = v2[1]
+    v1[1] = e1[0]
+    e1[1] = e2[0]
+    e2[1] = v2[0]
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    return sgd
 
 
 @pytest.fixture
@@ -181,42 +204,49 @@ def unknot_0e_3v():
 
 @pytest.fixture
 def unknot_1e_3v():
-    pass
-
-
-@pytest.fixture
-def unknot_2e_3v():
-    pass
-
-
-@pytest.fixture
-def unknot_2e_2v_1():
-    """An unknot formed by two edges and two 2-valent vertices."""
     e1 = Edge('e1')
-    e2 = Edge('e2')
     v1 = Vertex(2, 'v1')
     v2 = Vertex(2, 'v2')
-    v1[0] = e2[1]
+    v3 = Vertex(2, 'v3')
+    v1[0] = v3[1]
     v1[1] = e1[0]
-    v2[0] = e1[1]
-    v2[1] = e2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    e1[1] = v2[0]
+    v2[1] = v3[0]
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2, v3])
     return sgd
 
 
 @pytest.fixture
-def unknot_2e_2v_2():
-    """An unknot formed by two edges and two 2-valent vertices."""
+def unknot_2e_3v_1():
     e1 = Edge('e1')
     e2 = Edge('e2')
     v1 = Vertex(2, 'v1')
     v2 = Vertex(2, 'v2')
-    v1[0] = v2[1]
+    v3 = Vertex(2, 'v3')
+    v1[0] = v3[1]
+    v1[1] = e1[0]
+    e1[1] = v2[0]
+    v2[1] = e2[0]
+    e2[1] = v3[0]
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3])
+    return sgd
+
+
+@pytest.fixture
+def unknot_2e_3v_2():
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    v1 = Vertex(2, 'v1')
+    v2 = Vertex(2, 'v2')
+    v3 = Vertex(2, 'v3')
+    v1[0] = v3[1]
     v1[1] = e1[0]
     e1[1] = e2[0]
     e2[1] = v2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    v2[1] = v3[0]
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3])
     return sgd
+
 
 
 @pytest.fixture

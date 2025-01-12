@@ -15,8 +15,8 @@ def test_r1_unknot_1e_1v(unknot_1e_1v):
     assert len(sgd_has_r1) == 0
 
 
-def test_r1_unknot_2e_2v(unknot_2e_2v):
-    sgd_has_r1 = has_r1(unknot_2e_2v)
+def test_r1_unknot_2e_2v(unknot_2e_2v_1):
+    sgd_has_r1 = has_r1(unknot_2e_2v_1)
     assert len(sgd_has_r1) == 0
 
 
