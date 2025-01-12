@@ -1,5 +1,7 @@
-from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
-from yamada.sgd.utilities import edges_form_a_strand
+from yamada.sgd.diagram_elements import Edge, Crossing
+from yamada.sgd.sgd_analysis import face_has_exactly_3_crossings_and_3_edges, edges_that_are_fully_under_or_over, \
+    edge_is_double_over_or_under, find_opposite_crossing, find_common_edge, get_index_of_crossing_corner, \
+    edges_form_a_strand
 
 
 # %% Reidemeister 1
@@ -253,103 +255,23 @@ def apply_r3(sgd, r3_input):
     return sgd
 
 
-def face_has_exactly_3_crossings_and_3_edges(face):
-    edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-    crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
-    vertices = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Vertex)]
-
-    has_3_edges = len(edges) == 3
-    has_3_crossings = len(crossings) == 3
-    has_no_vertices = len(vertices) == 0
-    has_exactly_3_crossings_and_3_edges = has_3_edges and has_3_crossings and has_no_vertices
-    return has_exactly_3_crossings_and_3_edges
-
-
-def edges_that_are_fully_under_or_over(face):
-    edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
-    candidate_edges = []
-    for edge in edges:
-        if edge_is_double_over_or_under(edge):
-            candidate_edges.append(edge)
-    return candidate_edges
-
-
-def edge_is_double_over_or_under(edge):
-    edge_adjacent_1 = edge.adjacent[0][0]
-    edge_adjacent_2 = edge.adjacent[1][0]
-
-    if not isinstance(edge_adjacent_1, Crossing) or not isinstance(edge_adjacent_2, Crossing):
-        return False
-
-    crossing_1 = edge_adjacent_1
-    crossing_2 = edge_adjacent_2
-
-    edge_over_crossing_1 = edge_is_over(edge, crossing_1)
-    edge_over_crossing_2 = edge_is_over(edge, crossing_2)
-
-    # Double over
-    if edge_over_crossing_1 and edge_over_crossing_2:
-        return True
-
-    # Double under
-    elif not edge_over_crossing_1 and not edge_over_crossing_2:
-        return True
-
-    # One over, one under
-    else:
-        return False
-
-
-def edge_is_over(edge, crossing):
-    """
-    Crossing indices 1 and 3 indicate the over edge. Indices 0 and 2 indicate the under edge.
-    If an edge is not over, then it must be under. Therefore, we only check for
-    one of these two conditions.
-    """
-    if crossing.adjacent[1][0] == edge or crossing.adjacent[3][0] == edge:
-        return True
-    else:
-        return False
-
-
-def find_opposite_crossing(face, edge):
-    for entrypoint in face:
-        if isinstance(entrypoint.vertex, Crossing):
-            edge_adjacent = [adjacent[0] for adjacent in edge.adjacent]
-            if entrypoint.vertex not in edge_adjacent:
-                return entrypoint.vertex
-
-
-def find_common_edge(crossing1, crossing2):
-    for adjacent1 in crossing1.adjacent:
-        for adjacent2 in crossing2.adjacent:
-            if adjacent1[0] == adjacent2[0]:
-                return adjacent1[0]
-    raise Exception('Common edge not found in crossings')
-
-
-def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
-    for i in range(4):
-        if crossing.adjacent[i][0] == corner:
-            if not opposite_side:
-                return i
-            else:
-                return (i + 2) % 4
-    raise Exception('Corner not found in crossing')
-
-
-
 # %% Reidemeister 4
 
+
 # NOT IMPLEMENTED
+
 
 # %% Reidemeister 5
 
+
 # NOT IMPLEMENTED
+
 
 # %% Reidemeister 6
 
+
 # NOT FULLY IMPLEMENTED
+
 
 def has_r6(sgd):
     for V in sgd.vertices:
@@ -427,7 +349,6 @@ def reidemeister_simplify(sgd, n_tries=10):
             total_r1_count += r1_count
             total_r2_count += r2_count
         else:
-            # TODO WHY DOES IT BREAK PREMATURELY SOMETIMES?
             break
 
     return sgd, total_r1_count, total_r2_count, total_r3_count

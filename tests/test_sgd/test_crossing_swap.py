@@ -1,6 +1,7 @@
 from yamada import Edge, Crossing, SpatialGraphDiagram
 from yamada.sgd.reidemeister import has_r1, has_r2, apply_r2
-from yamada.sgd.utilities import available_crossing_swaps, apply_crossing_swap
+from yamada.sgd.sgd_analysis import available_crossing_swaps
+from yamada.sgd.sgd_modification import apply_crossing_swap
 
 
 def test_crossing_swap_1(poly_unknot, unknot_inf_cw_2e_1c, unknot_infinity_ccw_2e_1c):

@@ -1,6 +1,7 @@
 import numpy as np
 from yamada import SpatialGraph
-from yamada.sgd.utilities import edges_form_a_strand
+from yamada.sgd.sgd_analysis import edges_form_a_strand
+
 
 # %% Strands
 

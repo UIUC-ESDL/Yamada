@@ -2,7 +2,7 @@ import glob
 import json
 import pickle
 
-from yamada.sgd.utilities import split_edges
+from yamada.sgd.sgd_operations import split_edges
 
 
 def read_json_file(filename):
