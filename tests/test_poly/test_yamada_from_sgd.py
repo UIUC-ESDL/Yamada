@@ -45,7 +45,7 @@ def test_yamada_polynomial_unknotted_theta_graph_1():
 
     t = nx.MultiGraph(3 * [(0, 1)])
 
-    assert sgd.calculate_yamada_polynomial() == h_poly(t)
+    assert sgd.yamada_polynomial(normalize=False) == h_poly(t)
 
     assert sgd.yamada_polynomial() == normalize_poly(-a ** 4 - a ** 3 - 2 * a ** 2 - a - 1)
 

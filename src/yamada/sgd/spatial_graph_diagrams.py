@@ -321,6 +321,18 @@ class SpatialGraphDiagram:
         self._remove_vertex(remove_vertex)
         self.connect(keep_edge, keep_edge_connect_idx, remove_edge_keep_obj, remove_edge_keep_idx)
 
+    def _simplify(self):
+        """
+        Simplifies the diagram by removing unnecessary edges and vertices.
+        """
+
+        # Remove unnecessary edges
+        for V in self.vertices:
+            if V.degree == 2:
+                (A, i), (B, j) = V.adjacent
+                if isinstance(A, Edge) and isinstance(B, Edge):
+                    self._merge_edges(A, B)
+
     def faces(self):
         """
         The faces are the complementary regions of the diagram. Each
@@ -435,71 +447,130 @@ class SpatialGraphDiagram:
         if edges_used == len(self.edges):
             return G
 
-    def calculate_yamada_polynomial(self, check_pieces=False):
+    def _resolve_crossing(self, crossing, resolution_type, check_pieces=False):
+        """
+        Resolves a crossing into a simplified diagram based on the resolution type.
 
+        Args:
+            crossing (Crossing): The crossing to resolve.
+            resolution_type (str): One of "S_plus", "S_minus", or "S_0".
+            check_pieces (bool): If True, validates the resolved diagram.
+
+        Returns:
+            SpatialGraphDiagram: The resolved spatial graph diagram.
+        """
+        resolved_diagram = self.copy()
+        crossing_copy = resolved_diagram.data[crossing.label]
+        resolved_diagram._remove_crossing(crossing_copy)
+
+        if resolution_type == "S_plus":
+            resolved_diagram.short_cut(crossing_copy, 0)
+            resolved_diagram.short_cut(crossing_copy, 2)
+        elif resolution_type == "S_minus":
+            resolved_diagram.short_cut(crossing_copy, 1)
+            resolved_diagram.short_cut(crossing_copy, 3)
+        elif resolution_type == "S_0":
+            resolved_diagram._create_s0_vertex(crossing_copy)
+        else:
+            raise ValueError(f"Unknown resolution type: {resolution_type}")
+
+        if check_pieces:
+            resolved_diagram._check()
+
+        return resolved_diagram
+
+    def _create_s0_vertex(self, crossing):
+        """
+        Creates a 4-valent vertex to replace a crossing in the S_0 resolution.
+
+        Args:
+            crossing (Crossing): The crossing being replaced.
+        """
+        # Create a new vertex
+        vertex_label = f"{crossing.label}_smushed"
+        new_vertex = Vertex(4, vertex_label)
+        self._add_vertex(new_vertex)
+
+        # Connect the adjacent elements to the new vertex
+        for i in range(4):
+            connected_obj, index = crossing.adjacent[i]
+            new_vertex[i] = connected_obj[index]
+
+    # def calculate_yamada_polynomial(self, check_pieces=False):
+    #     """
+    #     Recursively calculates the Yamada polynomial of the spatial graph diagram.
+    #
+    #     Args:
+    #         check_pieces (bool): If True, validates intermediate diagrams.
+    #
+    #     Returns:
+    #         pari: The calculated Yamada polynomial.
+    #     """
+    #     A = pari('A')
+    #
+    #     # Base case: no crossings left
+    #     if len(self.crossings) == 0:
+    #         return h_poly(self.projection_graph())
+    #
+    #     # Recursive case: handle the first crossing
+    #     crossing = self.crossings[0]
+    #     S_plus = self._resolve_crossing(crossing, "S_plus", check_pieces)
+    #     S_minus = self._resolve_crossing(crossing, "S_minus", check_pieces)
+    #     S_0 = self._resolve_crossing(crossing, "S_0", check_pieces)
+    #
+    #     # Combine the polynomials using the Yamada polynomial formula
+    #     Y_plus = S_plus.calculate_yamada_polynomial()
+    #     Y_minus = S_minus.calculate_yamada_polynomial()
+    #     Y_0 = S_0.calculate_yamada_polynomial()
+    #
+    #     return A * Y_plus + (A ** -1) * Y_minus + Y_0
+    #
+    #
+    # def yamada_polynomial(self, normalize=True):
+    #     """normalized_yamada_polynomial"""
+    #
+    #     yamada_polynomial = self.calculate_yamada_polynomial()
+    #
+    #     if normalize:
+    #         yamada_polynomial =  normalize_poly(yamada_polynomial)
+    #
+    #     return yamada_polynomial
+
+    def yamada_polynomial(self, normalize=True, check_pieces=False):
+        """
+        Calculates the Yamada polynomial of the spatial graph diagram, optionally normalizing it.
+
+        Args:
+            normalize (bool): If True, normalize the Yamada polynomial.
+            check_pieces (bool): If True, validates intermediate diagrams during calculation.
+
+        Returns:
+            pari: The calculated (and optionally normalized) Yamada polynomial.
+        """
         A = pari('A')
 
+        # Base case: no crossings left
         if len(self.crossings) == 0:
-            return h_poly(self.projection_graph())
+            yamada_poly = h_poly(self.projection_graph())
+        else:
+            # Recursive case: handle the first crossing
+            crossing = self.crossings[0]
+            S_plus = self._resolve_crossing(crossing, "S_plus", check_pieces)
+            S_minus = self._resolve_crossing(crossing, "S_minus", check_pieces)
+            S_0 = self._resolve_crossing(crossing, "S_0", check_pieces)
 
-        C = self.crossings[0]
-        c = C.label
+            # Combine the polynomials using the Yamada polynomial formula
+            Y_plus = S_plus.yamada_polynomial(normalize=False, check_pieces=check_pieces)
+            Y_minus = S_minus.yamada_polynomial(normalize=False, check_pieces=check_pieces)
+            Y_0 = S_0.yamada_polynomial(normalize=False, check_pieces=check_pieces)
 
-        # S_plus
-        S_plus = self.copy()
-        C_plus = S_plus.data[c]
-        S_plus._remove_crossing(C_plus)
-        S_plus.short_cut(C_plus, 0)
-        S_plus.short_cut(C_plus, 2)
-        if check_pieces:
-            S_plus._check()
+            yamada_poly = A * Y_plus + (A ** -1) * Y_minus + Y_0
 
-        # S_minus
-        S_minus = self.copy()
-        C_minus = S_minus.data[c]
-        S_minus._remove_crossing(C_minus)
-        S_minus.short_cut(C_minus, 1)
-        S_minus.short_cut(C_minus, 3)
-        if check_pieces:
-            S_minus._check()
-
-        # S_0
-        S_0 = self.copy()
-        C_0 = S_0.data[c]
-        S_0._remove_crossing(C_0)
-
-        V = Vertex(4, repr(C_0) + '_smushed')
-        S_0._add_vertex(V)
-
-        # (A, i), (B, j), (C, k), (D, l) = C_0.adjacent
-        # S_0._create_vertex((A, i), (B, j), (C, k), (D, l))
-
-        # for i, (B, j) in enumerate(C_0.adjacent):
-        #     V[i] = B[j]
-
-        for i in range(4):
-            B, j = C_0.adjacent[i]
-            V[i] = B[j]
-
-        if check_pieces:
-            S_0._check()
-
-        Y_plus  = S_plus.calculate_yamada_polynomial()
-        Y_minus = S_minus.calculate_yamada_polynomial()
-        Y_0     = S_0.calculate_yamada_polynomial()
-        Y_new   = A * Y_plus + (A ** -1) * Y_minus + Y_0
-
-        return Y_new
-
-    def yamada_polynomial(self, normalize=True):
-        """normalized_yamada_polynomial"""
-
-        yamada_polynomial = self.calculate_yamada_polynomial()
-
+        # Normalize if required
         if normalize:
-            yamada_polynomial =  normalize_poly(yamada_polynomial)
+            yamada_poly = normalize_poly(yamada_poly)
 
-        return yamada_polynomial
+        return yamada_poly
 
     def planar_embedding(self):
         """
