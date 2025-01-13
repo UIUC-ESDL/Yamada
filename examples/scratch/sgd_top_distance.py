@@ -30,4 +30,4 @@ v3[2] = e4[0]
 sgd1 = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6], vertices=[v1, v2, v3])
 sgd2 = sgd1.copy()
 
-compute_min_distance(sgd1, sgd2)
+# compute_min_distance(sgd1, sgd2)

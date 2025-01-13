@@ -662,14 +662,6 @@ class SpatialGraphDiagram:
                 alpha=0.4,
                 edgecolors="orange"
             )
-            # nx.draw_networkx_labels(
-            #     planar_graph,
-            #     pos,
-            #     labels={n: highlight_labels.get(n, n) for n in highlight_nodes},
-            #     font_size=12,
-            #     font_color="white",
-            #     font_weight="bold",
-            # )
 
         # State all object-index assignments
         intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
