@@ -3,10 +3,23 @@ import collections
 import itertools
 import subprocess
 import io
-import time
 from yamada.sgd.diagram_elements import Vertex, Crossing, Edge
 from yamada.sgd.spatial_graph_diagrams import SpatialGraphDiagram
 from yamada.sgd.reidemeister import has_r2, has_r6
+
+
+def read_edge_code(stream, size):
+    """
+    Read 1 byte form of edge code
+    """
+    ans = [[]]
+    for _ in range(size):
+        i = int.from_bytes(stream.read(1), 'big')
+        if i < 255:
+            ans[-1].append(i)
+        else:
+            ans.append([])
+    return ans
 
 
 def shadows_via_plantri_by_ascii(plantri_directory, num_tri_verts, num_crossings):
@@ -32,18 +45,7 @@ def shadows_via_plantri_by_ascii(plantri_directory, num_tri_verts, num_crossings
     return ans
 
 
-def read_edge_code(stream, size):
-    """
-    Read 1 byte form of edge code
-    """
-    ans = [[]]
-    for _ in range(size):
-        i = int.from_bytes(stream.read(1), 'big')
-        if i < 255:
-            ans[-1].append(i)
-        else:
-            ans.append([])
-    return ans
+
 
 
 def shadows_via_plantri_by_edge_codes(plantri_directory, num_tri_verts, num_crossings):
@@ -51,14 +53,6 @@ def shadows_via_plantri_by_edge_codes(plantri_directory, num_tri_verts, num_cros
     vertices = num_tri_verts + num_crossings
     edges = (3 * num_tri_verts + 4 * num_crossings) // 2
     faces = 2 - vertices + edges
-    # cmd = ['./plantri53/plantri',
-    #        '-p -d',  # simple planar maps, but return the dual
-    #        '-f4',  # maximum valence in the returned dual is <= 4
-    #        '-c1',  # graph should be 1-connected
-    #        '-m2',  # no valence 1 vertices = no loops in the dual
-    #        '-E',  # return binary edge code format
-    #        '-e%d' % edges,
-    #        '%d' % faces]
     cmd = [plantri_directory+'plantri',
            '-p -d',  # simple planar maps, but return the dual
            '-f4',  # maximum valence in the returned dual is <= 4
@@ -164,22 +158,6 @@ def enumerate_yamada_classes(plantri_directory, G, max_crossings):
 def to_poly(diagram):
     p = diagram.yamada_polynomial()
     return p, diagram
-
-
-def enumerate_yamada_classes_multicore(G, max_crossings, pool):
-    examined = 0
-    polys = dict()
-    timings = dict()
-    for crossings in range(0, max_crossings + 1):
-        start = time.time()
-        diagrams = spatial_graph_diagrams_fixed_crossings(G, crossings)
-        some_polys = pool.imap_unordered(to_poly, diagrams)
-        for p, D in some_polys:
-            if p not in polys:
-                polys[p] = D
-            examined += 1
-        timings[crossings] = time.time() - start
-    return polys, timings, examined
 
 
 def num_automorphisms(graph):

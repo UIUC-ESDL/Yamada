@@ -1,5 +1,5 @@
 from yamada import SpatialGraph
-from yamada.sgd.Reidemeister import *
+from yamada.sgd.reidemeister import *
 
 # from example_routing import node_labels, node_positions, edges
 # from example_cube import node_labels, node_positions, edges

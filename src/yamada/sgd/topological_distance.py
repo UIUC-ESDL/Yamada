@@ -1,9 +1,9 @@
 from collections import deque
 import time
-from yamada.Anti_Reidemeister import apply_anti_reidemeister_move
+from yamada.sgd.sgd_modification import apply_crossing_swap
 
 
-def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
+def compute_min_distance(diagram1, diagram2, max_depth=3, max_runtime=10):
     start_time = time.time()
 
     # Initialize BFS queues and visited polynomial sets
@@ -27,7 +27,7 @@ def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
             current_diagram1, depth1 = queue1.popleft()
             if depth1 < max_depth:
                 for crossing in current_diagram1.crossings:
-                    new_diagram = apply_anti_reidemeister_move(current_diagram1, crossing.label)
+                    new_diagram = apply_crossing_swap(current_diagram1, crossing.label)
                     yamada_poly = new_diagram.yamada_polynomial()
                     if yamada_poly not in polynomials1:
                         polynomials1[yamada_poly] = depth1 + 1
@@ -42,7 +42,7 @@ def compute_min_distance(diagram1, diagram2, max_depth, max_runtime):
             current_diagram2, depth2 = queue2.popleft()
             if depth2 < max_depth:
                 for crossing in current_diagram2.crossings:
-                    new_diagram = apply_anti_reidemeister_move(current_diagram2, crossing.label)
+                    new_diagram = apply_crossing_swap(current_diagram2, crossing.label)
                     yamada_poly = new_diagram.yamada_polynomial()
                     if yamada_poly not in polynomials2:
                         polynomials2[yamada_poly] = depth2 + 1

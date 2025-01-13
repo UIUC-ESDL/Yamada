@@ -185,7 +185,7 @@ class SpatialGraphDiagram:
         """
         Returns True if the diagram is planar.
         """
-        return self._euler() == 2 * len(list(nx.connected_components(self.projection_graph())))
+        return self._euler() == 2 * len(list(nx.connected_components(self.graph())))
 
 
 
@@ -407,13 +407,8 @@ class SpatialGraphDiagram:
         """
         return pickle.loads(pickle.dumps(self))
 
-    def projection_graph(self):
-        """
-        TODO Add documentation
-        """
-
+    def graph(self):
         G = nx.MultiGraph()
-
         for e in self.edges:
             v = e.adjacent[0][0].label
             w = e.adjacent[1][0].label
@@ -496,46 +491,6 @@ class SpatialGraphDiagram:
             connected_obj, index = crossing.adjacent[i]
             new_vertex[i] = connected_obj[index]
 
-    # def calculate_yamada_polynomial(self, check_pieces=False):
-    #     """
-    #     Recursively calculates the Yamada polynomial of the spatial graph diagram.
-    #
-    #     Args:
-    #         check_pieces (bool): If True, validates intermediate diagrams.
-    #
-    #     Returns:
-    #         pari: The calculated Yamada polynomial.
-    #     """
-    #     A = pari('A')
-    #
-    #     # Base case: no crossings left
-    #     if len(self.crossings) == 0:
-    #         return h_poly(self.projection_graph())
-    #
-    #     # Recursive case: handle the first crossing
-    #     crossing = self.crossings[0]
-    #     S_plus = self._resolve_crossing(crossing, "S_plus", check_pieces)
-    #     S_minus = self._resolve_crossing(crossing, "S_minus", check_pieces)
-    #     S_0 = self._resolve_crossing(crossing, "S_0", check_pieces)
-    #
-    #     # Combine the polynomials using the Yamada polynomial formula
-    #     Y_plus = S_plus.calculate_yamada_polynomial()
-    #     Y_minus = S_minus.calculate_yamada_polynomial()
-    #     Y_0 = S_0.calculate_yamada_polynomial()
-    #
-    #     return A * Y_plus + (A ** -1) * Y_minus + Y_0
-    #
-    #
-    # def yamada_polynomial(self, normalize=True):
-    #     """normalized_yamada_polynomial"""
-    #
-    #     yamada_polynomial = self.calculate_yamada_polynomial()
-    #
-    #     if normalize:
-    #         yamada_polynomial =  normalize_poly(yamada_polynomial)
-    #
-    #     return yamada_polynomial
-
     def yamada_polynomial(self, normalize=True, check_pieces=False):
         """
         Calculates the Yamada polynomial of the spatial graph diagram, optionally normalizing it.
@@ -551,7 +506,7 @@ class SpatialGraphDiagram:
 
         # Base case: no crossings left
         if len(self.crossings) == 0:
-            yamada_poly = h_poly(self.projection_graph())
+            yamada_poly = h_poly(self.graph())
         else:
             # Recursive case: handle the first crossing
             crossing = self.crossings[0]

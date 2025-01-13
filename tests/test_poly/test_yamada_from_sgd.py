@@ -9,7 +9,7 @@ def test_spatial_graph_diagram_unknotted_theta_graph_1(unknotted_theta_graph_1):
     assert len(sgd.crossings) == 0
     assert len(sgd.vertices) == 2
 
-    g = sgd.projection_graph()
+    g = sgd.graph()
     t = nx.MultiGraph(3 * [(0, 1)])
 
     assert nx.is_isomorphic(remove_valence_two_vertices(g), t)
@@ -25,7 +25,7 @@ def test_spatial_graph_diagram_unknotted_theta_graph_2():
 
     sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
 
-    g = sgd.projection_graph()
+    g = sgd.graph()
     t = nx.MultiGraph(3 * [(0, 1)])
 
     assert nx.is_isomorphic(remove_valence_two_vertices(g), t)
