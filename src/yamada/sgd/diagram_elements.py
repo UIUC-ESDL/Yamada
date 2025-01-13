@@ -1,3 +1,5 @@
+# TODO Add label initialization warnings
+
 class EntryPoint:
     def __init__(self, vertex_like, index):
         self.vertex = vertex_like

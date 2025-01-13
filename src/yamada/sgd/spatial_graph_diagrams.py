@@ -48,6 +48,8 @@ from cypari import pari
 import matplotlib
 matplotlib.use('TkAgg')   # Use a non-interactive backend
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, PathPatch
+from matplotlib.path import Path
 import numpy as np
 
 from yamada.poly.H_polynomial import h_poly
@@ -56,39 +58,16 @@ from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 
 class SpatialGraphDiagram:
-    """
-    TODO: Fix labels. Normalize them, and make sure they are unique (both currently, and going forward)
-    """
 
     def __init__(self, *, edges=None, vertices=None, crossings=None, check=True):
 
         # Ensure inputs are lists (avoid mutable default arguments)
-        edges = edges or []
-        vertices = vertices or []
-        crossings = crossings or []
-
-        # Combine all elements into a single list
-        data = edges + vertices + crossings
-
-        # Ensure labels are unique by creating a dictionary
-        self.data = {d.label: d for d in data}
-
-        # Validate label uniqueness
-        if len(data) != len(self.data):
-            raise ValueError("Labels must be unique across all diagram elements.")
+        edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
 
         # Categorize elements by type
-        self.edges = [d for d in data if isinstance(d, Edge)]
-        self.vertices = [d for d in data if isinstance(d, Vertex)]
-        self.crossings = [d for d in data if isinstance(d, Crossing)]
-
-        # Optional: Validate categorization
-        if len(self.edges) != len(edges):
-            raise ValueError("Some edges are incorrectly classified.")
-        if len(self.vertices) != len(vertices):
-            raise ValueError("Some vertices are incorrectly classified.")
-        if len(self.crossings) != len(crossings):
-            raise ValueError("Some crossings are incorrectly classified.")
+        self.edges = edges
+        self.vertices = vertices
+        self.crossings = crossings
 
         # Normalize labels
         self._normalize_labels()
@@ -102,6 +81,46 @@ class SpatialGraphDiagram:
         # Optionally run additional checks
         if check:
             self._check()
+
+    @property
+    def data(self):
+        return {d.label: d for d in self.edges + self.vertices + self.crossings}
+
+    def _validate_inputs(self, edges, vertices, crossings):
+
+        # Ensure inputs are lists (avoid mutable default arguments)
+        edges = edges or []
+        vertices = vertices or []
+        crossings = crossings or []
+        data = edges + vertices + crossings
+
+        # Ensure all elements are edges
+        e_are_e = all(isinstance(e, Edge) for e in edges)
+        v_are_v = all(isinstance(v, Vertex) for v in vertices)
+        c_are_c = all(isinstance(c, Crossing) for c in crossings)
+        if not e_are_e or not v_are_v or not c_are_c:
+            raise TypeError("Some elements are incorrectly categorized.")
+
+        # Ensure all elements are unique
+        e_are_unqiue = len(edges) == len(set(e.label for e in edges))
+        v_are_unqiue = len(vertices) == len(set(v.label for v in vertices))
+        c_are_unqiue = len(crossings) == len(set(c.label for c in crossings))
+        if not e_are_unqiue or not v_are_unqiue or not c_are_unqiue:
+            raise ValueError("Labels must be unique.")
+
+        # Ensure all indices are uniquely assigned.
+        all_indices = [(A, i) for element in data for A, i in element.adjacent]
+        unique_indices = set((A, i) for element in data for A, i in element.adjacent)
+        if len(all_indices) != len(unique_indices):
+            raise ValueError("Indices must be unique.")
+
+        # Ensure all indices are assigned to other diagram elements
+        for A, i in all_indices:
+            if A not in data:
+                raise ValueError("Indices incorrectly assigned to an element not in this diagram")
+
+        return edges, vertices, crossings
+
 
     def _normalize_labels(self):
         """
@@ -577,108 +596,10 @@ class SpatialGraphDiagram:
 
         return G, node_labels, edge_labels
 
-    def plot(self, highlight_nodes=None, highlight_labels=None):
-        """
-        Plots the spatial graph diagram, labeling intermediate edges with index numbers
-        and intermediate nodes with full index assignments.
-        """
+    def plot(self):
 
         # Step 1: Create the planar-friendly graph
         planar_graph, node_labels, edge_labels = self.planar_embedding()
 
-        # Step 2: Generate the planar embedding
-        is_planar, embedding = nx.check_planarity(planar_graph)
-        if not is_planar:
-            raise ValueError("The graph is not planar!")
-        pos = nx.planar_layout(embedding)
+        plot_spatial_graph_diagram(planar_graph, node_labels, edge_labels)
 
-        # Step 3: Separate node types
-        edges = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Edge"]
-        vertices = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Vertex"]
-        crossings = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Crossing"]
-        regular_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] != "Intermediate"]
-        intermediate_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Intermediate"]
-
-        # Initialize the plot
-        plt.figure(figsize=(12, 12))
-
-        # Draw the edges
-        nx.draw_networkx_edges(planar_graph, pos)
-
-        # Label the edges
-        nx.draw_networkx_edge_labels(
-            planar_graph,
-            pos,
-            edge_labels=edge_labels,
-            font_size=8,
-            font_color="black",
-            rotate=False,
-        )
-
-        # Draw the nodes
-        nx.draw_networkx_nodes(
-            planar_graph,
-            pos,
-            nodelist=edges,
-            node_color="gray",
-            node_size=300,
-            alpha=0.7
-        )
-
-        nx.draw_networkx_nodes(
-            planar_graph,
-            pos,
-            nodelist=vertices,
-            node_color="lightgreen",
-            node_size=300,
-            alpha=0.7
-        )
-
-        nx.draw_networkx_nodes(
-            planar_graph,
-            pos,
-            nodelist=crossings,
-            node_color="lightblue",
-            node_size=300,
-            alpha=0.7
-        )
-
-        # Label the nodes
-        nx.draw_networkx_labels(
-            planar_graph,
-            pos,
-            labels={n: n for n in regular_nodes},
-            font_size=10,
-        )
-
-        if highlight_nodes:
-            nx.draw_networkx_nodes(
-                planar_graph,
-                pos,
-                nodelist=highlight_nodes,
-                node_color="yellow",
-                node_size=2000,
-                label="Highlighted Nodes",
-                alpha=0.4,
-                edgecolors="orange"
-            )
-
-        # State all object-index assignments
-        intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
-        plt.gcf().text(
-            0.85, 0.5,  # Position the text box to the right of the plot
-            intermediate_label_text,
-            fontsize=10,
-            va="center",
-            bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="white", alpha=0.9),
-        )
-
-        # Step 10: Remove axis and spines
-        plt.axis("off")  # Turn off axes, ticks, and labels
-        ax = plt.gca()  # Get the current axis
-        for spine in ax.spines.values():
-            spine.set_visible(False)  # Hide all spines
-
-        # Show the plot
-        plt.title("Planar Embedding of the Spatial Graph Diagram")
-        plt.show()

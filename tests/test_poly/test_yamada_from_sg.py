@@ -64,9 +64,9 @@ def test_unknot_double_twist():
 def test_unknot_four_crossings():
 
     nodes = ['a', 'b', 'c', 'd', 'e','f','g']
-    node_positions = {'a': [0,0,0],
-                      'b': [1,1,2],
-                      'c': [2,0,0],
+    node_positions = {'a': [0, 0, 0],
+                      'b': [1, 1, 2],
+                      'c': [2, 0, 0],
                       'd': [3,1,2],
                       'e': [4,0,0],
                       'f': [4,0,1],

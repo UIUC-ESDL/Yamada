@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.algorithms.planar_drawing import triangulate_embedding
 import numpy as np
-from yamada.sgd.sgd_operations import split_edges
+from yamada.sgd.sgd_analysis import split_edges
 
 
 def tutte_system(planar_graph):
@@ -156,3 +156,156 @@ def plot_spatial_graph(nodes, node_positions, edges):
     plt.show()
 
 
+
+# def add_curved_edge(ax, pos, n1, n2, over=True):
+#     """Add a curved edge between two nodes."""
+#     x1, y1 = pos[n1]
+#     x2, y2 = pos[n2]
+#     mid_x, mid_y = (x1 + x2) / 2, (y1 + y2) / 2
+#     curve_factor = 0.2
+#     control_x = mid_x + curve_factor * (y2 - y1)
+#     control_y = mid_y - curve_factor * (x2 - x1)
+#
+#     path = Path([(x1, y1), (control_x, control_y), (x2, y2)],
+#                 [Path.MOVETO, Path.CURVE3, Path.CURVE3])
+#     patch = PathPatch(path, edgecolor='blue' if over else 'orange', lw=2, zorder=2 if over else 1)
+#     ax.add_patch(patch)
+
+# def plot_spatial_graph(graph, pos):
+#     """Plot the graph with crossings visualized."""
+#     fig, ax = plt.subplots(figsize=(8, 8))
+#     ax.set_aspect('equal')
+#
+#     # Draw nodes
+#     for node, (x, y) in pos.items():
+#         ax.plot(x, y, 'o', color='black', zorder=3)
+#         ax.text(x, y, str(node), fontsize=12, ha='center', va='center')
+#
+#     # Draw edges
+#     for edge in graph.edges:
+#         n1, n2 = edge
+#         # Example: Assume alternating "over" and "under" crossings
+#         over = graph.edges[edge].get('over', True)
+#         add_curved_edge(ax, pos, n1, n2, over)
+#
+#     plt.axis('off')
+#     plt.show()
+#
+# # Create a sample graph
+# G = nx.Graph()
+# G.add_edges_from([(0, 1), (1, 2), (2, 3), (3, 0)])  # A square graph
+#
+# # Add "over/under" attributes to crossings
+# for i, edge in enumerate(G.edges):
+#     G.edges[edge]['over'] = (i % 2 == 0)
+#
+# # Compute positions
+# pos = nx.planar_layout(G)  # Use planar layout for simplicity
+# plot_spatial_graph(G, pos)
+
+
+# def plot(self, highlight_nodes=None, highlight_labels=None):
+#     """
+#     Plots the spatial graph diagram, labeling intermediate edges with index numbers
+#     and intermediate nodes with full index assignments.
+#     """
+#
+#     # Step 1: Create the planar-friendly graph
+#     planar_graph, node_labels, edge_labels = self.planar_embedding()
+#
+#     # Step 2: Generate the planar embedding
+#     is_planar, embedding = nx.check_planarity(planar_graph)
+#     if not is_planar:
+#         raise ValueError("The graph is not planar!")
+#     pos = nx.planar_layout(embedding)
+#
+#     # Step 3: Separate node types
+#     edges = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Edge"]
+#     vertices = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Vertex"]
+#     crossings = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Crossing"]
+#     regular_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] != "Intermediate"]
+#     intermediate_nodes = [n for n, d in planar_graph.nodes(data=True) if d["type"] == "Intermediate"]
+#
+#     # Initialize the plot
+#     plt.figure(figsize=(12, 12))
+#
+#     # Draw the edges
+#     nx.draw_networkx_edges(planar_graph, pos)
+#
+#     # Label the edges
+#     nx.draw_networkx_edge_labels(
+#         planar_graph,
+#         pos,
+#         edge_labels=edge_labels,
+#         font_size=8,
+#         font_color="black",
+#         rotate=False,
+#     )
+#
+#     # Draw the nodes
+#     nx.draw_networkx_nodes(
+#         planar_graph,
+#         pos,
+#         nodelist=edges,
+#         node_color="gray",
+#         node_size=300,
+#         alpha=0.7
+#     )
+#
+#     nx.draw_networkx_nodes(
+#         planar_graph,
+#         pos,
+#         nodelist=vertices,
+#         node_color="lightgreen",
+#         node_size=300,
+#         alpha=0.7
+#     )
+#
+#     nx.draw_networkx_nodes(
+#         planar_graph,
+#         pos,
+#         nodelist=crossings,
+#         node_color="lightblue",
+#         node_size=300,
+#         alpha=0.7
+#     )
+#
+#     # Label the nodes
+#     nx.draw_networkx_labels(
+#         planar_graph,
+#         pos,
+#         labels={n: n for n in regular_nodes},
+#         font_size=10,
+#     )
+#
+#     if highlight_nodes:
+#         nx.draw_networkx_nodes(
+#             planar_graph,
+#             pos,
+#             nodelist=highlight_nodes,
+#             node_color="yellow",
+#             node_size=2000,
+#             label="Highlighted Nodes",
+#             alpha=0.4,
+#             edgecolors="orange"
+#         )
+#
+#     # State all object-index assignments
+#     intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
+#     plt.gcf().text(
+#         0.85, 0.5,  # Position the text box to the right of the plot
+#         intermediate_label_text,
+#         fontsize=10,
+#         va="center",
+#         bbox=dict(boxstyle="round,pad=0.5", edgecolor="black", facecolor="white", alpha=0.9),
+#     )
+#
+#     # Step 10: Remove axis and spines
+#     plt.axis("off")  # Turn off axes, ticks, and labels
+#     ax = plt.gca()  # Get the current axis
+#     for spine in ax.spines.values():
+#         spine.set_visible(False)  # Hide all spines
+#
+#     # Show the plot
+#     plt.title("Planar Embedding of the Spatial Graph Diagram")
+#     plt.show()
