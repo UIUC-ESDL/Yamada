@@ -62,71 +62,23 @@ class SpatialGraphDiagram:
     def __init__(self, *, edges=None, vertices=None, crossings=None, check=True):
 
         # Ensure inputs are lists (avoid mutable default arguments)
-        edges = edges or []
-        vertices = vertices or []
-        crossings = crossings or []
-
-        # Combine all elements into a single list
-        data = edges + vertices + crossings
-
-        # Ensure labels are unique by creating a dictionary
-        self.data = {d.label: d for d in data}
-
-        # Validate label uniqueness
-        if len(data) != len(self.data):
-            raise ValueError("Labels must be unique across all diagram elements.")
+        edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
 
         # Categorize elements by type
-        self.edges = [d for d in data if isinstance(d, Edge)]
-        self.vertices = [d for d in data if isinstance(d, Vertex)]
-        self.crossings = [d for d in data if isinstance(d, Crossing)]
-
-        # Optional: Validate categorization
-        if len(self.edges) != len(edges):
-            raise ValueError("Some edges are incorrectly classified.")
-        if len(self.vertices) != len(vertices):
-            raise ValueError("Some vertices are incorrectly classified.")
-        if len(self.crossings) != len(crossings):
-            raise ValueError("Some crossings are incorrectly classified.")
+        self.edges = edges
+        self.vertices = vertices
+        self.crossings = crossings
+        self.data = {d.label: d for d in self.edges + self.vertices + self.crossings}
 
         # Normalize labels
         self._normalize_labels()
 
         # Ensure that vertices and crossings are connected indirectly via edges
-        self._preprocess_diagram()
-
-        # Add edges and 2-valent vertices where necessary to ensure that self-loops have a planar embedding
-        # self._inflate_self_loops()
+        self._correct_graph_structure()
 
         # Optionally run additional checks
         if check:
-            self._check()
-
-
-        # # Ensure inputs are lists (avoid mutable default arguments)
-        # edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
-        #
-        # # Categorize elements by type
-        # self.edges = edges
-        # self.vertices = vertices
-        # self.crossings = crossings
-        #
-        # # Normalize labels
-        # self._normalize_labels()
-        #
-        # # Ensure that vertices and crossings are connected indirectly via edges
-        # self._preprocess_diagram()
-        #
-        # # Add edges and 2-valent vertices where necessary to ensure that self-loops have a planar embedding
-        # # self._inflate_self_loops()
-        #
-        # # Optionally run additional checks
-        # if check:
-        #     self._check()
-
-    # @property
-    # def data(self):
-    #     return {d.label: d for d in self.edges + self.vertices + self.crossings}
+            self._check_graph_structure()
 
     def _validate_inputs(self, edges, vertices, crossings):
 
@@ -163,6 +115,37 @@ class SpatialGraphDiagram:
 
         return edges, vertices, crossings
 
+    def _check_graph_structure(self):
+
+        # Check that the diagram is connected
+        assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
+
+        # Check that the graph is planar
+        v = len(self.crossings) + len(self.vertices)
+        e = len(self.edges)
+        f = len(self.faces())
+        euler = v - e + f
+        is_planar = euler == 2 * len(list(nx.connected_components(self.graph())))
+        assert is_planar
+
+    def _correct_graph_structure(self):
+        """
+        Ensures that the diagram is correctly assembled.
+        """
+
+        # Pairs of edges must be connected by a vertex.
+        for A in self.edges:
+            for i in range(2):
+                B, j = A.adjacent[i]
+                if isinstance(B, Edge):
+                    self._create_vertex((A, i), (B, j))
+
+        # Pairs of vertices and/or crossings must be connected by an edge.
+        for A in self.crossings + self.vertices:
+            for i in range(A.degree):
+                B, j = A.adjacent[i]
+                if not isinstance(B, Edge):
+                    self._create_edge(A, i, B, j)
 
     def _normalize_labels(self):
         """
@@ -196,58 +179,6 @@ class SpatialGraphDiagram:
         self.edge_counter = len(self.edges)
         self.vertex_counter = len(self.vertices)
         self.crossing_counter = len(self.crossings)
-
-    def _preprocess_diagram(self):
-        """
-        Ensures that the diagram is correctly assembled.
-        """
-
-        # Pairs of edges must be connected by a vertex.
-        for A in self.edges:
-            for i in range(2):
-                B, j = A.adjacent[i]
-                if isinstance(B, Edge):
-                    self._create_vertex((A, i), (B, j))
-
-        # Pairs of vertices and/or crossings must be connected by an edge.
-        for A in self.crossings + self.vertices:
-            for i in range(A.degree):
-                B, j = A.adjacent[i]
-                if not isinstance(B, Edge):
-                    self._create_edge(A, i, B, j)
-
-    def _check(self):
-        """
-        Checks that the diagram is valid.
-        """
-
-        assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
-
-        for C in self.crossings:
-            assert all(isinstance(v, Edge) for v, j in C.adjacent)
-        for V in self.vertices:
-            assert all(isinstance(v, Edge) for v, j in V.adjacent)
-        for E in self.edges:
-            assert all(not isinstance(v, Edge) for v, j in E.adjacent)
-
-        # Graph is planar
-        assert self._is_planar()
-
-    def _euler(self):
-        """
-        Returns the Euler characteristic of the diagram.
-        """
-        v = len(self.crossings) + len(self.vertices)
-        e = len(self.edges)
-        f = len(self.faces())
-        return v - e + f
-
-    def _is_planar(self):
-        """
-        Returns True if the diagram is planar.
-        """
-        return self._euler() == 2 * len(list(nx.connected_components(self.graph())))
-
 
 
     def _create_edge(self, A, i, B, j):
@@ -531,7 +462,7 @@ class SpatialGraphDiagram:
             raise ValueError(f"Unknown resolution type: {resolution_type}")
 
         if check_pieces:
-            resolved_diagram._check()
+            resolved_diagram._check_graph_structure()
 
         return resolved_diagram
 

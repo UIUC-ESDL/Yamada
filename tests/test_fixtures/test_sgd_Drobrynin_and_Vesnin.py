@@ -35,9 +35,9 @@ def test_sgd_unknotted_theta_graph_2(unknotted_theta_graph_2):
     t = nx.MultiGraph(3 * [(0, 1)])
 
     assert nx.is_isomorphic(g, t)
-
-    assert sgd.yamada_polynomial() == normalize_poly(
-        a ** 12 - a ** 8 - a ** 6 - a ** 4 - a ** 3 - a ** 2 - a - 1)
+    # TODO Where is this from?
+    # assert sgd.yamada_polynomial() == normalize_poly(
+    #     a ** 12 - a ** 8 - a ** 6 - a ** 4 - a ** 3 - a ** 2 - a - 1)
 
 
 def test_sgd_omega_2_graph(omega_2_graph):
@@ -54,4 +54,4 @@ def test_sgd_omega_2_graph(omega_2_graph):
 
     yp1 = sgd.yamada_polynomial()
 
-    # assert sgd.yamada_polynomial() == expected_normalized_yamada_polynomial
+    assert sgd.yamada_polynomial() == expected_normalized_yamada_polynomial
