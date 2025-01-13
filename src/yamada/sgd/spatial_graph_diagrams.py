@@ -62,12 +62,32 @@ class SpatialGraphDiagram:
     def __init__(self, *, edges=None, vertices=None, crossings=None, check=True):
 
         # Ensure inputs are lists (avoid mutable default arguments)
-        edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
+        edges = edges or []
+        vertices = vertices or []
+        crossings = crossings or []
+
+        # Combine all elements into a single list
+        data = edges + vertices + crossings
+
+        # Ensure labels are unique by creating a dictionary
+        self.data = {d.label: d for d in data}
+
+        # Validate label uniqueness
+        if len(data) != len(self.data):
+            raise ValueError("Labels must be unique across all diagram elements.")
 
         # Categorize elements by type
-        self.edges = edges
-        self.vertices = vertices
-        self.crossings = crossings
+        self.edges = [d for d in data if isinstance(d, Edge)]
+        self.vertices = [d for d in data if isinstance(d, Vertex)]
+        self.crossings = [d for d in data if isinstance(d, Crossing)]
+
+        # Optional: Validate categorization
+        if len(self.edges) != len(edges):
+            raise ValueError("Some edges are incorrectly classified.")
+        if len(self.vertices) != len(vertices):
+            raise ValueError("Some vertices are incorrectly classified.")
+        if len(self.crossings) != len(crossings):
+            raise ValueError("Some crossings are incorrectly classified.")
 
         # Normalize labels
         self._normalize_labels()
@@ -82,9 +102,31 @@ class SpatialGraphDiagram:
         if check:
             self._check()
 
-    @property
-    def data(self):
-        return {d.label: d for d in self.edges + self.vertices + self.crossings}
+
+        # # Ensure inputs are lists (avoid mutable default arguments)
+        # edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
+        #
+        # # Categorize elements by type
+        # self.edges = edges
+        # self.vertices = vertices
+        # self.crossings = crossings
+        #
+        # # Normalize labels
+        # self._normalize_labels()
+        #
+        # # Ensure that vertices and crossings are connected indirectly via edges
+        # self._preprocess_diagram()
+        #
+        # # Add edges and 2-valent vertices where necessary to ensure that self-loops have a planar embedding
+        # # self._inflate_self_loops()
+        #
+        # # Optionally run additional checks
+        # if check:
+        #     self._check()
+
+    # @property
+    # def data(self):
+    #     return {d.label: d for d in self.edges + self.vertices + self.crossings}
 
     def _validate_inputs(self, edges, vertices, crossings):
 

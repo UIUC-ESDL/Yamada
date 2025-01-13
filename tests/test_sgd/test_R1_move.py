@@ -30,19 +30,11 @@ def test_r1_unknot_2e_2v(unknot_2e_2v_1):
 #     sgd_post_r1 = apply_r1(unknot_infinity_1c, 'c1')
 #     assert sgd_post_r1.normalized_yamada_polynomial() == unknot_yamada_poly
 
-def test_r1_2():
-    a = pari('A')
+def test_r1_2(unknot_inf_cw_0e_0v_1c, poly_unknot):
 
-    yp_ground_truth = -a ** 2 - a - 1
+    sgd = unknot_inf_cw_0e_0v_1c
 
-    c1 = Crossing('c1')
-    c1[1], c1[3] = c1[2], c1[0]
-
-    sgd = SpatialGraphDiagram(crossings=[c1])
-
-    yp_before_r1 = sgd.yamada_polynomial()
-
-    assert yp_before_r1 == yp_ground_truth
+    assert sgd.yamada_polynomial() == poly_unknot
 
     r1_crossing_labels = has_r1(sgd)
 
@@ -51,9 +43,7 @@ def test_r1_2():
 
     sgd = apply_r1(sgd, 'c1')
 
-    yp_after_r1 = sgd.yamada_polynomial()
-
-    assert yp_after_r1 == yp_ground_truth
+    assert sgd.yamada_polynomial() == poly_unknot
 
 
 def test_r1_3():
