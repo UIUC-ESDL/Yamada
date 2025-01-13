@@ -122,7 +122,6 @@ def unknot_inf_cw_4e_2v_1c():
     pass
 
 
-
 @pytest.fixture
 def unknot_inf_cw_0e_3v_1c():
     # TODO Implement
@@ -145,7 +144,6 @@ def unknot_inf_cw_2e_3v_1c():
 def unknot_inf_cw_3e_3v_1c():
     # TODO Implement
     pass
-
 
 
 @pytest.fixture
@@ -183,8 +181,9 @@ def unknot_inf_cw_4e_4v_1c():
     # TODO Implement
     pass
 
+
 @pytest.fixture
-def TBD_unknot_inf_cw_1e_1c():
+def TBD_unknot_inf_cw_1e_0v_1c():
     """
     An unknot with a single twist, forming an infinity symbol.
     Formed by a crossing with two corners self-connected and two corners connected via an edge.
@@ -197,7 +196,6 @@ def TBD_unknot_inf_cw_1e_1c():
     c1[2] = e1[1]
     sgd = SpatialGraphDiagram(edges=[e1], crossings=[c1])
     return sgd
-
 
 
 @pytest.fixture

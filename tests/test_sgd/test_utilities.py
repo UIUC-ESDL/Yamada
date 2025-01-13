@@ -19,9 +19,9 @@ def test_forms_a_strand_unknot_1e_2v(unknot_2e_2v_1):
     assert forms_a_strand is True
 
 
-def test_forms_a_strand_unknot_infinity_1_2e_1c(unknot_inf_cw_2e_1c):
-    e1, e2 = unknot_inf_cw_2e_1c.edges
-    c1 = unknot_inf_cw_2e_1c.crossings[0]
+def test_forms_a_strand_unknot_infinity_1_2e_1c(unknot_inf_cw_2e_0v_1c_1):
+    e1, e2 = unknot_inf_cw_2e_0v_1c_1.edges
+    c1 = unknot_inf_cw_2e_0v_1c_1.crossings[0]
 
     check_1 = edges_form_a_strand(e1, e1)
     assert check_1 is True
