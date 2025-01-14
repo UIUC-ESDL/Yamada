@@ -32,6 +32,13 @@ def test_unknot_2e_0v(unknot_2e_0v, poly_unknot):
     assert unknot_2e_0v.vertices[1].label == 'v2'
     assert unknot_2e_0v.yamada_polynomial() == poly_unknot
 
+    # Simplify the graph
+    unknot_2e_0v._simplify_graph()
+    assert len(unknot_2e_0v.edges) == 1
+    assert len(unknot_2e_0v.vertices) == 1
+    assert unknot_2e_0v.edges[0].label == 'e1'
+    assert unknot_2e_0v.vertices[0].label == 'v1'
+
 
 def test_unknot_3e_0v(unknot_3e_0v, poly_unknot):
     assert unknot_3e_0v

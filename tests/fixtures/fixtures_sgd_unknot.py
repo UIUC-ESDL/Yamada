@@ -19,7 +19,7 @@ def unknot_1e_0v():
     """
     e1 = Edge('e1')
     e1[0] = e1[1]
-    sgd = SpatialGraphDiagram(edges=[e1])
+    sgd = SpatialGraphDiagram(edges=[e1], simplify=False)
     return sgd
 
 
@@ -32,7 +32,7 @@ def unknot_2e_0v():
     e2 = Edge('e2')
     e1[0] = e2[1]
     e1[1] = e2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], simplify=False)
     return sgd
 
 

@@ -8,7 +8,7 @@ The basic approach differs somewhat from the one in the paper.
 Namely, I use "plantri" to enumerate possible diagram shadows with the
 specified number of crossings::
 
-  http://users.cecs.anu.edu.au/~bdm/plantri/
+http://users.cecs.anu.edu.au/~bdm/plantri/
 
 You need to compile plantri and have it in the same directory as this
 file (or somewhere in your path) for the enumeration to work.
@@ -39,7 +39,6 @@ Compared to Dobrynin and Vesnin:
 
 Note: The way this script is written w/ pickling you must import this script into another script
 rather than directly calculate Yamada polynomials in this script (you'll get error messages)
-
 """
 
 import networkx as nx
@@ -59,10 +58,15 @@ from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 class SpatialGraphDiagram:
 
-    def __init__(self, *, edges=None, vertices=None, crossings=None, check=True):
+    def __init__(self, *, edges=None, vertices=None, crossings=None, simplify=False):
 
         # Ensure inputs are lists (avoid mutable default arguments)
-        edges, vertices, crossings = self._validate_inputs(edges, vertices, crossings)
+        edges = edges or []
+        vertices = vertices or []
+        crossings = crossings or []
+
+        # Validate inputs
+        self._validate_inputs(edges, vertices, crossings)
 
         # Categorize elements by type
         self.edges = edges
@@ -74,18 +78,13 @@ class SpatialGraphDiagram:
         self._normalize_labels()
 
         # Ensure that vertices and crossings are connected indirectly via edges
-        self._correct_graph_structure()
+        self._correct_graph()
+        if simplify:
+            self._simplify_graph()
 
-        # Optionally run additional checks
-        if check:
-            self._check_graph_structure()
+    @staticmethod
+    def _validate_inputs(edges, vertices, crossings):
 
-    def _validate_inputs(self, edges, vertices, crossings):
-
-        # Ensure inputs are lists (avoid mutable default arguments)
-        edges = edges or []
-        vertices = vertices or []
-        crossings = crossings or []
         data = edges + vertices + crossings
 
         # Ensure all elements are edges
@@ -96,10 +95,10 @@ class SpatialGraphDiagram:
             raise TypeError("Some elements are incorrectly categorized.")
 
         # Ensure all elements are unique
-        e_are_unqiue = len(edges) == len(set(e.label for e in edges))
-        v_are_unqiue = len(vertices) == len(set(v.label for v in vertices))
-        c_are_unqiue = len(crossings) == len(set(c.label for c in crossings))
-        if not e_are_unqiue or not v_are_unqiue or not c_are_unqiue:
+        e_are_unique = len(edges) == len(set(e.label for e in edges))
+        v_are_unique = len(vertices) == len(set(v.label for v in vertices))
+        c_are_unique = len(crossings) == len(set(c.label for c in crossings))
+        if not e_are_unique or not v_are_unique or not c_are_unique:
             raise ValueError("Labels must be unique.")
 
         # Ensure all indices are uniquely assigned.
@@ -115,20 +114,7 @@ class SpatialGraphDiagram:
 
         return edges, vertices, crossings
 
-    def _check_graph_structure(self):
-
-        # Check that the diagram is connected
-        assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
-
-        # Check that the graph is planar
-        v = len(self.crossings) + len(self.vertices)
-        e = len(self.edges)
-        f = len(self.faces())
-        euler = v - e + f
-        is_planar = euler == 2 * len(list(nx.connected_components(self.graph())))
-        assert is_planar
-
-    def _correct_graph_structure(self):
+    def _correct_graph(self):
         """
         Ensures that the diagram is correctly assembled.
         """
@@ -146,6 +132,48 @@ class SpatialGraphDiagram:
                 B, j = A.adjacent[i]
                 if not isinstance(B, Edge):
                     self._create_edge(A, i, B, j)
+
+        # Check the corrected diagram
+        self._check_graph()
+
+    def _simplify_graph(self):
+        """Merges edges sharing 2-valent vertices until no more simplifications can be made."""
+
+        changed = True
+        while changed:
+            changed = False
+
+            # Iterate over vertices in reverse order
+            for V in reversed(self.vertices):  # Process higher-labeled vertices first
+                if V.degree == 2:
+                    (A, i), (B, j) = V.adjacent  # Adjacent edges
+
+                    # Ensure both are edges
+                    if not (isinstance(A, Edge) and isinstance(B, Edge)):
+                        raise ValueError("Vertices must be connected to edges.")
+
+                    # Merge the two edges
+                    if A != B:  # Only merge if the edges are different
+                        self._merge_edges(A, B)
+                        changed = True
+                        break  # Restart the loop after a change
+
+        # Check the simplified diagram
+        self._check_graph()
+
+    def _check_graph(self):
+
+        # Check that the diagram is connected
+        assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
+
+        # Check that the graph is planar
+        v = len(self.crossings) + len(self.vertices)
+        e = len(self.edges)
+        f = len(self.faces())
+        euler = v - e + f
+        is_planar = euler == 2 * len(list(nx.connected_components(self.graph())))
+        assert is_planar
+
 
     def _normalize_labels(self):
         """
@@ -267,7 +295,7 @@ class SpatialGraphDiagram:
         assert isinstance(E0, Edge) and isinstance(E1, Edge)
         assert E0 != E1
 
-        # Ensure the edges share a 2-valent vertex
+        # Ensure the edges share at least one 2-valent vertex
         assert any(adj0 == adj1 for adj0, _ in E0.adjacent for adj1, _ in E1.adjacent)
 
         # Convert the edge labels into integers
@@ -283,9 +311,25 @@ class SpatialGraphDiagram:
             raise ValueError('Edges must have distinct labels.')
 
         # Find the shared 2-valent vertex
+        # If the edges share a two 2-valent then select the higher index
         (A, i), (B, j) = keep_edge.adjacent
         (C, k), (D, l) = remove_edge.adjacent
-        if A == C:
+
+        # If the edges shared two vertices, remove the higher vertex
+        edges_share_two_vertices = (A == C and B == D) or (A == D and B == C)
+        shared_vertices_are_two_valent = A.degree == 2 and B.degree == 2
+        if edges_share_two_vertices and shared_vertices_are_two_valent:
+            A_label = int(A.label[1:])
+            B_label = int(B.label[1:])
+            if A_label > B_label:
+                remove_vertex = A
+                keep_edge_connect_idx = 1 if A == B else 0  # Connect to the other vertex
+            else:
+                remove_vertex = B
+                keep_edge_connect_idx = 0 if A == B else 1  # Connect to the other vertex
+            remove_edge_keep_obj = D if remove_vertex == C else C
+            remove_edge_keep_idx = l if remove_vertex == C else k
+        elif A == C:
             keep_edge_connect_idx = 0
             remove_vertex = C
             remove_edge_keep_obj = D
@@ -462,7 +506,7 @@ class SpatialGraphDiagram:
             raise ValueError(f"Unknown resolution type: {resolution_type}")
 
         if check_pieces:
-            resolved_diagram._check_graph_structure()
+            resolved_diagram._check_graph()
 
         return resolved_diagram
 
