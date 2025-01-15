@@ -5,16 +5,14 @@ from yamada.sgd.sgd_modification import apply_crossing_swap
 from yamada.sgd.topological_distance import compute_min_distance
 
 e1 = Edge('e1')
-e2 = Edge('e2')
-e3 = Edge('e3')
 v1 = Vertex(2, 'v1')
 v2 = Vertex(2, 'v2')
-v1[0] = e3[1]
+v3 = Vertex(2, 'v3')
+v1[0] = v3[1]
 v1[1] = e1[0]
-e1[1] = e2[0]
-e2[1] = v2[0]
-v2[1] = e3[0]
-sgd =  SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2],
+e1[1] = v2[0]
+v2[1] = v3[0]
+sgd =  SpatialGraphDiagram(edges=[e1], vertices=[v1, v2, v3],
                            correct_diagram=True,
                            simplify_diagram=False)
 

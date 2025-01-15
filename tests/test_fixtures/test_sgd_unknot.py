@@ -437,8 +437,9 @@ def test_unknot_1e_3v(unknot_1e_3v, poly_unknot):
         sgd._correct_diagram()
 
     assert len(record) == 2
-    assert str(record[0].message) == "Vertices v2[0] and v3[0] should be connected by an edge."
-    assert str(record[1].message) == "Vertices v3[1] and v1[0] should be connected by an edge."
+    assert str(record[0].message) == "Vertices v1[0] and v3[1] should be connected by an edge."
+    assert str(record[1].message) == "Vertices v2[1] and v3[0] should be connected by an edge."
+
 
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
@@ -471,7 +472,7 @@ def test_unknot_2e_3v_1(unknot_2e_3v_1, poly_unknot):
         sgd._correct_diagram()
 
     assert len(record) == 1
-    assert str(record[0].message) == "Vertices v3[0] and v1[0] should be connected by an edge."
+    assert str(record[0].message) == "Vertices v1[0] and v3[1] should be connected by an edge."
 
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
@@ -506,8 +507,8 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
 
     assert len(record) == 3
     assert str(record[0].message) == "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
-    assert str(record[1].message) == "Vertices v2[1] and v3[0] should be connected by an edge."
-    assert str(record[2].message) == "Vertices v3[1] and v1[0] should be connected by an edge."
+    assert str(record[1].message) == "Vertices v1[0] and v3[1] should be connected by an edge."
+    assert str(record[2].message) == "Vertices v2[1] and v3[0] should be connected by an edge."
 
     assert len(sgd.vertices) == 4
     assert len(sgd.edges) == 4
@@ -568,8 +569,8 @@ def test_unknot_3e_3v_2(unknot_3e_3v_2, poly_unknot):
     assert len(record) == 4
     assert str(record[0].message) == "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
     assert str(record[1].message) == "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
-    assert str(record[2].message) == "Vertices v2[1] and v3[0] should be connected by an edge."
-    assert str(record[3].message) == "Vertices v3[1] and v1[0] should be connected by an edge."
+    assert str(record[2].message) == "Vertices v1[0] and v3[1] should be connected by an edge."
+    assert str(record[3].message) == "Vertices v2[1] and v3[0] should be connected by an edge."
 
     assert len(sgd.vertices) == 5
     assert len(sgd.edges) == 5
@@ -604,7 +605,7 @@ def test_unknot_3e_3v_3(unknot_3e_3v_3, poly_unknot):
 
     assert len(record) == 2
     assert str(record[0].message) == "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
-    assert str(record[1].message) == "Vertices v3[1] and v1[0] should be connected by an edge."
+    assert str(record[1].message) == "Vertices v1[0] and v3[1] should be connected by an edge."
 
     assert len(sgd.vertices) == 4
     assert len(sgd.edges) == 4
