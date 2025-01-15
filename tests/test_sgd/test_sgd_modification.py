@@ -27,7 +27,7 @@ def test_copy(unknot_inf_cw_2e_1v_1c_1):
 
 def test_merge_edges(unknot_3e_3v_1, poly_unknot):
 
-    sgd_1 = unknot_3e_3v_1
+    sgd_1 = unknot_3e_3v_1(correct_diagram=True, simplify_diagram=False)
     sgd_2 = sgd_1.copy()
     sgd_3 = sgd_1.copy()
     sgd_4 = sgd_1.copy()

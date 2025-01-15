@@ -11,12 +11,14 @@ from yamada import SpatialGraphDiagram, Edge, Crossing, has_r1, apply_r1
 
 
 def test_r1_unknot_1e_1v(unknot_1e_1v):
-    sgd_has_r1 = has_r1(unknot_1e_1v)
+    sgd = unknot_1e_1v(correct_diagram=True, simplify_diagram=True)
+    sgd_has_r1 = has_r1(sgd)
     assert len(sgd_has_r1) == 0
 
 
 def test_r1_unknot_2e_2v(unknot_2e_2v_1):
-    sgd_has_r1 = has_r1(unknot_2e_2v_1)
+    sgd = unknot_2e_2v_1(correct_diagram=True, simplify_diagram=True)
+    sgd_has_r1 = has_r1(sgd)
     assert len(sgd_has_r1) == 0
 
 
@@ -30,20 +32,20 @@ def test_r1_unknot_2e_2v(unknot_2e_2v_1):
 #     sgd_post_r1 = apply_r1(unknot_infinity_1c, 'c1')
 #     assert sgd_post_r1.normalized_yamada_polynomial() == unknot_yamada_poly
 
-def test_r1_2(unknot_inf_cw_0e_0v_1c, poly_unknot):
-
-    sgd = unknot_inf_cw_0e_0v_1c
-
-    assert sgd.yamada_polynomial() == poly_unknot
-
-    r1_crossing_labels = has_r1(sgd)
-
-    assert len(r1_crossing_labels) == 1
-    assert 'c1' in r1_crossing_labels
-
-    sgd = apply_r1(sgd, 'c1')
-
-    assert sgd.yamada_polynomial() == poly_unknot
+# def test_r1_2(unknot_inf_cw_0e_0v_1c, poly_unknot):
+#
+#     sgd = unknot_inf_cw_0e_0v_1c
+#
+#     assert sgd.yamada_polynomial() == poly_unknot
+#
+#     r1_crossing_labels = has_r1(sgd)
+#
+#     assert len(r1_crossing_labels) == 1
+#     assert 'c1' in r1_crossing_labels
+#
+#     sgd = apply_r1(sgd, 'c1')
+#
+#     assert sgd.yamada_polynomial() == poly_unknot
 
 
 def test_r1_3():

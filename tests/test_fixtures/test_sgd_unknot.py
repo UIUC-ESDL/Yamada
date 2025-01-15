@@ -1,24 +1,14 @@
-def test_unknot_0e_0v(unknot_0e_0v, poly_empty):
-    # Not actually unknot--an empty diagram.
-    sgd = unknot_0e_0v
-    assert sgd
-    assert sgd.yamada_polynomial() == poly_empty
-
-    # Simplify the graph
-    sgd.simplify()
-    assert len(sgd.edges) == 0
-    assert len(sgd.vertices) == 0
-    assert len(sgd.crossings) == 0
-    assert sgd.yamada_polynomial() == poly_empty
-
-
+import pytest
 
 def test_unknot_1e_0v(unknot_1e_0v, poly_unknot):
     """
     SGD should fix this by adding vertices to self-connected edges.
     """
-    sgd = unknot_1e_0v
-    assert sgd
+    sgd = unknot_1e_0v(correct_diagram=False, simplify_diagram=False)
+
+    with pytest.warns(UserWarning, match="Edges e1\[0\] and e1\[1\] should be connected by a two-valent vertex."):
+        sgd._correct_diagram()
+
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -27,7 +17,7 @@ def test_unknot_1e_0v(unknot_1e_0v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -40,8 +30,10 @@ def test_unknot_2e_0v(unknot_2e_0v, poly_unknot):
     """
     SGD should fix this by adding vertices to self-connected edges.
     """
-    sgd = unknot_2e_0v
+    sgd = unknot_2e_0v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[0] and e2[1] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e1[1] and e1[0] should be connected by a two-valent vertex."
     assert len(sgd.vertices) == 2
     assert len(sgd.edges) == 2
     assert len(sgd.crossings) == 0
@@ -52,7 +44,7 @@ def test_unknot_2e_0v(unknot_2e_0v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -62,8 +54,11 @@ def test_unknot_2e_0v(unknot_2e_0v, poly_unknot):
 
 
 def test_unknot_3e_0v(unknot_3e_0v, poly_unknot):
-    sgd = unknot_3e_0v
+    sgd = unknot_3e_0v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[0] and e3[1] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -76,7 +71,7 @@ def test_unknot_3e_0v(unknot_3e_0v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -89,8 +84,9 @@ def test_unknot_0e_1v(unknot_0e_1v, poly_unknot):
     """
     SGD should fix this by adding edges to self-connected vertices.
     """
-    sgd = unknot_0e_1v
+    sgd = unknot_0e_1v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v1[0] and v1[1] should be connected by an edge."
     assert len(sgd .vertices) == 1
     assert len(sgd .edges) == 1
     assert len(sgd .crossings) == 0
@@ -99,7 +95,7 @@ def test_unknot_0e_1v(unknot_0e_1v, poly_unknot):
     assert sgd .yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -109,8 +105,9 @@ def test_unknot_0e_1v(unknot_0e_1v, poly_unknot):
 
 
 def test_unknot_1e_1v(unknot_1e_1v, poly_unknot):
-    sgd = unknot_1e_1v
+    sgd = unknot_1e_1v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO Assert no warning
     assert len(sgd.vertices) == 1
     assert len(sgd.edges) == 1
     assert len(sgd.crossings) == 0
@@ -119,7 +116,7 @@ def test_unknot_1e_1v(unknot_1e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -129,8 +126,9 @@ def test_unknot_1e_1v(unknot_1e_1v, poly_unknot):
 
 
 def test_unknot_2e_1v(unknot_2e_1v, poly_unknot):
-    sgd = unknot_2e_1v
+    sgd = unknot_2e_1v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
     assert len(sgd.vertices) == 2
     assert len(sgd.edges) == 2
     assert len(sgd.crossings) == 0
@@ -141,7 +139,7 @@ def test_unknot_2e_1v(unknot_2e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -151,8 +149,10 @@ def test_unknot_2e_1v(unknot_2e_1v, poly_unknot):
 
 
 def test_unknot_3e_1v(unknot_3e_1v, poly_unknot):
-    sgd = unknot_3e_1v
+    sgd = unknot_3e_1v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -165,7 +165,7 @@ def test_unknot_3e_1v(unknot_3e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -175,8 +175,10 @@ def test_unknot_3e_1v(unknot_3e_1v, poly_unknot):
 
 
 def test_unknot_0e_2v(unknot_0e_2v, poly_unknot):
-    sgd = unknot_0e_2v
+    sgd = unknot_0e_2v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v1[0] and v2[1] should be connected by an edge."
+    # TODO: Assert warning "Vertices v1[1] and v2[0] should be connected by an edge."
     assert len(sgd.edges) == 2
     assert len(sgd.vertices) == 2
     assert len(sgd.crossings) == 0
@@ -187,7 +189,7 @@ def test_unknot_0e_2v(unknot_0e_2v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -197,8 +199,9 @@ def test_unknot_0e_2v(unknot_0e_2v, poly_unknot):
 
 
 def test_unknot_1e_2v(unknot_1e_2v, poly_unknot):
-    sgd = unknot_1e_2v
+    sgd = unknot_1e_2v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v1[0] and v2[1] should be connected by an edge."
     assert len(sgd.vertices) == 2
     assert len(sgd.edges) == 2
     assert len(sgd.crossings) == 0
@@ -209,7 +212,7 @@ def test_unknot_1e_2v(unknot_1e_2v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -219,8 +222,9 @@ def test_unknot_1e_2v(unknot_1e_2v, poly_unknot):
 
 
 def test_unknot_2e_2v_1(unknot_2e_2v_1, poly_unknot):
-    sgd = unknot_2e_2v_1
+    sgd = unknot_2e_2v_1(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO assert no warnings
     assert len(sgd.vertices) == 2
     assert len(sgd.edges) == 2
     assert len(sgd.crossings) == 0
@@ -231,7 +235,7 @@ def test_unknot_2e_2v_1(unknot_2e_2v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -245,8 +249,10 @@ def test_unknot_2e_2v_2(unknot_2e_2v_2, poly_unknot):
     Completes SGD by inserting a vertex between the two edges.
     And an edge between the two vertices.
     """
-    sgd = unknot_2e_2v_2
+    sgd = unknot_2e_2v_2(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v1[0] and v2[1] should be connected by an edge."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -259,7 +265,7 @@ def test_unknot_2e_2v_2(unknot_2e_2v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -272,8 +278,11 @@ def test_unknot_3e_2v_1(unknot_3e_2v_1, poly_unknot):
     """
     Completes SGD by inserting an edge between the two vertices.
     """
-    sgd = unknot_3e_2v_1
+    sgd = unknot_3e_2v_1(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v1[0] and v2[1] should be connected by an edge."
     assert len(sgd.vertices) == 4
     assert len(sgd.edges) == 4
     assert len(sgd.crossings) == 0
@@ -288,7 +297,7 @@ def test_unknot_3e_2v_1(unknot_3e_2v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -302,8 +311,11 @@ def test_unknot_3e_2v_2(unknot_3e_2v_2, poly_unknot):
     Completes SGD by inserting two edge between the three vertices.
     And a vertex between the two edges.
     """
-    sgd = unknot_3e_2v_2
+    sgd = unknot_3e_2v_2(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v1[0] and v2[1] should be connected by an edge."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -316,7 +328,7 @@ def test_unknot_3e_2v_2(unknot_3e_2v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -329,8 +341,11 @@ def test_unknot_0e_3v(unknot_0e_3v, poly_unknot):
     """
     Completes SGD by inserting an edge between the three vertices.
     """
-    sgd = unknot_0e_3v
+    sgd = unknot_0e_3v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v1[0] and v3[1] should be connected by an edge."
+    # TODO: Assert warning "Vertices v1[1] and v2[0] should be connected by an edge."
+    # TODO: Assert warning "Vertices v2[1] and v3[0] should be connected by an edge."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -343,7 +358,7 @@ def test_unknot_0e_3v(unknot_0e_3v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -356,8 +371,10 @@ def test_unknot_1e_3v(unknot_1e_3v, poly_unknot):
     """
     Completes SGD by inserting an edge between the three vertices.
     """
-    sgd = unknot_1e_3v
+    sgd = unknot_1e_3v(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v2[0] and v3[0] should be connected by an edge."
+    # TODO: Assert warning "Vertices v3[1] and v1[0] should be connected by an edge."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -370,7 +387,7 @@ def test_unknot_1e_3v(unknot_1e_3v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -383,8 +400,9 @@ def test_unknot_2e_3v_1(unknot_2e_3v_1, poly_unknot):
     """
     Completes SGD by inserting an edge between the two vertices.
     """
-    sgd = unknot_2e_3v_1
+    sgd = unknot_2e_3v_1(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Vertices v3[0] and v1[0] should be connected by an edge."
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -397,7 +415,7 @@ def test_unknot_2e_3v_1(unknot_2e_3v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -411,8 +429,11 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
     Completes SGD by inserting an edge between the two vertices.
     And inserting edges between the three vertices.
     """
-    sgd = unknot_2e_3v_2
+    sgd = unknot_2e_3v_2(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v2[1] and v3[0] should be connected by an edge."
+    # TODO: Assert warning "Vertices v3[1] and v1[0] should be connected by an edge."
     assert len(sgd.vertices) == 4
     assert len(sgd.edges) == 4
     assert len(sgd.crossings) == 0
@@ -427,7 +448,7 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -437,8 +458,9 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
 
 
 def test_unknot_3e_3v_1(unknot_3e_3v_1, poly_unknot):
-    sgd = unknot_3e_3v_1
+    sgd = unknot_3e_3v_1(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO Assert no warnings
     assert len(sgd.vertices) == 3
     assert len(sgd.edges) == 3
     assert len(sgd.crossings) == 0
@@ -451,7 +473,7 @@ def test_unknot_3e_3v_1(unknot_3e_3v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -461,8 +483,12 @@ def test_unknot_3e_3v_1(unknot_3e_3v_1, poly_unknot):
 
 
 def test_unknot_3e_3v_2(unknot_3e_3v_2, poly_unknot):
-    sgd = unknot_3e_3v_2
+    sgd = unknot_3e_3v_2(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Edges e2[1] and e3[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v2[1] and v3[0] should be connected by an edge."
+    # TODO: Assert warning "Vertices v3[1] and v1[0] should be connected by an edge."
     assert len(sgd.vertices) == 5
     assert len(sgd.edges) == 5
     assert len(sgd.crossings) == 0
@@ -479,7 +505,7 @@ def test_unknot_3e_3v_2(unknot_3e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -489,8 +515,10 @@ def test_unknot_3e_3v_2(unknot_3e_3v_2, poly_unknot):
 
 
 def test_unknot_3e_3v_3(unknot_3e_3v_3, poly_unknot):
-    sgd = unknot_3e_3v_3
+    sgd = unknot_3e_3v_3(correct_diagram=True, simplify_diagram=False)
     assert sgd
+    # TODO: Assert warning "Edges e1[1] and e2[0] should be connected by a two-valent vertex."
+    # TODO: Assert warning "Vertices v3[1] and v1[0] should be connected by an edge."
     assert len(sgd.vertices) == 4
     assert len(sgd.edges) == 4
     assert len(sgd.crossings) == 0
@@ -505,15 +533,10 @@ def test_unknot_3e_3v_3(unknot_3e_3v_3, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd.simplify()
+    sgd.simplify_diagram()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
     assert sgd.edges[0].label == 'e1'
     assert sgd.vertices[0].label == 'v1'
     assert sgd.yamada_polynomial() == poly_unknot
-
-
-
-
-

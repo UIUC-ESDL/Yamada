@@ -44,6 +44,7 @@ rather than directly calculate Yamada polynomials in this script (you'll get err
 import networkx as nx
 import pickle
 from cypari import pari
+import warnings
 import matplotlib
 matplotlib.use('TkAgg')   # Use a non-interactive backend
 import matplotlib.pyplot as plt
@@ -58,7 +59,10 @@ from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 
 class SpatialGraphDiagram:
 
-    def __init__(self, *, edges=None, vertices=None, crossings=None, simplify=False):
+    def __init__(self, *, edges=None, vertices=None, crossings=None,
+                 standardize_labels=True,
+                 correct_diagram=True,
+                 simplify_diagram=True):
 
         # Ensure inputs are lists (avoid mutable default arguments)
         edges = edges or []
@@ -74,13 +78,14 @@ class SpatialGraphDiagram:
         self.crossings = crossings
         self.data = {d.label: d for d in self.edges + self.vertices + self.crossings}
 
-        # Normalize labels
-        self._normalize_labels()
+        if standardize_labels:
+            self._standardize_labels()
 
-        # Ensure that vertices and crossings are connected indirectly via edges
-        self._correct_graph()
-        if simplify:
-            self.simplify()
+        if correct_diagram:
+            self._correct_diagram()
+
+        if simplify_diagram:
+            self.simplify_diagram()
 
     @staticmethod
     def _validate_inputs(edges, vertices, crossings):
@@ -114,16 +119,20 @@ class SpatialGraphDiagram:
 
         return edges, vertices, crossings
 
-    def _correct_graph(self):
+    def _correct_diagram(self):
         """
         Ensures that the diagram is correctly assembled.
         """
+
+        if len(self.edges) == 0 and len(self.vertices) == 0 and len(self.crossings) == 0:
+            warnings.warn("Empty diagram.", UserWarning)
 
         # Pairs of edges must be connected by a vertex.
         for A in self.edges:
             for i in range(2):
                 B, j = A.adjacent[i]
                 if isinstance(B, Edge):
+                    warnings.warn(f"Edges {A.label}[{i}] and {B.label}[{j}] should be connected by a two-valent vertex.", UserWarning)
                     self._create_vertex((A, i), (B, j))
 
         # Pairs of vertices and/or crossings must be connected by an edge.
@@ -136,7 +145,7 @@ class SpatialGraphDiagram:
         # Check the corrected diagram
         self.check()
 
-    def simplify(self):
+    def simplify_diagram(self):
         """Merges edges sharing 2-valent vertices until no more simplifications can be made."""
 
         changed = True
@@ -175,7 +184,7 @@ class SpatialGraphDiagram:
         assert is_planar
 
 
-    def _normalize_labels(self):
+    def _standardize_labels(self):
         """
         Renumbers labels for edges, vertices, and crossings sequentially.
         """

@@ -12,11 +12,12 @@ def unknot_inf_cw_0e_0v_1c():
     Formed by a self-connected crossing.
     Twist is clockwise.
     """
-    c1 = Crossing('c1')
-    c1[0] = c1[1]
-    c1[2] = c1[3]
-    sgd = SpatialGraphDiagram(crossings=[c1], simplify=False)
-    return sgd
+    def create_sgd():
+        c1 = Crossing('c1')
+        c1[0] = c1[1]
+        c1[2] = c1[3]
+        sgd = SpatialGraphDiagram(crossings=[c1], simplify_diagram=False)
+    return create_sgd
 
 
 @pytest.fixture
@@ -26,7 +27,7 @@ def unknot_inf_cw_1e_0v_1c():
     c1[0] = c1[1]
     c1[2] = e1[0]
     c1[3] = e1[1]
-    sgd = SpatialGraphDiagram(edges=[e1], crossings=[c1], simplify=False)
+    sgd = SpatialGraphDiagram(edges=[e1], crossings=[c1], simplify_diagram=False)
     return sgd
 
 
@@ -42,7 +43,7 @@ def unknot_inf_cw_2e_0v_1c_1():
     c1[1] = e2[0]
     c1[2] = e1[0]
     c1[3] = e1[1]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1], simplify=False)
+    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1], simplify_diagram=False)
     return sgd
 
 
@@ -59,7 +60,7 @@ def unknot_inf_cw_2e_0v_1c_2():
     e1[1] = e2[0]
     e2[1] = c1[3]
     # TODO Assert warning "e1[1] and e2[0] should be connected..."
-    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1], simplify=False)
+    sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1], simplify_diagram=False)
     return sgd
 
 
