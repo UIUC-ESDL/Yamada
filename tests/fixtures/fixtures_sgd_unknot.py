@@ -47,7 +47,7 @@ def unknot_3e_0v():
     e1[0] = e3[1]
     e1[1] = e2[0]
     e2[1] = e3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], simplify=False)
     return sgd
 
 
@@ -58,7 +58,7 @@ def unknot_0e_1v():
     """
     v1 = Vertex(2, label='v1')
     v1[0] = v1[1]
-    sgd = SpatialGraphDiagram(vertices=[v1])
+    sgd = SpatialGraphDiagram(vertices=[v1], simplify=False)
     return sgd
 
 
@@ -69,7 +69,7 @@ def unknot_1e_1v():
     v1 = Vertex(2, label='v1')
     v1[0] = e1[1]
     v1[1] = e1[0]
-    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1])
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1], simplify=False)
     return sgd
 
 
@@ -82,7 +82,7 @@ def unknot_2e_1v():
     v1[0] = e2[1]
     v1[1] = e1[0]
     e1[1] = e2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1], simplify=False)
     return sgd
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def unknot_3e_1v():
     v1[1] = e1[0]
     e1[1] = e2[0]
     e2[1] = e3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1], simplify=False)
     return sgd
 
 
@@ -109,7 +109,7 @@ def unknot_0e_2v():
     v2 = Vertex(2, label='v2')
     v1[0] = v2[1]
     v1[1] = v2[0]
-    sgd = SpatialGraphDiagram(vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(vertices=[v1, v2], simplify=False)
     return sgd
 
 @pytest.fixture
@@ -121,7 +121,7 @@ def unknot_1e_2v():
     v1[0] = v2[1]
     v1[1] = e1[0]
     e1[1] = v2[0]
-    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2], simplify=False)
     return sgd
 
 
@@ -135,7 +135,7 @@ def unknot_2e_2v_1():
     v1[1] = e1[0]
     e1[1] = v2[0]
     v2[1] = e2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2], simplify=False)
     return sgd
 
 
@@ -149,7 +149,7 @@ def unknot_2e_2v_2():
     v1[1] = e1[0]
     e1[1] = e2[0]
     e2[1] = v2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2], simplify=False)
     return sgd
 
 
@@ -166,7 +166,7 @@ def unknot_3e_2v_1():
     e1[1] = e2[0]
     e2[1] = e3[0]
     e3[1] = v2[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2], simplify=False)
     return sgd
 
 
@@ -183,7 +183,7 @@ def unknot_3e_2v_2():
     e1[1] = e2[0]
     e2[1] = v2[0]
     v2[1] = e3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2], simplify=False)
     return sgd
 
 
@@ -198,7 +198,7 @@ def unknot_0e_3v():
     v1[0] = v3[1]
     v1[1] = v2[0]
     v2[1] = v3[0]
-    sgd = SpatialGraphDiagram(vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -212,7 +212,7 @@ def unknot_1e_3v():
     v1[1] = e1[0]
     e1[1] = v2[0]
     v2[1] = v3[0]
-    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -228,7 +228,7 @@ def unknot_2e_3v_1():
     e1[1] = v2[0]
     v2[1] = e2[0]
     e2[1] = v3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -244,7 +244,7 @@ def unknot_2e_3v_2():
     e1[1] = e2[0]
     e2[1] = v2[0]
     v2[1] = v3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2], vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -264,7 +264,7 @@ def unknot_3e_3v_1():
     v2[1] = e2[0]
     v3[0] = e2[1]
     v3[1] = e3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -283,7 +283,7 @@ def unknot_3e_3v_2():
     e2[1] = e3[0]
     e3[1] = v2[0]
     v2[1] = v3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3], simplify=False)
     return sgd
 
 
@@ -302,5 +302,5 @@ def unknot_3e_3v_3():
     e2[1] = v2[0]
     v2[1] = e3[0]
     e3[1] = v3[0]
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3])
+    sgd = SpatialGraphDiagram(edges=[e1, e2, e3], vertices=[v1, v2, v3], simplify=False)
     return sgd

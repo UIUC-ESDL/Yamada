@@ -6,11 +6,15 @@ from yamada.sgd.topological_distance import compute_min_distance
 
 e1 = Edge('e1')
 e2 = Edge('e2')
-e1[0] = e2[1]
+c1 = Crossing('c1')
+c1[0] = c1[1]
+c1[2] = e1[0]
 e1[1] = e2[0]
-sgd = SpatialGraphDiagram(edges=[e1, e2], simplify=True)
+e2[1] = c1[3]
+# TODO Assert warning "e1[1] and e2[0] should be connected..."
+sgd = SpatialGraphDiagram(edges=[e1, e2], crossings=[c1], simplify=False)
 
-
+sgd.simplify()
 
 # v1 = Vertex(3, 'v1')
 # v2 = Vertex(3, 'v2')

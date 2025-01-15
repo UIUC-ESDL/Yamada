@@ -54,6 +54,9 @@ def apply_r1(sgd, crossing_label):
     sgd.connect(B, j, D, l)
     sgd._remove_crossing(crossing)
 
+    # Check the diagram
+    sgd.check()
+
     return sgd
 
 
@@ -122,6 +125,9 @@ def apply_r2(sgd, crossing_labels):
     sgd.connect(c2_a0, c2_a0_i, c2_a2, c2_a2_i)
     sgd.connect(c2_a1, c2_a1_i, c2_a3, c2_a3_i)
     sgd._remove_crossing(crossing_2)
+
+    # Check the diagram
+    sgd.check()
 
     return sgd
 
@@ -251,6 +257,9 @@ def apply_r3(sgd, r3_input):
     # Connect MC1 and MC2 to SC's original connections
     sc_adj_opposite_of_se2[index_sc_adj_opposite_of_se2_to_sc] = mc1[index_mc1_to_se1]
     sc_adj_opposite_of_se1[index_sc_adj_opposite_of_se1_to_sc] = mc2[index_mc2_to_se2]
+
+    # Check the diagram
+    sgd.check()
 
     return sgd
 

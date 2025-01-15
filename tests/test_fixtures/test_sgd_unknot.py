@@ -5,7 +5,7 @@ def test_unknot_0e_0v(unknot_0e_0v, poly_empty):
     assert sgd.yamada_polynomial() == poly_empty
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 0
     assert len(sgd.vertices) == 0
     assert len(sgd.crossings) == 0
@@ -19,15 +19,15 @@ def test_unknot_1e_0v(unknot_1e_0v, poly_unknot):
     """
     sgd = unknot_1e_0v
     assert sgd
-    assert len(sgd.vertices) == 1
     assert len(sgd.edges) == 1
+    assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
     assert sgd.edges[0].label == 'e1'
     assert sgd.vertices[0].label == 'v1'
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -52,7 +52,7 @@ def test_unknot_2e_0v(unknot_2e_0v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -76,7 +76,7 @@ def test_unknot_3e_0v(unknot_3e_0v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -99,7 +99,7 @@ def test_unknot_0e_1v(unknot_0e_1v, poly_unknot):
     assert sgd .yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -119,7 +119,7 @@ def test_unknot_1e_1v(unknot_1e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -141,7 +141,7 @@ def test_unknot_2e_1v(unknot_2e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -165,7 +165,7 @@ def test_unknot_3e_1v(unknot_3e_1v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -187,7 +187,7 @@ def test_unknot_0e_2v(unknot_0e_2v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -209,7 +209,7 @@ def test_unknot_1e_2v(unknot_1e_2v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -231,7 +231,7 @@ def test_unknot_2e_2v_1(unknot_2e_2v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -259,7 +259,7 @@ def test_unknot_2e_2v_2(unknot_2e_2v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -288,7 +288,7 @@ def test_unknot_3e_2v_1(unknot_3e_2v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -316,7 +316,7 @@ def test_unknot_3e_2v_2(unknot_3e_2v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -343,7 +343,7 @@ def test_unknot_0e_3v(unknot_0e_3v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -352,7 +352,7 @@ def test_unknot_0e_3v(unknot_0e_3v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
 
-def test_1e_3v(unknot_1e_3v, poly_unknot):
+def test_unknot_1e_3v(unknot_1e_3v, poly_unknot):
     """
     Completes SGD by inserting an edge between the three vertices.
     """
@@ -370,7 +370,7 @@ def test_1e_3v(unknot_1e_3v, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -397,7 +397,7 @@ def test_unknot_2e_3v_1(unknot_2e_3v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -427,7 +427,7 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -436,7 +436,7 @@ def test_unknot_2e_3v_2(unknot_2e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
 
-def test_3e_3v_1(unknot_3e_3v_1, poly_unknot):
+def test_unknot_3e_3v_1(unknot_3e_3v_1, poly_unknot):
     sgd = unknot_3e_3v_1
     assert sgd
     assert len(sgd.vertices) == 3
@@ -451,7 +451,7 @@ def test_3e_3v_1(unknot_3e_3v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -460,7 +460,7 @@ def test_3e_3v_1(unknot_3e_3v_1, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
 
-def test_3e_3v_2(unknot_3e_3v_2, poly_unknot):
+def test_unknot_3e_3v_2(unknot_3e_3v_2, poly_unknot):
     sgd = unknot_3e_3v_2
     assert sgd
     assert len(sgd.vertices) == 5
@@ -479,7 +479,7 @@ def test_3e_3v_2(unknot_3e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0
@@ -488,7 +488,7 @@ def test_3e_3v_2(unknot_3e_3v_2, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
 
-def test_3e_3v_3(unknot_3e_3v_3, poly_unknot):
+def test_unknot_3e_3v_3(unknot_3e_3v_3, poly_unknot):
     sgd = unknot_3e_3v_3
     assert sgd
     assert len(sgd.vertices) == 4
@@ -505,7 +505,7 @@ def test_3e_3v_3(unknot_3e_3v_3, poly_unknot):
     assert sgd.yamada_polynomial() == poly_unknot
 
     # Simplify the graph
-    sgd._simplify_graph()
+    sgd.simplify()
     assert len(sgd.edges) == 1
     assert len(sgd.vertices) == 1
     assert len(sgd.crossings) == 0

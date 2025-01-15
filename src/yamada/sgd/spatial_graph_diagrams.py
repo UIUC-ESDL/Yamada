@@ -80,7 +80,7 @@ class SpatialGraphDiagram:
         # Ensure that vertices and crossings are connected indirectly via edges
         self._correct_graph()
         if simplify:
-            self._simplify_graph()
+            self.simplify()
 
     @staticmethod
     def _validate_inputs(edges, vertices, crossings):
@@ -134,9 +134,9 @@ class SpatialGraphDiagram:
                     self._create_edge(A, i, B, j)
 
         # Check the corrected diagram
-        self._check_graph()
+        self.check()
 
-    def _simplify_graph(self):
+    def simplify(self):
         """Merges edges sharing 2-valent vertices until no more simplifications can be made."""
 
         changed = True
@@ -159,9 +159,9 @@ class SpatialGraphDiagram:
                         break  # Restart the loop after a change
 
         # Check the simplified diagram
-        self._check_graph()
+        self.check()
 
-    def _check_graph(self):
+    def check(self):
 
         # Check that the diagram is connected
         assert 2 * len(self.edges) == sum(d.degree for d in self.crossings + self.vertices)
@@ -316,9 +316,10 @@ class SpatialGraphDiagram:
         (C, k), (D, l) = remove_edge.adjacent
 
         # If the edges shared two vertices, remove the higher vertex
-        edges_share_two_vertices = (A == C and B == D) or (A == D and B == C)
+        edges_share_two_objects = (A == C and B == D) or (A == D and B == C)
+        objects_are_vertices = isinstance(A, Vertex) and isinstance(B, Vertex)
         shared_vertices_are_two_valent = A.degree == 2 and B.degree == 2
-        if edges_share_two_vertices and shared_vertices_are_two_valent:
+        if edges_share_two_objects and objects_are_vertices and shared_vertices_are_two_valent:
             A_label = int(A.label[1:])
             B_label = int(B.label[1:])
             if A_label > B_label:
@@ -329,22 +330,22 @@ class SpatialGraphDiagram:
                 keep_edge_connect_idx = 0 if A == B else 1  # Connect to the other vertex
             remove_edge_keep_obj = D if remove_vertex == C else C
             remove_edge_keep_idx = l if remove_vertex == C else k
-        elif A == C:
+        elif A == C and isinstance(A, Vertex):
             keep_edge_connect_idx = 0
             remove_vertex = C
             remove_edge_keep_obj = D
             remove_edge_keep_idx = l
-        elif A == D:
+        elif A == D and isinstance(A, Vertex):
             keep_edge_connect_idx = 0
             remove_vertex = D
             remove_edge_keep_obj = C
             remove_edge_keep_idx = k
-        elif B == C:
+        elif B == C and isinstance(B, Vertex):
             keep_edge_connect_idx = 1
             remove_vertex = C
             remove_edge_keep_obj = D
             remove_edge_keep_idx = l
-        elif B == D:
+        elif B == D and isinstance(B, Vertex):
             keep_edge_connect_idx = 1
             remove_vertex = D
             remove_edge_keep_obj = C
@@ -506,7 +507,7 @@ class SpatialGraphDiagram:
             raise ValueError(f"Unknown resolution type: {resolution_type}")
 
         if check_pieces:
-            resolved_diagram._check_graph()
+            resolved_diagram.check()
 
         return resolved_diagram
 
