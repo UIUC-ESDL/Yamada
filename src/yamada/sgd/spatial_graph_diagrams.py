@@ -140,6 +140,9 @@ class SpatialGraphDiagram:
             for i in range(A.degree):
                 B, j = A.adjacent[i]
                 if not isinstance(B, Edge):
+                    warnings.warn(
+                        f"Vertices {A.label}[{i}] and {B.label}[{j}] should be connected by an edge.",
+                        UserWarning)
                     self._create_edge(A, i, B, j)
 
         # Check the corrected diagram
