@@ -25,12 +25,13 @@ def test_r1_unknot_2e_2v(unknot_2e_2v_1):
 # %% Unknots that do have a Reidemeister 1 move
 
 
-# def test_r1_unknot_infinity_1c(unknot_infinity_1c, unknot_yamada_poly):
-#     sgd_has_r1 = has_r1(unknot_infinity_1c)
-#     assert len(sgd_has_r1) == 1
-#     assert 'c1' in sgd_has_r1
-#     sgd_post_r1 = apply_r1(unknot_infinity_1c, 'c1')
-#     assert sgd_post_r1.normalized_yamada_polynomial() == unknot_yamada_poly
+def test_r1_unknot_infinity_1c(unknot_inf_cw_2e_0v_1c_1, poly_unknot):
+    sgd = unknot_inf_cw_2e_0v_1c_1
+    sgd_has_r1 = has_r1(sgd)
+    assert len(sgd_has_r1) == 1
+    assert 'c1' in sgd_has_r1
+    sgd_post_r1 = apply_r1(sgd, 'c1')
+    assert sgd_post_r1.yamada_polynomial() == poly_unknot
 
 # def test_r1_2(unknot_inf_cw_0e_0v_1c, poly_unknot):
 #

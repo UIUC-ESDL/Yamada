@@ -51,16 +51,22 @@ def test_sgd_omega_2_graph(omega_2_graph_1, omega_2_graph_2):
     with pytest.warns() as record:
         sgd2._correct_diagram()
 
+    # It should raise 12 warnings for the 12 missing edges
     assert len(record) == 12
 
-    g = sgd1.underlying_graph()
+    g1 = sgd1.underlying_graph()
+    g2 = sgd2.underlying_graph()
 
-    assert nx.is_isomorphic(g, nx.complete_graph(4))
+    assert nx.is_isomorphic(g1, nx.complete_graph(4))
+    assert nx.is_isomorphic(g2, nx.complete_graph(4))
+
+
     a = pari('A')
     expected_normalized_yamada_polynomial = \
         normalize_poly(a**-5 + a**-4 + a**-3 + a**-2 + a**-1 -1 + a - 2*a**2+a**3-a**4+a**5+a**6+a**8)
 
     yp1 = sgd1.yamada_polynomial()
+    yp2 = sgd2.yamada_polynomial()
 
     assert sgd1.yamada_polynomial() == expected_normalized_yamada_polynomial
-
+    assert sgd2.yamada_polynomial() == expected_normalized_yamada_polynomial
