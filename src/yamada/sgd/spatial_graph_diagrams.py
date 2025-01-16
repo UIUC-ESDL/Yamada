@@ -106,16 +106,23 @@ class SpatialGraphDiagram:
         if not e_are_unique or not v_are_unique or not c_are_unique:
             raise ValueError("Labels must be unique.")
 
+        # Ensure all indices are assigned to other diagram elements
+        all_indices = []
+        unique_indices = set()
+        for element in data:
+            for i, adjacent in enumerate(element.adjacent):
+                if adjacent is None:
+                    raise ValueError(f"Object {element.label} index {i} is not assigned.")
+                elif adjacent[0] not in data:
+                    raise ValueError(f"Object {element.label} index {i} is incorrectly assigned to an object not within the SGD.")
+                else:
+                    all_indices.append(adjacent)
+                    unique_indices.add(adjacent)
+
+
         # Ensure all indices are uniquely assigned.
-        all_indices = [(A, i) for element in data for A, i in element.adjacent]
-        unique_indices = set((A, i) for element in data for A, i in element.adjacent)
         if len(all_indices) != len(unique_indices):
             raise ValueError("Indices must be unique.")
-
-        # Ensure all indices are assigned to other diagram elements
-        for A, i in all_indices:
-            if A not in data:
-                raise ValueError("Indices incorrectly assigned to an element not in this diagram")
 
         return edges, vertices, crossings
 
