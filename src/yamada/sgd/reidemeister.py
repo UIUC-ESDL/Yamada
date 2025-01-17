@@ -54,8 +54,8 @@ def apply_r1(sgd, crossing_label):
     sgd.connect(B, j, D, l)
     sgd._remove_crossing(crossing)
 
-    # Check the diagram
-    sgd.check()
+    # Simplify and Check the diagram
+    sgd._simplify()
 
     return sgd
 
@@ -126,8 +126,8 @@ def apply_r2(sgd, crossing_labels):
     sgd.connect(c2_a1, c2_a1_i, c2_a3, c2_a3_i)
     sgd._remove_crossing(crossing_2)
 
-    # Check the diagram
-    sgd.check()
+    # Simplify and Check the diagram
+    sgd._simplify()
 
     return sgd
 

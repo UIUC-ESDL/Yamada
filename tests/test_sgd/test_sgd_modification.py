@@ -1,9 +1,9 @@
 import pytest
 
 
-def test_copy(unknot_inf_cw_2e_1v_1c_1):
+def test_copy(unknot_inf_cw_4e_2v_1c_1):
     """Ensures that the copy method creates a completely new object."""
-    sgd = unknot_inf_cw_2e_1v_1c_1
+    sgd = unknot_inf_cw_4e_2v_1c_1()
     edges = sgd.edges
     vertices = sgd.vertices
     crossings = sgd.crossings

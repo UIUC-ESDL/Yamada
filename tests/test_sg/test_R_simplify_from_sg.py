@@ -1,9 +1,3 @@
-# # TODO Implement
-
-def test_dummy():
-    assert True
-
-#
 # from yamada import SpatialGraph
 # from yamada.sgd.reidemeister import reidemeister_simplify
 #
