@@ -6,7 +6,6 @@ from yamada.sgd.sgd_analysis import face_has_exactly_3_crossings_and_3_edges, ed
 
 # %% Reidemeister 1
 
-
 def available_r1_moves(sgd):
     """
     Criteria:
@@ -17,6 +16,8 @@ def available_r1_moves(sgd):
     Note: Applying the R1 move monotonically simplifies the diagram. Further, since applying the R1 move will change
     the diagram, it might invalidate other identified R1 moves. Therefore, we will only provide the first identified R1.
     This function may be called multiple times to simplify the diagram.
+
+    TODO Decouple SGD Object from Reidemeister Moves. Rely on static data structures.
     """
 
 
@@ -74,6 +75,8 @@ def available_r2_moves(sgd):
     Note: Applying the R2 move monotonically simplifies the diagram. Further, since applying the R2 move will change
     the diagram, it might invalidate other identified R1 moves. Therefore, we will only provide the first identified R2.
     This function may be called multiple times to simplify the diagram.
+
+    TODO Decouple SGD Object from Reidemeister Moves. Rely on static data structures.
     """
 
     r2_crossing_labels = []
@@ -154,7 +157,6 @@ def available_r3_moves(sgd):
     """
 
     # Initialize the lists
-    sgd_has_r3 = False
     r3_inputs = []
 
     # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
@@ -168,15 +170,27 @@ def available_r3_moves(sgd):
         candidate_edges = edges_that_are_fully_under_or_over(face)
         for candidate_edge in candidate_edges:
             r3_input = {}
-            crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
 
             # In a triangular face (3 crossings, 3 edges), the stationary crossing is opposite of the moving edge.
             stationary_crossing = find_opposite_crossing(face, candidate_edge)
-            moving_crossings = [crossing for crossing in crossings if crossing != stationary_crossing]
+
+            face_entry_points = [ep.vertex for ep in face]
+
+            # Determine the starting point (stationary crossing)
+            start_index = face_entry_points.index(stationary_crossing)
+
+            # Reorder the face to start from the stationary crossing
+            ordered_face = face_entry_points[start_index:] + face_entry_points[:start_index]
+
+            # Identify the two moving crossings (next clockwise crossings after the stationary crossing)
+            moving_crossings = [ep for ep in ordered_face if isinstance(ep, Crossing) and ep != stationary_crossing]
+
+            # Loop through face to ensure crossings are numbered in a clockwise order
+            # moving_crossings = [ep.vertex for ep in face if isinstance(ep.vertex, Crossing) and ep.vertex != stationary_crossing]
+
             stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
             stationary_edge_2 = find_common_edge(stationary_crossing, moving_crossings[1])
 
-            sgd_has_r3 = True
             r3_input['stationary_crossing'] = stationary_crossing.label
             r3_input['stationary_edge_1'] = stationary_edge_1.label
             r3_input['stationary_edge_2'] = stationary_edge_2.label
@@ -185,7 +199,7 @@ def available_r3_moves(sgd):
             r3_input['moving_edge'] = candidate_edge.label
             r3_inputs.append(r3_input)
 
-    return sgd_has_r3, r3_inputs
+    return r3_inputs
 
 
 def apply_r3_move(sgd, r3_input, simplify=True):
@@ -246,7 +260,6 @@ def apply_r3_move(sgd, r3_input, simplify=True):
     se1_sc_index = [i for (edge, i) in sc.adjacent if edge == se1][0]
     se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
     se2_sc_index = [i for (edge, i) in sc.adjacent if edge == se2][0]
-
 
     # Connect the dangling edges to SC
     sc[index_sc_to_se1] = mc1_adj_opposite_of_se1[index_mc1_adj_opposite_of_se1_to_mc1]
@@ -351,8 +364,8 @@ def reidemeister_simplify(sgd, n_tries=10):
 
     # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
-        sgd_has_r3, r3_inputs = available_r3_moves(sgd)
-        if sgd_has_r3:
+        r3_inputs = available_r3_moves(sgd)
+        if len(r3_inputs) > 0:
             # Pick a semi-random R3 move
             r3_input = r3_inputs[i % len(r3_inputs)]
             sgd = apply_r3_move(sgd, r3_input)

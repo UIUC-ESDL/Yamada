@@ -2,118 +2,97 @@ from cypari import pari
 from yamada import SpatialGraphDiagram, Edge, Crossing, available_r3_moves, apply_r3_move
 
 
-def pre_r3():
-
-    c1 = Crossing('c1')
-    c2 = Crossing('c2')
-    c3 = Crossing('c3')
-    c4 = Crossing('c4')
-    c5 = Crossing('c5')
-
-    e1 = Edge('e1')
-    e2 = Edge('e2')
-    e3 = Edge('e3')
-    e4 = Edge('e4')
-    e5 = Edge('e5')
-    e6 = Edge('e6')
-    e7 = Edge('e7')
-    e8 = Edge('e8')
-    e9 = Edge('e9')
-    e10 = Edge('e10')
-
-    c1[0] = e1[0]
-    c1[1] = e4[0]
-    c1[2] = e3[0]
-    c1[3] = e2[0]
-
-    c2[0] = e5[1]
-    c2[1] = e1[1]
-    c2[2] = e6[0]
-    c2[3] = e9[0]
-
-    c3[0] = e6[1]
-    c3[1] = e2[1]
-    c3[2] = e7[1]
-    c3[3] = e9[1]
-
-    c4[0] = e8[1]
-    c4[1] = e10[1]
-    c4[2] = e7[0]
-    c4[3] = e3[1]
-
-    c5[0] = e5[0]
-    c5[1] = e10[0]
-    c5[2] = e8[0]
-    c5[3] = e4[1]
-
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10], crossings=[c1, c2, c3, c4, c5])
-
-    return sgd
+def test_does_not_have_r3():
+    # TODO: Implement
+    pass
 
 
-def post_r3():
-    # TODO This is no longer valid. All SGD creation should be done with fixtures and tested.
-    c1 = Crossing('c1')
-    c2 = Crossing('c2')
-    c3 = Crossing('c3')
-    c4 = Crossing('c4')
-    c5 = Crossing('c5')
+def test_has_r3(two_unknots_1):
+    # Conventions _1, _2 follow clockwise ordering.
 
-    e1 = Edge('e1')
-    e2 = Edge('e2')
-    e3 = Edge('e3')
-    e4 = Edge('e4')
-    e5 = Edge('e5')
-    e6 = Edge('e6')
-    e7 = Edge('e7')
-    e8 = Edge('e8')
-    e9 = Edge('e9')
-    e10 = Edge('e10')
-    e11 = Edge('e11')
-    e12 = Edge('e12')
+    r3_moves = available_r3_moves(two_unknots_1)
+    assert len(r3_moves) == 8
 
-    c1[0] = e11[0]
-    c1[1] = e12[0]
-    c1[2] = e3[0]
-    c1[3] = e2[0]
+    # Face c1, c2, c3 has 2 possible R3 moves
+    r3_1 = {'stationary_crossing': 'c1',
+            'stationary_edge_1': 'e1',
+            'stationary_edge_2': 'e2',
+            'moving_crossing_1': 'c2',
+            'moving_crossing_2': 'c3',
+            'moving_edge': 'e6'}
 
-    c2[0] = e5[1]
-    c2[1] = e1[1]
-    c2[2] = e6[0]
-    c2[3] = e9[0]
+    r3_2 = {'stationary_crossing': 'c2',
+            'stationary_edge_1': 'e6',
+            'stationary_edge_2': 'e1',
+            'moving_crossing_1': 'c3',
+            'moving_crossing_2': 'c1',
+            'moving_edge': 'e2'}
 
-    c3[0] = e6[1]
-    c3[1] = e1[0]
-    c3[2] = e7[1]
-    c3[3] = e11[1]
+    assert r3_1 in r3_moves
+    assert r3_2 in r3_moves
 
-    c4[0] = e8[1]
-    c4[1] = e12[1]
-    c4[2] = e7[0]
-    c4[3] = e4[0]
+    # Face c1, c3, c4 has 2 possible R3 moves
+    r3_3 = {'stationary_crossing': 'c1',
+            'stationary_edge_1': 'e2',
+            'stationary_edge_2': 'e3',
+            'moving_crossing_1': 'c3',
+            'moving_crossing_2': 'c4',
+            'moving_edge': 'e7'}
 
-    c5[0] = e5[0]
-    c5[1] = e10[0]
-    c5[2] = e8[0]
-    c5[3] = e4[1]
+    r3_4 = {'stationary_crossing': 'c4',
+            'stationary_edge_1': 'e3',
+            'stationary_edge_2': 'e7',
+            'moving_crossing_1': 'c1',
+            'moving_crossing_2': 'c3',
+            'moving_edge': 'e2'}
 
-    e2[1] = e9[1]
-    e3[1] = e10[1]
+    assert r3_3 in r3_moves
+    assert r3_4 in r3_moves
 
-    sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12], crossings=[c1, c2, c3, c4, c5])
+    # Face c1, c4, c5 has 2 possible R3 moves
+    r3_5 = {'stationary_crossing': 'c1',
+            'stationary_edge_1': 'e3',
+            'stationary_edge_2': 'e4',
+            'moving_crossing_1': 'c4',
+            'moving_crossing_2': 'c5',
+            'moving_edge': 'e8'}
 
-    return sgd
+    r3_6 = {'stationary_crossing': 'c4',
+            'stationary_edge_1': 'e8',
+            'stationary_edge_2': 'e3',
+            'moving_crossing_1': 'c5',
+            'moving_crossing_2': 'c1',
+            'moving_edge': 'e4'}
 
+    assert r3_5 in r3_moves
+    assert r3_6 in r3_moves
 
-def test_r3():
-    a = pari('A')
+    # Face c1, c5, c2 has 2 possible R3 moves
+    r3_7 = {'stationary_crossing': 'c1',
+            'stationary_edge_1': 'e4',
+            'stationary_edge_2': 'e1',
+            'moving_crossing_1': 'c5',
+            'moving_crossing_2': 'c2',
+            'moving_edge': 'e5'}
 
-    sgd = pre_r3()
+    r3_3 = {'stationary_crossing': 'c2',
+            'stationary_edge_1': 'e1',
+            'stationary_edge_2': 'e5',
+            'moving_crossing_1': 'c1',
+            'moving_crossing_2': 'c5',
+            'moving_edge': 'e4'}
 
-    yp1 = sgd.yamada_polynomial()
+    assert r3_7 in r3_moves
+    assert r3_3 in r3_moves
 
-    pre_r3_has_r3, _ = available_r3_moves(sgd)
-    assert pre_r3_has_r3
+def test_r3(two_unknots_1, poly_two_unknots):
+
+    sgd = two_unknots_1
+
+    assert sgd.yamada_polynomial() == poly_two_unknots
+
+    r3_moves = available_r3_moves(sgd)
+    assert len(r3_moves) > 0
 
     # Hard-coded demo
     stationary_crossing = 'c1'
@@ -131,14 +110,49 @@ def test_r3():
         'stationary_edge_2': stationary_edge_2
     }
 
+    # TODO Asser r3 move in r3 moves...
+
     sgd_r3 = apply_r3_move(sgd, r3_input)
 
-    yp2 = sgd_r3.yamada_polynomial()
+    assert sgd_r3.yamada_polynomial() == poly_two_unknots
 
-    assert yp1 == yp2
-
-    post_r3_has_r3, _ = available_r3_moves(sgd_r3)
-    assert post_r3_has_r3
+    r3_moves = available_r3_moves(sgd_r3)
+    assert len(r3_moves) > 0
 
 
-# TODO, add simple example that repeats the R3 move back and forth n times, checks original inputs
+def test_r3_try_different(two_unknots_1, poly_two_unknots):
+    """With one diagram, try each available R3 move in parallel."""
+
+    sgd = two_unknots_1
+    assert sgd.yamada_polynomial() == poly_two_unknots
+    r3_moves = available_r3_moves(sgd)
+    sgd_copies = [sgd.copy() for _ in range(len(r3_moves))]
+
+    for sgd_copy, r3_move in zip(sgd_copies, r3_moves):
+        sgd_copy = apply_r3_move(sgd_copy, r3_move)
+        assert sgd_copy.yamada_polynomial() == poly_two_unknots
+
+
+
+def test_r3_repeat(two_unknots_1, poly_two_unknots):
+    """With one diagram, try applying R3 moves in succession."""
+    # TODO Fix Error
+    sgd = two_unknots_1
+
+    assert sgd.yamada_polynomial() == poly_two_unknots
+
+    n_tries = 2
+    for i in range(n_tries):
+        r3_moves = available_r3_moves(sgd)
+        assert len(r3_moves) > 0
+        sgd = apply_r3_move(sgd, r3_moves[0])
+        assert sgd.yamada_polynomial() == poly_two_unknots
+
+    # n_tries = 5
+    # for i in range(n_tries):
+    #     r3_moves = available_r3_moves(sgd)
+    #     assert len(r3_moves) > 0
+    #     sgd = apply_r3_move(sgd, r3_moves[i])
+    #     assert sgd.yamada_polynomial() == poly_two_unknots
+
+

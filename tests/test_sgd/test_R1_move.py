@@ -131,6 +131,3 @@ def test_r1_unknot_unknot_two_ccw_twists(unknot_two_ccw_twists, poly_unknot):
     r1_crossing_labels = available_r1_moves(sgd)
 
     assert len(r1_crossing_labels) == 0
-
-
-
