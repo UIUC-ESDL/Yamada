@@ -5,7 +5,7 @@ import subprocess
 import io
 from yamada.sgd.diagram_elements import Vertex, Crossing, Edge
 from yamada.sgd.spatial_graph_diagrams import SpatialGraphDiagram
-from yamada.sgd.reidemeister import has_r2, has_r6
+from yamada.sgd.reidemeister import available_r2_moves, has_r6
 
 
 def read_edge_code(stream, size):
@@ -138,7 +138,7 @@ def spatial_graph_diagrams_fixed_crossings(plantri_directory, G, crossings):
                         for signs in itertools.product((0, 1), repeat=num_cross - 1):
                             signs = (0,) + signs
                             D = shadow.spatial_graph_diagram(signs=signs, check=False)
-                            D_has_r2 = has_r2(D)
+                            D_has_r2 = available_r2_moves(D)
                             if not D_has_r2:
                                 yield D
 

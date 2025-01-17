@@ -1,5 +1,5 @@
 from cypari import pari
-from yamada import SpatialGraphDiagram, Edge, Crossing, has_r3, apply_r3
+from yamada import SpatialGraphDiagram, Edge, Crossing, available_r3_moves, apply_r3_move
 
 
 def pre_r3():
@@ -112,7 +112,7 @@ def test_r3():
 
     yp1 = sgd.yamada_polynomial()
 
-    pre_r3_has_r3, _ = has_r3(sgd)
+    pre_r3_has_r3, _ = available_r3_moves(sgd)
     assert pre_r3_has_r3
 
     # Hard-coded demo
@@ -131,13 +131,13 @@ def test_r3():
         'stationary_edge_2': stationary_edge_2
     }
 
-    sgd_r3 = apply_r3(sgd, r3_input)
+    sgd_r3 = apply_r3_move(sgd, r3_input)
 
     yp2 = sgd_r3.yamada_polynomial()
 
     assert yp1 == yp2
 
-    post_r3_has_r3, _ = has_r3(sgd_r3)
+    post_r3_has_r3, _ = available_r3_moves(sgd_r3)
     assert post_r3_has_r3
 
 

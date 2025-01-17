@@ -3,6 +3,29 @@ from yamada import SpatialGraphDiagram, Edge, Vertex, Crossing
 
 
 @pytest.fixture
+def two_unknots_1():
+    pass
+
+
+@pytest.fixture
+def two_unknots_2():
+    pass
+
+
+@pytest.fixture
+def two_unknots_3():
+    pass
+
+
+
+@pytest.fixture
+def two_unknots_4():
+    pass
+
+
+
+
+@pytest.fixture
 def figure_8():
 
     e1 = Edge('e1')

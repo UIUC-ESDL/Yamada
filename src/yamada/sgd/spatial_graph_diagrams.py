@@ -377,18 +377,6 @@ class SpatialGraphDiagram:
         self._remove_vertex(remove_vertex)
         self.connect(keep_edge, keep_edge_connect_idx, remove_edge_keep_obj, remove_edge_keep_idx)
 
-    def _simplify(self):
-        """
-        Simplifies the diagram by removing unnecessary edges and vertices.
-        """
-
-        # Remove unnecessary edges
-        for V in self.vertices:
-            if V.degree == 2:
-                (A, i), (B, j) = V.adjacent
-                if isinstance(A, Edge) and isinstance(B, Edge):
-                    self._merge_edges(A, B)
-
     def faces(self):
         """
         The faces are the complementary regions of the diagram. Each

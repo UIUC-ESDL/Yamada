@@ -1,5 +1,5 @@
 from yamada import Edge, Crossing, SpatialGraphDiagram
-from yamada.sgd.reidemeister import has_r1, has_r2, apply_r2
+from yamada.sgd.reidemeister import available_r1_moves, available_r2_moves, apply_r2_move
 from yamada.sgd.sgd_analysis import available_crossing_swaps
 from yamada.sgd.sgd_modification import apply_crossing_swap
 
@@ -72,14 +72,14 @@ def test_crossing_swap_2(poly_unknot):
     assert yp_after == poly_unknot
 
     # Ensure the R2 move is correct
-    sgd_has_r2 = has_r2(sgd)
+    sgd_has_r2 = available_r2_moves(sgd)
     assert len(sgd_has_r2) > 0
-    sgd = apply_r2(sgd, ("c2", "c3"))
+    sgd = apply_r2_move(sgd, ("c2", "c3"))
     yp_after_r2 = sgd.yamada_polynomial()
     assert yp_after_r2 == poly_unknot
 
     # Ensure the R1 move is correct
-    sgd_has_r1 = has_r1(sgd)
+    sgd_has_r1 = available_r1_moves(sgd)
     assert len(sgd_has_r1) > 0
     # sgd = apply_r1(sgd, "c1")
     # yp_after_r1 = sgd.normalized_yamada_polynomial()

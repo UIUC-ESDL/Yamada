@@ -6,7 +6,8 @@ from yamada.sgd.sgd_analysis import face_has_exactly_3_crossings_and_3_edges, ed
 
 # %% Reidemeister 1
 
-def has_r1(sgd):
+
+def available_r1_moves(sgd):
     """
     Criteria:
     1. The diagram must have a crossing.
@@ -32,7 +33,7 @@ def has_r1(sgd):
     return r1_crossing_labels
 
 
-def apply_r1(sgd, crossing_label):
+def apply_r1_move(sgd, crossing_label, simplify=True):
     """
     1. Remove the crossing.
     2. Remove the edge that two adjacent crossing corners share.
@@ -55,14 +56,15 @@ def apply_r1(sgd, crossing_label):
     sgd._remove_crossing(crossing)
 
     # Simplify and Check the diagram
-    sgd._simplify()
+    if simplify:
+        sgd.simplify_diagram()
 
     return sgd
 
 
 # %% Reidemeister 2
 
-def has_r2(sgd):
+def available_r2_moves(sgd):
     """
     Criteria:
     1. There must exist a pair of crossings that share two common edges.
@@ -89,13 +91,14 @@ def has_r2(sgd):
     return r2_crossing_labels
 
 
-def apply_r2(sgd, crossing_labels):
+def apply_r2_move(sgd, crossing_labels, simplify=True):
     """
     0. Get the indices
     1. Remove the two crossings
     2. Connect edges on opposite sides of the crossings
     # 2. Remove the two common edges
     # 3. Connect the continuations of the common edges
+
     """
 
     # Make a copy of the sgd object to avoid modifying the original
@@ -127,14 +130,15 @@ def apply_r2(sgd, crossing_labels):
     sgd._remove_crossing(crossing_2)
 
     # Simplify and Check the diagram
-    sgd._simplify()
+    if simplify:
+        sgd.simplify_diagram()
 
     return sgd
 
 
 # %% Reidemeister 3
 
-def has_r3(sgd):
+def available_r3_moves(sgd):
     """
     Criteria:
     1. The face must have exactly 3 crossings and 3 edges.
@@ -184,7 +188,7 @@ def has_r3(sgd):
     return sgd_has_r3, r3_inputs
 
 
-def apply_r3(sgd, r3_input):
+def apply_r3_move(sgd, r3_input, simplify=True):
     """
     We apply the R3 move by:
     TBD...
@@ -259,7 +263,8 @@ def apply_r3(sgd, r3_input):
     sc_adj_opposite_of_se1[index_sc_adj_opposite_of_se1_to_sc] = mc2[index_mc2_to_se2]
 
     # Check the diagram
-    sgd.check()
+    if simplify:
+        sgd.simplify_diagram()
 
     return sgd
 
@@ -307,16 +312,16 @@ def r1_and_r2_simplify(sgd):
     sgd_has_r2 = True
     while sgd_has_r1 and sgd_has_r2:
 
-        r1_crossing_labels = has_r1(sgd)
+        r1_crossing_labels = available_r1_moves(sgd)
         if len(r1_crossing_labels) > 0:
-            sgd = apply_r1(sgd, r1_crossing_labels[0])
+            sgd = apply_r1_move(sgd, r1_crossing_labels[0])
             r1_count += 1
         else:
             sgd_has_r1 = False
 
-        r2_crossing_labels = has_r2(sgd)
+        r2_crossing_labels = available_r2_moves(sgd)
         if len(r2_crossing_labels) > 0:
-            sgd = apply_r2(sgd, r2_crossing_labels[0])
+            sgd = apply_r2_move(sgd, r2_crossing_labels[0])
             r2_count += 1
         else:
             sgd_has_r2 = False
@@ -346,11 +351,11 @@ def reidemeister_simplify(sgd, n_tries=10):
 
     # Perform Reidemeister 3 moves to see if they set up any R1 or R2 moves
     for i in range(n_tries):
-        sgd_has_r3, r3_inputs = has_r3(sgd)
+        sgd_has_r3, r3_inputs = available_r3_moves(sgd)
         if sgd_has_r3:
             # Pick a semi-random R3 move
             r3_input = r3_inputs[i % len(r3_inputs)]
-            sgd = apply_r3(sgd, r3_input)
+            sgd = apply_r3_move(sgd, r3_input)
             total_r3_count += 1
 
             # Check for any R1 or R2 moves that will monotonically simplify the diagram
