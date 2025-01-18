@@ -58,14 +58,29 @@ r3_3 = {'stationary_crossing': 'c1',
 
 sgd_post_r3 = apply_r3_move(sgd, r3_3)
 
-r3_rev = {'stationary_crossing': 'c1',
-          'stationary_edge_1': 'e3',
-          'stationary_edge_2': 'e2',
-          'moving_crossing_1': 'c4',
-          'moving_crossing_2': 'c3',
-          'moving_edge': 'e7'}
+r3_moves_post_r3 = available_r3_moves(sgd_post_r3)
 
-sgd_post_rev_r3 = apply_r3_move(sgd_post_r3, r3_rev)
+sgd_copies = [sgd_post_r3.copy() for _ in range(8)]
+
+sgd_post_r3_1 = apply_r3_move(sgd_copies[0], r3_moves_post_r3[0])
+sgd_post_r3_2 = apply_r3_move(sgd_copies[1], r3_moves_post_r3[1])
+sgd_post_r3_3 = apply_r3_move(sgd_copies[2], r3_moves_post_r3[2])
+sgd_post_r3_4 = apply_r3_move(sgd_copies[3], r3_moves_post_r3[3])
+sgd_post_r3_5 = apply_r3_move(sgd_copies[4], r3_moves_post_r3[4])
+sgd_post_r3_6 = apply_r3_move(sgd_copies[5], r3_moves_post_r3[5])
+sgd_post_r3_7 = apply_r3_move(sgd_copies[6], r3_moves_post_r3[6])
+sgd_post_r3_8 = apply_r3_move(sgd_copies[7], r3_moves_post_r3[7])
+
+
+
+# r3_rev = {'stationary_crossing': 'c1',
+#           'stationary_edge_1': 'e3',
+#           'stationary_edge_2': 'e2',
+#           'moving_crossing_1': 'c4',
+#           'moving_crossing_2': 'c3',
+#           'moving_edge': 'e7'}
+#
+# sgd_post_rev_r3 = apply_r3_move(sgd_post_r3, r3_rev)
 
 # assert sgd.crossings[]
 
