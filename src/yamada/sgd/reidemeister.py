@@ -263,7 +263,6 @@ def apply_r3_move(sgd, r3_input, simplify=True):
     sgd.connect(mc1, index_mc1_to_opposite_of_se1, se1, se1_mc1_index)
     sgd.connect(mc1, index_mc1_to_se1, sc_adj_opposite_of_se2, index_sc_adj_opposite_of_se2_to_sc)
 
-
     # Update the moving-crossing-2 connections
     sgd.connect(mc2, index_mc2_to_opposite_of_se2, se2, se2_mc2_index)
     sgd.connect(mc2, index_mc2_to_se2, sc_adj_opposite_of_se1, index_sc_adj_opposite_of_se1_to_sc)

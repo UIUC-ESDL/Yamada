@@ -1,6 +1,7 @@
 from yamada import SpatialGraphDiagram, Vertex, Edge, Crossing
 from yamada import SpatialGraph
-from yamada import available_r1_moves, apply_r1_move, available_r2_moves, apply_r2_move, available_r3_moves, apply_r3_move
+from yamada import available_r1_moves, apply_r1_move, available_r2_moves, apply_r2_move, available_r3_moves, \
+    apply_r3_move
 
 e1 = Edge('e1')
 e2 = Edge('e2')
@@ -55,7 +56,16 @@ r3_3 = {'stationary_crossing': 'c1',
         'moving_crossing_2': 'c4',
         'moving_edge': 'e7'}
 
-sgd = apply_r3_move(sgd, r3_3)
+sgd_post_r3 = apply_r3_move(sgd, r3_3)
+
+r3_rev = {'stationary_crossing': 'c1',
+          'stationary_edge_1': 'e3',
+          'stationary_edge_2': 'e2',
+          'moving_crossing_1': 'c4',
+          'moving_crossing_2': 'c3',
+          'moving_edge': 'e7'}
+
+sgd_post_rev_r3 = apply_r3_move(sgd_post_r3, r3_rev)
 
 # assert sgd.crossings[]
 
@@ -64,6 +74,3 @@ sgd = apply_r3_move(sgd, r3_3)
 # r3_moves_2 = available_r3_moves(sgd_2)
 #
 # sgd_3 = apply_r3_move(sgd_2, r3_moves_2[0])
-
-
-
