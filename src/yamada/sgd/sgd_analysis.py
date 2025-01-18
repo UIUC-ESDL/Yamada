@@ -76,9 +76,9 @@ def find_common_edge(crossing1, crossing2):
     raise Exception('Common edge not found in crossings')
 
 
-def get_index_of_crossing_corner(crossing, corner, opposite_side=False):
+def get_index_of_crossing_corner(crossing, corner, idx, opposite_side=False):
     for i in range(4):
-        if crossing.adjacent[i][0] == corner:
+        if crossing.adjacent[i] == (corner, idx):
             if not opposite_side:
                 return i
             else:

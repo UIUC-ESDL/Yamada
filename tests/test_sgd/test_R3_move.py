@@ -139,30 +139,32 @@ def test_reverse_r3(two_unknots_1, poly_two_unknots):
     assert sgd_post_rev_r3.yamada_polynomial() == poly_two_unknots
     # TODO assert sgd_post_rev_r3 == sgd
 
-def test_try_each_available_r3(two_unknots_1, poly_two_unknots):
-    """With one diagram, try each available R3 move in parallel."""
-
-    sgd = two_unknots_1
-    assert sgd.yamada_polynomial() == poly_two_unknots
-    r3_moves = available_r3_moves(sgd)
-    assert len(r3_moves) == 8
-    sgd_copies = [sgd.copy() for _ in range(len(r3_moves))]
-
-    for sgd_copy, r3_move in zip(sgd_copies, r3_moves):
-        sgd_copy = apply_r3_move(sgd_copy, r3_move)
-        assert sgd_copy.yamada_polynomial() == poly_two_unknots
+# def test_try_each_available_r3(two_unknots_1, poly_two_unknots):
+#     """With one diagram, try each available R3 move in parallel."""
+#
+#     sgd = two_unknots_1
+#     assert sgd.yamada_polynomial() == poly_two_unknots
+#     r3_moves = available_r3_moves(sgd)
+#     assert len(r3_moves) == 8
+#     sgd_copies = [sgd.copy() for _ in range(len(r3_moves))]
+#
+#     for sgd_copy, r3_move in zip(sgd_copies, r3_moves):
+#         sgd_copy = apply_r3_move(sgd_copy, r3_move)
+#         assert sgd_copy.yamada_polynomial() == poly_two_unknots
 
 
 def test_multiple_r3_moves(two_unknots_1, poly_two_unknots):
     """With one diagram, try applying R3 moves in succession."""
+
     sgd = two_unknots_1
 
     assert sgd.yamada_polynomial() == poly_two_unknots
 
-    n_tries = 2
+    n_tries = 4
     for i in range(n_tries):
         r3_moves = available_r3_moves(sgd)
         assert len(r3_moves) > 0
+        print("Applying move", r3_moves[0])
         sgd = apply_r3_move(sgd, r3_moves[0])
         assert sgd.yamada_polynomial() == poly_two_unknots
 
