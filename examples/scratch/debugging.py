@@ -45,16 +45,25 @@ c5[3] = e4[1]
 
 sgd = SpatialGraphDiagram(edges=[e1, e2, e3, e4, e5, e6, e7, e8, e9, e10], crossings=[c1, c2, c3, c4, c5])
 
-r3_moves = available_r3_moves(sgd)
+# r3_moves_1 = available_r3_moves(sgd)
 
 
-r3_1 = {'stationary_crossing': 'c1',
-            'stationary_edge_1': 'e1',
-            'stationary_edge_2': 'e2',
-            'moving_crossing_1': 'c2',
-            'moving_crossing_2': 'c3',
-            'moving_edge': 'e6'}
+r3_3 = {'stationary_crossing': 'c1',
+        'stationary_edge_1': 'e2',
+        'stationary_edge_2': 'e3',
+        'moving_crossing_1': 'c3',
+        'moving_crossing_2': 'c4',
+        'moving_edge': 'e7'}
 
+sgd = apply_r3_move(sgd, r3_3)
+
+# assert sgd.crossings[]
+
+# There should be 6 R3 moves available...
+
+# r3_moves_2 = available_r3_moves(sgd_2)
+#
+# sgd_3 = apply_r3_move(sgd_2, r3_moves_2[0])
 
 
 

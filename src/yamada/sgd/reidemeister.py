@@ -185,9 +185,6 @@ def available_r3_moves(sgd):
             # Identify the two moving crossings (next clockwise crossings after the stationary crossing)
             moving_crossings = [ep for ep in ordered_face if isinstance(ep, Crossing) and ep != stationary_crossing]
 
-            # Loop through face to ensure crossings are numbered in a clockwise order
-            # moving_crossings = [ep.vertex for ep in face if isinstance(ep.vertex, Crossing) and ep.vertex != stationary_crossing]
-
             stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
             stationary_edge_2 = find_common_edge(stationary_crossing, moving_crossings[1])
 
@@ -251,29 +248,25 @@ def apply_r3_move(sgd, r3_input, simplify=True):
     index_mc1_adj_opposite_of_se1_to_mc1 = get_index_of_crossing_corner(mc1_adj_opposite_of_se1, mc1)
     index_mc2_adj_opposite_of_se2_to_mc2 = get_index_of_crossing_corner(mc2_adj_opposite_of_se2, mc2)
 
-    # Step 1A: Disconnect SC from SE1/MC1, Connect SC to the object on the opposite side of MC1
-
-    # Step 1B: Disconnect SC from SE2/MC2, Connect SC to the object on the opposite side of MC2
-
-    # Splice the edges on both sides of MC1 (SE1 and Opposite SE1) and MC2 (SE2 and Opposite SE2)
     se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
     se1_sc_index = [i for (edge, i) in sc.adjacent if edge == se1][0]
     se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
     se2_sc_index = [i for (edge, i) in sc.adjacent if edge == se2][0]
 
-    # Connect the dangling edges to SC
-    sc[index_sc_to_se1] = mc1_adj_opposite_of_se1[index_mc1_adj_opposite_of_se1_to_mc1]
-    sc[index_sc_to_se2] = mc2_adj_opposite_of_se2[index_mc2_adj_opposite_of_se2_to_mc2]
+    # Update the stationary crossing connections
+    sgd.connect(sc, index_sc_to_se1, mc1_adj_opposite_of_se1, index_mc1_adj_opposite_of_se1_to_mc1)
+    sgd.connect(sc, index_sc_to_se2, mc2_adj_opposite_of_se2, index_mc2_adj_opposite_of_se2_to_mc2)
+    sgd.connect(sc, index_sc_to_opposite_of_se1, se2, se2_sc_index)
+    sgd.connect(sc, index_sc_to_opposite_of_se2, se1, se1_sc_index)
 
-    # Connect SEs to the new SC connections
-    se1[se1_sc_index] = sc[index_sc_to_opposite_of_se2]
-    se2[se2_sc_index] = sc[index_sc_to_opposite_of_se1]
-    se1[se1_mc1_index] = mc1[index_mc1_to_opposite_of_se1]
-    se2[se2_mc2_index] = mc2[index_mc2_to_opposite_of_se2]
+    # Update the moving-crossing-1 connections
+    sgd.connect(mc1, index_mc1_to_opposite_of_se1, se1, se1_mc1_index)
+    sgd.connect(mc1, index_mc1_to_se1, sc_adj_opposite_of_se2, index_sc_adj_opposite_of_se2_to_sc)
 
-    # Connect MC1 and MC2 to SC's original connections
-    sc_adj_opposite_of_se2[index_sc_adj_opposite_of_se2_to_sc] = mc1[index_mc1_to_se1]
-    sc_adj_opposite_of_se1[index_sc_adj_opposite_of_se1_to_sc] = mc2[index_mc2_to_se2]
+
+    # Update the moving-crossing-2 connections
+    sgd.connect(mc2, index_mc2_to_opposite_of_se2, se2, se2_mc2_index)
+    sgd.connect(mc2, index_mc2_to_se2, sc_adj_opposite_of_se1, index_sc_adj_opposite_of_se1_to_sc)
 
     # Check the diagram
     if simplify:
