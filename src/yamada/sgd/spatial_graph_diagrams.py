@@ -229,6 +229,8 @@ class SpatialGraphDiagram:
 
     def __eq__(self, other):
 
+        # Check the individual elements
+
         if not isinstance(other, SpatialGraphDiagram):
             raise ValueError("This must be a SpatialGraphDiagram.")
 
@@ -264,6 +266,15 @@ class SpatialGraphDiagram:
         for crossing_s, crossing_o in zip(sorted(crossings_s), sorted(crossings_o)):
             if crossing_s != crossing_o:
                 return False
+
+        # Check the index assignments
+
+        for obj_s, obj_o in zip(self.data.values(), other.data.values()):
+            for i in range(obj_s.degree):
+                adj_s, idx_s = obj_s.adjacent[i]
+                adj_o, idx_o = obj_o.adjacent[i]
+                if adj_s.label != adj_o.label or idx_s != idx_o:
+                    return False
 
         return True
 
