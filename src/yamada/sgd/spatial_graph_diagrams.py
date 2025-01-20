@@ -155,6 +155,39 @@ class SpatialGraphDiagram:
         # Check the corrected diagram
         self.check()
 
+    def _standardize_labels(self):
+        """
+        Renumbers labels for edges, vertices, and crossings sequentially.
+        """
+        # Renumber edges
+        for i, edge in enumerate(self.edges, start=1):
+            old_label = edge.label
+            new_label = f"e{i}"
+            edge.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = edge
+
+        # Renumber vertices
+        for i, vertex in enumerate(self.vertices, start=1):
+            old_label = vertex.label
+            new_label = f"v{i}"
+            vertex.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = vertex
+
+        # Renumber crossings
+        for i, crossing in enumerate(self.crossings, start=1):
+            old_label = crossing.label
+            new_label = f"c{i}"
+            crossing.label = new_label
+            self.data.pop(old_label)
+            self.data[new_label] = crossing
+
+        # Update counters
+        self.edge_counter = len(self.edges)
+        self.vertex_counter = len(self.vertices)
+        self.crossing_counter = len(self.crossings)
+
     def simplify_diagram(self):
         """Merges edges sharing 2-valent vertices until no more simplifications can be made."""
 
@@ -194,39 +227,48 @@ class SpatialGraphDiagram:
         assert is_planar
 
 
-    def _standardize_labels(self):
-        """
-        Renumbers labels for edges, vertices, and crossings sequentially.
-        """
-        # Renumber edges
-        for i, edge in enumerate(self.edges, start=1):
-            old_label = edge.label
-            new_label = f"e{i}"
-            edge.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = edge
+    def __eq__(self, other):
 
-        # Renumber vertices
-        for i, vertex in enumerate(self.vertices, start=1):
-            old_label = vertex.label
-            new_label = f"v{i}"
-            vertex.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = vertex
+        if not isinstance(other, SpatialGraphDiagram):
+            raise ValueError("This must be a SpatialGraphDiagram.")
 
-        # Renumber crossings
-        for i, crossing in enumerate(self.crossings, start=1):
-            old_label = crossing.label
-            new_label = f"c{i}"
-            crossing.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = crossing
+        # Compare edges
+        edges_s = [edge.label for edge in self.edges]
+        edges_o = [edge.label for edge in other.edges]
 
-        # Update counters
-        self.edge_counter = len(self.edges)
-        self.vertex_counter = len(self.vertices)
-        self.crossing_counter = len(self.crossings)
+        if len(edges_s) != len(edges_o):
+            return False
 
+        for edge_s, edge_o in zip(sorted(edges_s), sorted(edges_o)):
+            if edge_s != edge_o:
+                return False
+
+        # Compare vertices
+        vertices_s = [vertex.label for vertex in self.vertices]
+        vertices_o = [vertex.label for vertex in other.vertices]
+
+        if len(vertices_s) != len(vertices_o):
+            return False
+
+        for vertex_s, vertex_o in zip(sorted(vertices_s), sorted(vertices_o)):
+            if vertex_s != vertex_o:
+                return False
+
+        # Compare crossings
+        crossings_s = [crossing.label for crossing in self.crossings]
+        crossings_o = [crossing.label for crossing in other.crossings]
+
+        if len(crossings_s) != len(crossings_o):
+            return False
+
+        for crossing_s, crossing_o in zip(sorted(crossings_s), sorted(crossings_o)):
+            if crossing_s != crossing_o:
+                return False
+
+        return True
+
+    def __neq__(self, other):
+        return not self == other
 
     def _create_edge(self, A, i, B, j):
         """Creates and adds an edge to the diagram."""

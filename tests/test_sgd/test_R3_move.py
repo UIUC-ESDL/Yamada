@@ -154,25 +154,26 @@ def test_reverse_r3(two_unknots_1, poly_two_unknots):
 
 
 def test_multiple_r3_moves(two_unknots_1, poly_two_unknots):
-    """With one diagram, try applying R3 moves in succession."""
+    """
+    With one diagram, try applying R3 moves in succession.
+    This will help ensure that repeatedly modifying the SGD does not introduce any errors.
+    TODO Verify R3 moves do not increase or decrease the number of available R3 moves--it should remain the same.
+    """
 
     sgd = two_unknots_1
 
+    # Verify the initial state
     assert sgd.yamada_polynomial() == poly_two_unknots
+    assert len(available_r3_moves(sgd)) == 8
 
-    n_tries = 4
+    # Try an arbitrary number of R3 moves
+    n_tries = 5
     for i in range(n_tries):
         r3_moves = available_r3_moves(sgd)
-        assert len(r3_moves) > 0
+        assert len(r3_moves) == 8
         print("Applying move", r3_moves[0])
         sgd = apply_r3_move(sgd, r3_moves[0])
         assert sgd.yamada_polynomial() == poly_two_unknots
 
-    # n_tries = 5
-    # for i in range(n_tries):
-    #     r3_moves = available_r3_moves(sgd)
-    #     assert len(r3_moves) > 0
-    #     sgd = apply_r3_move(sgd, r3_moves[i])
-    #     assert sgd.yamada_polynomial() == poly_two_unknots
 
 

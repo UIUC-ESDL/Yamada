@@ -223,51 +223,45 @@ def apply_r3_move(sgd, r3_input, simplify=True):
     mc2 = [crossing for crossing in sgd.crossings if crossing.label == mc2_label][0]
 
     # Find the indices of the objects
-    se1_mc1_index = [i for (edge, i) in mc1.adjacent if edge == se1][0]
-    se1_sc_index = [i for (edge, i) in sc.adjacent if edge == se1][0]
-    se2_mc2_index = [i for (edge, i) in mc2.adjacent if edge == se2][0]
-    se2_sc_index = [i for (edge, i) in sc.adjacent if edge == se2][0]
+    se1_index_mc1 = [edge_opp_sc_se1_index_sc for (edge, edge_opp_sc_se1_index_sc) in mc1.adjacent if edge == se1][0]
+    se1_index_sc = [edge_opp_sc_se1_index_sc for (edge, edge_opp_sc_se1_index_sc) in sc.adjacent if edge == se1][0]
+    se2_index_mc2 = [edge_opp_sc_se1_index_sc for (edge, edge_opp_sc_se1_index_sc) in mc2.adjacent if edge == se2][0]
+    se2_index_sc = [edge_opp_sc_se1_index_sc for (edge, edge_opp_sc_se1_index_sc) in sc.adjacent if edge == se2][0]
 
     # Stationary crossing edge assignments
-    index_sc_to_se1 = get_index_of_crossing_corner(sc, se1, se1_sc_index)
-    index_sc_to_se2 = get_index_of_crossing_corner(sc, se2, se2_sc_index)
-    index_sc_to_opposite_of_se1 = get_index_of_crossing_corner(sc, se1, se1_sc_index, opposite_side=True)
-    index_sc_to_opposite_of_se2 = get_index_of_crossing_corner(sc, se2, se2_sc_index, opposite_side=True)
+    sc_index_se1 = get_index_of_crossing_corner(sc, se1, se1_index_sc)
+    sc_index_se2 = get_index_of_crossing_corner(sc, se2, se2_index_sc)
+    sc_index_opp_se1 = get_index_of_crossing_corner(sc, se1, se1_index_sc, opposite_side=True)
+    sc_index_opp_se2 = get_index_of_crossing_corner(sc, se2, se2_index_sc, opposite_side=True)
 
     # Moving crossing 1 edge assignments
-    index_mc1_to_se1 = get_index_of_crossing_corner(mc1, se1, se1_mc1_index)
-    index_mc1_to_opposite_of_se1 = get_index_of_crossing_corner(mc1, se1, se1_mc1_index, opposite_side=True)
+    mc1_index_se1 = get_index_of_crossing_corner(mc1, se1, se1_index_mc1)
+    mc1_index_opp_se1 = get_index_of_crossing_corner(mc1, se1, se1_index_mc1, opposite_side=True)
 
     # Moving crossing 2 edge assignments
-    index_mc2_to_se2 = get_index_of_crossing_corner(mc2, se2, se2_mc2_index)
-    index_mc2_to_opposite_of_se2 = get_index_of_crossing_corner(mc2, se2, se2_mc2_index, opposite_side=True)
+    mc2_index_se2 = get_index_of_crossing_corner(mc2, se2, se2_index_mc2)
+    mc2_index_opp_se2 = get_index_of_crossing_corner(mc2, se2, se2_index_mc2, opposite_side=True)
 
     # Find the objects adjacent to one crossing on the side opposing another crossing
-    sc_adj_opposite_of_se1, i = sc.adjacent[index_sc_to_opposite_of_se1]
-    sc_adj_opposite_of_se2, j = sc.adjacent[index_sc_to_opposite_of_se2]
-    mc1_adj_opposite_of_se1, k = mc1.adjacent[index_mc1_to_opposite_of_se1]
-    mc2_adj_opposite_of_se2, l = mc2.adjacent[index_mc2_to_opposite_of_se2]
+    edge_opp_sc_se1, edge_opp_sc_se1_index_sc = sc.adjacent[sc_index_opp_se1]
+    edge_opp_sc_se2, edge_opp_sc_se2_index_sc = sc.adjacent[sc_index_opp_se2]
 
-    # Also find their relevant indices
-    index_sc_adj_opposite_of_se1_to_sc = get_index_of_crossing_corner(sc, sc_adj_opposite_of_se1, i)
-    index_sc_adj_opposite_of_se2_to_sc = get_index_of_crossing_corner(sc, sc_adj_opposite_of_se2, j)
-    index_mc1_adj_opposite_of_se1_to_mc1 = get_index_of_crossing_corner(mc1, mc1_adj_opposite_of_se1, k)
-    index_mc2_adj_opposite_of_se2_to_mc2 = get_index_of_crossing_corner(mc2, mc2_adj_opposite_of_se2, l)
-
+    edge_opp_mc1_se1, edge_opp_mc1_se1_index_mc1 = mc1.adjacent[mc1_index_opp_se1]
+    edge_opp_mc2_se2, edge_opp_mc2_se2_index_mc2 = mc2.adjacent[mc2_index_opp_se2]
 
     # Update the stationary crossing connections
-    sgd.connect(sc, index_sc_to_se1, mc1_adj_opposite_of_se1, k)
-    sgd.connect(sc, index_sc_to_se2, mc2_adj_opposite_of_se2, l)
-    sgd.connect(sc, index_sc_to_opposite_of_se1, se2, se2_sc_index)
-    sgd.connect(sc, index_sc_to_opposite_of_se2, se1, se1_sc_index)
+    sgd.connect(sc, sc_index_se1, edge_opp_mc1_se1, edge_opp_mc1_se1_index_mc1)
+    sgd.connect(sc, sc_index_se2, edge_opp_mc2_se2, edge_opp_mc2_se2_index_mc2)
+    sgd.connect(sc, sc_index_opp_se1, se2, se2_index_sc)
+    sgd.connect(sc, sc_index_opp_se2, se1, se1_index_sc)
 
     # Update the moving-crossing-1 connections
-    sgd.connect(mc1, index_mc1_to_opposite_of_se1, se1, se1_mc1_index)
-    sgd.connect(mc1, index_mc1_to_se1, sc_adj_opposite_of_se2, j)
+    sgd.connect(mc1, mc1_index_opp_se1, se1, se1_index_mc1)
+    sgd.connect(mc1, mc1_index_se1, edge_opp_sc_se2, edge_opp_sc_se2_index_sc)
 
     # Update the moving-crossing-2 connections
-    sgd.connect(mc2, index_mc2_to_opposite_of_se2, se2, se2_mc2_index)
-    sgd.connect(mc2, index_mc2_to_se2, sc_adj_opposite_of_se1, i)
+    sgd.connect(mc2, mc2_index_opp_se2, se2, se2_index_mc2)
+    sgd.connect(mc2, mc2_index_se2, edge_opp_sc_se1, edge_opp_sc_se1_index_sc)
 
     # Check the diagram
     if simplify:
