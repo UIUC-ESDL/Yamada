@@ -1,4 +1,6 @@
 from time import time_ns
+import matplotlib
+matplotlib.use('TkAgg')
 from yamada.sgd.diagram_elements import Edge, Vertex, Crossing
 from yamada.sgd.spatial_graph_diagrams import SpatialGraphDiagram
 from yamada.sgd.topological_distance import compute_min_distance, compute_network
@@ -113,4 +115,37 @@ double_figure_8 = double_figure_8()
 #
 # print(f"Time: {(t2 - t1) / 1e6} ms")
 
-results = compute_network(figure_8)
+results = compute_network([unknot, double_figure_8],max_depth=5)
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+G = nx.DiGraph()
+
+# Add nodes with an attribute for min_depth
+for poly, data in results.items():
+    G.add_node(poly, min_depth=data['min_depth'])
+
+# Add directed edges with weights
+for src, data in results.items():
+    for tgt, weight in data['neighbors'].items():
+        # If the same edge exists from multiple BFS searches, only the minimum weight is kept.
+        G.add_edge(src, tgt, weight=weight)
+
+# Use a layout algorithm (e.g., spring_layout) to determine positions for the nodes.
+pos = nx.spring_layout(G, k=0.5, iterations=50)
+
+plt.figure(figsize=(12, 8))
+
+# Draw nodes and labels
+nx.draw_networkx_nodes(G, pos, node_size=700, node_color='lightblue')
+nx.draw_networkx_labels(G, pos, font_size=8)
+
+# Draw edges with arrows and edge labels
+nx.draw_networkx_edges(G, pos, arrowstyle='->', arrowsize=20, edge_color='gray')
+edge_labels = nx.get_edge_attributes(G, 'weight')
+nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red', font_size=8)
+
+plt.title("Network of Unique Spatial Topologies")
+plt.axis("off")
+plt.show(block=True)
