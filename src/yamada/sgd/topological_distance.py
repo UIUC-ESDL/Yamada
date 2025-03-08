@@ -136,7 +136,8 @@ def bfs_expansion(diagram, max_depth=5, max_runtime=10):
         # For every crossing, create a copy and perform a crossing swap.
         for crossing in current_diagram.crossings:
             new_diagram = apply_crossing_swap(current_diagram, crossing.label)
-            new_diagram, _, _, _ = reidemeister_simplify(new_diagram)
+            # TODO Fix
+            # new_diagram, _, _, _ = reidemeister_simplify(new_diagram)
             new_depth = current_depth + 1
             new_id = node_counter
             node_counter += 1
