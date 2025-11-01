@@ -5,11 +5,7 @@ This module contains classes and functions for working with spatial graphs.
 
 
 import numpy as np
-
-import itertools
 from itertools import combinations
-import pyvista as pv
-import matplotlib.colors as mcolors
 from scipy.stats import qmc
 
 from ..sg.geometry import (rotate,
@@ -21,6 +17,7 @@ from ..sg.geometry import (rotate,
 from ..sgd.diagram_elements import Vertex, Crossing
 from ..sgd.spatial_graph_diagrams import SpatialGraphDiagram
 from ..utils.visualization import plot_spatial_graph
+
 
 class SpatialGraph:
     """
@@ -47,7 +44,7 @@ class SpatialGraph:
 
         # Project the spatial graph onto a random the xz-plane
         self.node_positions_3d = self.project(node_positions, forced_rotation=rotation)
-        self.node_positions_dict_3d = {node: position for node, position in zip(nodes, node_positions)}
+        self.node_positions_dict_3d = {node: position for node, position in zip(nodes, self.node_positions_3d)}
 
         self.node_positions_2d = self.node_positions_3d[:, [0, 2]]
         self.node_positions_dict_2d = {node: position for node, position in zip(nodes, self.node_positions_2d)}
@@ -639,7 +636,7 @@ class SpatialGraph:
             if min_dist > 0.0001:
                 crossing_position = None
 
-            if crossing_position is np.inf:
+            if crossing_position is not None and np.any(np.isinf(crossing_position)):
                 raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
             elif crossing_position is None:
@@ -706,7 +703,7 @@ class SpatialGraph:
 
 
 
-    def project(self, node_positions, max_iter=2, forced_rotation=None):
+    def project(self, node_positions, max_iter=10, forced_rotation=None):
         """
         Project the spatial graph onto a random 2D plane.
 
@@ -746,7 +743,7 @@ class SpatialGraph:
                     x1, z1 = projected_node_positions[self.nodes.index(edge[0])]
                     x2, z2 = projected_node_positions[self.nodes.index(edge[1])]
 
-                    if x1 == x2 or z1 == z2:
+                    if np.isclose(x1, x2) or np.isclose(z1, z2):
                         raise ValueError('An edge is vertical or horizontal. This is not a valid spatial graph.')
 
                 # Second, check adjacent edge pairs for validity.
@@ -763,11 +760,11 @@ class SpatialGraph:
                     if min_dist > 0.0001:
                         crossing_position = None
 
-                    if crossing_position is not None and crossing_position is not np.inf:
-                        assertion_1 = all((crossing_position - a) < 0.0001)
-                        assertion_2 = all((crossing_position - b) < 0.0001)
-                        assertion_3 = all((crossing_position - c) < 0.0001)
-                        assertion_4 = all((crossing_position - d) < 0.0001)
+                    if crossing_position is not None and not np.any(np.isinf(crossing_position)):
+                        assertion_1 = np.allclose(crossing_position, a, atol=1e-4)
+                        assertion_2 = np.allclose(crossing_position, b, atol=1e-4)
+                        assertion_3 = np.allclose(crossing_position, c, atol=1e-4)
+                        assertion_4 = np.allclose(crossing_position, d, atol=1e-4)
                         if not any([assertion_1, assertion_2, assertion_3, assertion_4]):
                             raise ValueError('Adjacent edges must intersect at the endpoints.')
 
@@ -780,7 +777,10 @@ class SpatialGraph:
             except ValueError:
                 continue
 
-        rotated_node_positions = rotate(node_positions, rotation)
+        else:
+            # no rotation succeeded
+            raise RuntimeError("Failed to find a valid projection (all rotations invalid).")
+
         return rotated_node_positions
 
     def create_spatial_graph_diagram(self):

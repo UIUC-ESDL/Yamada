@@ -154,6 +154,9 @@ def position_spatial_graph_in_3d(G, z_height=20):
 
     segments = split_edges(segments)
 
+    # node_positions_arr = np.array(node_positions)
+    # node_positions_dict = dict(zip(nodes, node_positions_arr))
+
 
     return nodes, node_positions, segments
 
@@ -186,8 +189,12 @@ def plot_spatial_graph_diagram(sgd):
     # Plot edges as tubes
     pos_dict = dict(zip(nodes, node_positions))
     for edge in edges:
+
+        # line = pv.Line(pos_dict[edge[0]], pos_dict[edge[-1]])
+        # plotter.add_mesh(line.tube(radius=0.1), color="black", label=str(edge))
+
         line = pv.Line(pos_dict[edge[0]], pos_dict[edge[-1]])
-        plotter.add_mesh(line.tube(radius=0.1), color="black", label=str(edge))
+        plotter.add_mesh(line.tube(radius=0.5), color="black", label=str(edge), line_width=6)
 
     # Add node labels
     for node, coords in zip(nodes, node_positions):

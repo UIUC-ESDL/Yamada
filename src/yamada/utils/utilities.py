@@ -2,7 +2,7 @@ import glob
 import json
 import pickle
 
-from yamada.sgd.sgd_operations import split_edges
+# from yamada.sgd.sgd_operations import split_edges
 
 
 def read_json_file(filename):
@@ -26,9 +26,12 @@ def read_json_files(filenames):
     return data
 
 
-def extract_graph_from_json_file(filename):
+def create_sgd_from_json(filename):
     """
-    Reads a json file and returns a networkx graph
+    Reads a json file and returns a networkx-based Spatial Graph Diagram.
+
+    FIXME: Some 2D projections of 3D coordinates may be invalid. Rather than indexing
+    FIXME: and y coordinates, the JSON should deliberately provide valid 2D coordinates.
     """
 
     data = read_json_file(filename)
@@ -54,6 +57,10 @@ def extract_graph_from_json_file(filename):
     edges = split_edges(edges)
 
     return nodes, node_positions, edges
+
+
+def save_pickle(graph):
+    pass
 
 
 def read_pickle(nodes):
