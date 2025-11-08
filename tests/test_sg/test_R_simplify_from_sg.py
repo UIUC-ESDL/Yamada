@@ -6,7 +6,7 @@ def test_reidemeister_simplify():
     node_labels = ["0", "1", "2", "3", "4", "5", "6", "7",
                    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r"]
 
-    node_positions = {
+    pos = {
         "0": (0, 0, 0),
         'a': (0.15, 0, 0),
         'b': (0.15, 0.1, 0),
@@ -70,7 +70,7 @@ def test_reidemeister_simplify():
 
     # Instantiate the SpatialGraph object
     sg = SpatialGraph(nodes=node_labels,
-                      node_positions=node_positions,
+                      pos=pos,
                       edges=edges)
 
     # Plot

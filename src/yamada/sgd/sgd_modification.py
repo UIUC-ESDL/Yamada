@@ -1,6 +1,6 @@
 def split_edges(edges):
     """
-    Splits a list of edges with more than two nodes into a series of edges which each have two nodes.
+    Splits a list of edges with more than two nodes (e.g., a path) into a series of edges which each have two nodes.
     """
 
     # Strip crossings from edges

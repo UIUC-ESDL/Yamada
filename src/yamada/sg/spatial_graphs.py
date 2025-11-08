@@ -5,6 +5,7 @@ This module contains classes and functions for working with spatial graphs.
 
 
 import numpy as np
+import networkx as nx
 from itertools import combinations
 from scipy.stats import qmc
 
@@ -22,13 +23,27 @@ from ..utils.visualization import plot_spatial_graph
 class SpatialGraph:
     """
     A class to represent a spatial graph.
+
+    TODO Add an input checker
     """
+
+
 
     def __init__(self,
                  nodes: list[str],
-                 node_positions: dict,
+                 pos: dict,
                  edges: list[tuple[str, str]],
                  rotation=None):
+
+        # Initialize the underlying NetworkX graph
+        self.SGD = nx.Graph()
+
+        # Validate the inputs
+        nodes = self._validate_nodes(nodes)
+        edges = self._validate_edges(edges)
+        pos   = self._validate_positions(nodes, pos)
+
+        # Add the inputs to the SpatialGraph
 
         self.nodes = nodes
         self.edges = edges
@@ -39,7 +54,7 @@ class SpatialGraph:
                                        edge_pair not in self.adjacent_edge_pairs]
 
         # Temporarily convert node positions to array
-        node_positions_list = [node_positions[node] for node in nodes]
+        node_positions_list = [pos[node] for node in nodes]
         node_positions = np.array(node_positions_list)
 
         # Project the spatial graph onto a random the xz-plane
@@ -51,8 +66,41 @@ class SpatialGraph:
 
         self.crossings, self.crossing_positions, self.crossing_edge_pairs = self.get_crossings()
 
+    def __getattr__(self, name):
+        """
+        Get attributes from the underlying NetworkX graph.
+        """
+        return getattr(self.SGD, name)
+
+    @staticmethod
+    def _validate_nodes(nodes):
+        assert isinstance(nodes, list),                      "Nodes must be a list."
+        assert all(isinstance(node, str) for node in nodes), "All nodes must be strings."
+        assert len(nodes) == len(set(nodes)),                "All nodes must be unique."
+        return nodes
+
+    @staticmethod
+    def _validate_edges(edges):
+        assert isinstance(edges, list),                                          "Edges must be a list."
+        assert all(isinstance(s, str) and isinstance(t, str) for s, t in edges), "All edge nodes must be strings."
+        assert all(isinstance(edge, tuple) for edge in edges),                   "All edges must be tuples."
+        assert all(len(edge) == 2 for edge in edges),                            "All edges must have two nodes."
+        assert len(edges) == len(set(edges)),                                    "All edges must be unique."
+        return edges
+
+    @staticmethod
+    def _validate_positions(nodes, pos):
+        assert isinstance(pos, dict),                                         "Positions must be a dictionary."
+        assert all(isinstance(node, str) for node in pos.keys()),             "All position keys must be strings."
+        assert all(isinstance(position, tuple) for position in pos.values()), "All position values must be lists, tuples, or numpy arrays."
+        assert all(len(pos) == 3 for pos in pos.values()),                    "All position tuples must have three values."
+        assert all(isinstance(coord, (int, float)) for position in pos.values() for coord in position), "All position coordinates must be numbers."
+        assert set(nodes) == set(pos.keys()),                                 "All nodes must have a position and vice versa."
+        return pos
+
 
     def get_adjacent_nodes(self, reference_node: str) -> list[str]:
+        # TODO Replace with nx neighbors?
         adjacent_nodes = []
 
         for edge in self.edges:
@@ -63,7 +111,7 @@ class SpatialGraph:
 
 
     def get_adjacent_edge_pairs(self):
-
+        # TODO Replace with nx functions?
         adjacent_edge_pairs = set()  # Using a set to avoid duplicates
 
         # Create a dictionary that maps each node to the edges that contain it
@@ -128,6 +176,7 @@ class SpatialGraph:
         1. Edges that are not incident of a crossing (i.e., the edge is the sub-edge)
         2. When an edge is incident to a crossing(s), the edge is divided into one or more sub-edges depending on the
         number of crossings that the edge is incident to.
+        # TODO Encode edge as attirbutes
         """
 
         # Get the nodes and crossings of each edge, ordered from left to right
@@ -152,7 +201,7 @@ class SpatialGraph:
         return sub_edges
 
     def get_contiguous_edges(self):
-
+        # TODO Same...
         # Get the sub-edges and their positions
         sub_edges, sub_edge_positions = self.subdivide_edges_with_crossings()
 
@@ -288,6 +337,7 @@ class SpatialGraph:
     def get_adjacent_nodes_or_crossings(self, reference_node):
         """
         Get the adjacent nodes to a given node.
+        # TODO Replace...
         """
 
         adjacent_nodes = []

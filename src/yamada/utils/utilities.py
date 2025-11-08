@@ -2,7 +2,8 @@ import glob
 import json
 import pickle
 
-# from yamada.sgd.sgd_operations import split_edges
+from yamada import SpatialGraph
+from yamada.sgd.sgd_modification import split_edges
 
 
 def read_json_file(filename):
@@ -26,9 +27,42 @@ def read_json_files(filenames):
     return data
 
 
-def create_sgd_from_json(filename):
+# def create_sgd_from_json(filename):
+#     """
+#     Reads a json file and returns a networkx-based Spatial Graph Diagram.
+#
+#     FIXME: Some 2D projections of 3D coordinates may be invalid. Rather than indexing
+#     FIXME: and y coordinates, the JSON should deliberately provide valid 2D coordinates.
+#     """
+#
+#     data = read_json_file(filename)
+#
+#     # Extract the dictionary inputs
+#     nodes              = list(data['3D_positions'][0].keys())
+#     node_positions     = list(data['3D_positions'][0].values())
+#     crossings          = list(data['3D_positions'][1].keys())
+#     crossing_positions = list(data['3D_positions'][1].values())
+#     edges              = list(data['3D_positions'][2])
+#
+#     # Extract non crossings from crossings
+#     noncrossings, noncrossing_positions = zip(*[(crossing, crossing_position) for crossing, crossing_position in zip(crossings, crossing_positions) if "C" not in crossing])
+#
+#     # Only extract non crossings
+#     # Merge nodes and crossings
+#     nodes.extend(noncrossings)
+#     node_positions.extend(noncrossing_positions)
+#
+#     # Remove crossings from edges
+#
+#     # Format edges so that each edge has two nodes
+#     edges = split_edges(edges)
+#
+#     return nodes, node_positions, edges
+
+
+def create_sg_from_json(filename):
     """
-    Reads a json file and returns a networkx-based Spatial Graph Diagram.
+    Reads a json file and returns a Spatial Graph object.
 
     FIXME: Some 2D projections of 3D coordinates may be invalid. Rather than indexing
     FIXME: and y coordinates, the JSON should deliberately provide valid 2D coordinates.
@@ -37,26 +71,18 @@ def create_sgd_from_json(filename):
     data = read_json_file(filename)
 
     # Extract the dictionary inputs
-    nodes              = list(data['3D_positions'][0].keys())
-    node_positions     = list(data['3D_positions'][0].values())
-    crossings          = list(data['3D_positions'][1].keys())
-    crossing_positions = list(data['3D_positions'][1].values())
-    edges              = list(data['3D_positions'][2])
+    nodes     = data['3D_positions'][0]
+    positions = data['3D_positions'][1]
+    edges     = data['3D_positions'][2]
 
-    # Extract non crossings from crossings
-    noncrossings, noncrossing_positions = zip(*[(crossing, crossing_position) for crossing, crossing_position in zip(crossings, crossing_positions) if "C" not in crossing])
+    # Formatting
+    edges = [tuple(edge) for edge in edges]
+    positions = {node: tuple(pos) for node, pos in zip(nodes, positions)}
 
-    # Only extract non crossings
-    # Merge nodes and crossings
-    nodes.extend(noncrossings)
-    node_positions.extend(noncrossing_positions)
 
-    # Remove crossings from edges
+    sg = SpatialGraph(nodes, positions, edges)
 
-    # Format edges so that each edge has two nodes
-    edges = split_edges(edges)
-
-    return nodes, node_positions, edges
+    return sg
 
 
 def save_pickle(graph):

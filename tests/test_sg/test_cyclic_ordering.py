@@ -5,8 +5,8 @@ from yamada import SpatialGraph
 def test_cyclic_node_ordering_vertex():
     nodes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
-    node_positions = {'a': [0, 0, 0], 'b': [1, 0, 0], 'c': [0.5, 1, 0], 'd': [0.5, 0.5, 0], 'e': [0.25, 0.75, 0],
-                      'f': [0.75, 0.75, 0], 'g': [0, 1, 0], 'h': [1, 1, 0]}
+    pos = {'a': (0, 0, 0), 'b': (1, 0, 0), 'c': (0.5, 1, 0), 'd': (0.5, 0.5, 0), 'e': (0.25, 0.75, 0),
+                      'f': (0.75, 0.75, 0), 'g': (0, 1, 0), 'h': (1, 1, 0)}
 
     edges = [('a', 'b'), ('a', 'g'), ('a', 'd'), ('b', 'd'), ('b', 'h'), ('d', 'e'), ('d', 'f'), ('e', 'c'), ('f', 'c'),
              ('g', 'c'), ('h', 'c')]
@@ -15,7 +15,7 @@ def test_cyclic_node_ordering_vertex():
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
 
     sg = SpatialGraph(nodes=nodes,
-                      node_positions=node_positions,
+                      pos=pos,
                       edges=edges,
                       rotation=rotation)
 
@@ -54,31 +54,31 @@ def test_cyclic_ordering_crossing():
              waypoint_bf, waypoint_cd, waypoint_cg, waypoint_dh, waypoint_ef, waypoint_eh,
              waypoint_fg, waypoint_gh]
 
-    component_positions = np.array([[0, 0, 0],  # a
-                                [1, 0, 0],  # b
-                                [1, 1, 0],  # c
-                                [0, 1, 0],  # d
-                                [0, 0, 1],  # e
-                                [1, 0, 1],  # f
-                                [1, 1, 1],  # g
-                                [0, 1, 1]])  # h
+    component_positions = [(0, 0, 0),  # a
+                                (1, 0, 0),  # b
+                                (1, 1, 0),  # c
+                                (0, 1, 0),  # d
+                                (0, 0, 1),  # e
+                                (1, 0, 1),  # f
+                                (1, 1, 1),  # g
+                                (0, 1, 1)]  # h
 
-    waypoint_positions = np.array([[0.5, 0, 0],  # ab
-                               [0, 0.5, 0],  # ad
-                               [0, 0, 0.5],  # ae
-                               [1, 0.5, 0],  # bc
-                               [1, 0, 0.5],  # bf
-                               [0.5, 1, 0],  # cd
-                               [1, 1, 0.5],  # cg
-                               [0, 1, 0.5],  # dh
-                               [0.5, 0, 1],  # ef
-                               [0, 0.5, 1],  # eh
-                               [1, 0.5, 1],  # fg
-                               [0.5, 1, 1]])  # gh
+    waypoint_positions = [(0.5, 0, 0),  # ab
+                               (0, 0.5, 0),  # ad
+                               (0, 0, 0.5),  # ae
+                               (1, 0.5, 0),  # bc
+                               (1, 0, 0.5),  # bf
+                               (0.5, 1, 0),  # cd
+                               (1, 1, 0.5),  # cg
+                               (0, 1, 0.5),  # dh
+                               (0.5, 0, 1),  # ef
+                               (0, 0.5, 1),  # eh
+                               (1, 0.5, 1),  # fg
+                               (0.5, 1, 1)]  # gh
 
-    node_positions = np.concatenate((component_positions, waypoint_positions), axis=0)
+    pos = (component_positions + waypoint_positions)
 
-    node_positions = {node: pos for node, pos in zip(nodes, node_positions)}
+    pos = {node: pos for node, pos in zip(nodes, pos)}
 
     edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
          (component_a, waypoint_ad), (waypoint_ad, component_d),
@@ -97,7 +97,7 @@ def test_cyclic_ordering_crossing():
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
 
     sg = SpatialGraph(nodes=nodes,
-                      node_positions=node_positions,
+                      pos=pos,
                       edges=edges,
                       rotation=rotation)
 
@@ -137,31 +137,32 @@ def test_cyclic_ordering_crossing_2():
              waypoint_bf, waypoint_cd, waypoint_cg, waypoint_dh, waypoint_ef, waypoint_eh,
              waypoint_fg, waypoint_gh]
 
-    component_positions = np.array([[0, 0, 0],  # a
-                                    [1, 0, 0],  # b
-                                    [1, 1, 0],  # c
-                                    [0, 1, 0],  # d
-                                    [0, 0, 1],  # e
-                                    [1, 0, 1],  # f
-                                    [1, 1, 1],  # g
-                                    [0, 1, 1]])  # h
+    component_positions = [(0, 0, 0),  # a
+                                    (1, 0, 0),  # b
+                                    (1, 1, 0),  # c
+                                    (0, 1, 0),  # d
+                                    (0, 0, 1),  # e
+                                    (1, 0, 1),  # f
+                                    (1, 1, 1),  # g
+                                    (0, 1, 1)]  # h
 
-    waypoint_positions = np.array([[0.5, 0.1, 0],  # ab
-                                   [0.1, 0.7, 0.2],  # ad
-                                   [0.1, 0, 0.5],  # ae
-                                   [1, 0.5, 0],  # bc
-                                   [1, 0.1, 0.5],  # bf
-                                   [0.5, 1, 0],  # cd
-                                   [0.7, 0.6, 0.5],  # cg
-                                   [0.1, 1, 0.5],  # dh
-                                   [0.5, 0.1, 1],  # ef
-                                   [0.1, 0.6, 1],  # eh
-                                   [1, 0.5, 1],  # fg
-                                   [0.5, 0.95, 1]])  # gh
+    waypoint_positions = [(0.5, 0.1, 0),  # ab
+                                   (0.1, 0.7, 0.2),  # ad
+                                   (0.1, 0, 0.5),  # ae
+                                   (1, 0.5, 0),  # bc
+                                   (1, 0.1, 0.5),  # bf
+                                   (0.5, 1, 0),  # cd
+                                   (0.7, 0.6, 0.5),  # cg
+                                   (0.1, 1, 0.5),  # dh
+                                   (0.5, 0.1, 1),  # ef
+                                   (0.1, 0.6, 1),  # eh
+                                   (1, 0.5, 1),  # fg
+                                   (0.5, 0.95, 1)]  # gh
 
-    node_positions = np.concatenate((component_positions, waypoint_positions), axis=0)
 
-    node_positions = {node: pos for node, pos in zip(nodes, node_positions)}
+    pos = (component_positions + waypoint_positions)
+
+    pos = {node: pos for node, pos in zip(nodes, pos)}
 
     edges = [(component_a, waypoint_ab), (waypoint_ab, component_b),
              (component_a, waypoint_ad), (waypoint_ad, component_d),
@@ -180,7 +181,7 @@ def test_cyclic_ordering_crossing_2():
     rotation = np.array([2.73943676, 0.16289932, 3.4536312])
 
     sg = SpatialGraph(nodes=nodes,
-                      node_positions=node_positions,
+                      pos=pos,
                       edges=edges,
                       rotation=rotation)
 

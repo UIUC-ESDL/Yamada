@@ -1,12 +1,15 @@
-import matplotlib.pyplot as plt
+
+# Standard library imports
+import numpy as np
 import matplotlib.colors as mcolors
 import networkx as nx
 import pyvista as pv
 import itertools
-from itertools import combinations
 from networkx.algorithms.planar_drawing import triangulate_embedding
-import numpy as np
-from yamada.sgd.sgd_modification import split_edges
+
+
+# Local imports
+from ..sgd.sgd_modification import split_edges
 
 
 def tutte_system(planar_graph):
