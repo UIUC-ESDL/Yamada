@@ -71,12 +71,12 @@ def test_get_sub_edges():
     # Set rotation
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
 
-    sg = SpatialGraph(nodes=['a', 'b', 'c', 'd'],
-                      pos={'a':(0, 0.5, 0),
-                                      'b': (1, 0.5, 1),
-                                      'c': (1, 0, 0),
-                                      'd': (0, 0, 1)},
-                      edges=[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+    sg = SpatialGraph(nodes = ['a', 'b', 'c', 'd'],
+                      edges = [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+                      pos   = {'a': (0, 0.5, 0),
+                               'b': (1, 0.5, 1),
+                               'c': (1, 0,   0),
+                               'd': (0, 0,   1)},
                       rotation=rotation)
 
     sep = sg.get_sub_edges()

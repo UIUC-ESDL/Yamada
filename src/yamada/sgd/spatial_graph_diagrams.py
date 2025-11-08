@@ -642,10 +642,6 @@ class SpatialGraphDiagram:
         return G
 
     def plot(self):
-
-        p = plot_spatial_graph_diagram(self)
-
-        # planar_graph = self.planar_embedding()
-        # p = plot_spatial_graph_diagram(planar_graph)
-        p.show()
+        plotter = plot_spatial_graph_diagram(self)
+        plotter.show()
 

@@ -89,6 +89,11 @@ def compute_line_segment_intersection(a: np.ndarray,
     :return: Position of minimum distance, (1,3) numpy array
     """
 
+    # Validate inputs
+    # assert all(isinstance(pt, np.ndarray) for pt in [a, b, c, d]), "All input points must be numpy arrays"
+    # assert all(pt.shape == (1,3)          for pt in [a, b, c, d]), "All input points must be of shape (1,3)"
+    # assert all(pt.dtype == np.float64     for pt in [a, b, c, d]), "All input points must be of type np.float64"
+
     def clamp_bound(num):
         """
         If the number is outside the range [0,1] then clamp it to the nearest boundary.
