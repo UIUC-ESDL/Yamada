@@ -165,9 +165,10 @@ def compute_line_segment_intersection(a: np.ndarray,
 
     min_dist = np.linalg.norm(d1 * t - d2 * u - d12)
 
-    min_dist_position = a + d1 * t
+    pos_ab = a + d1 * t
+    pos_cd = c + d2 * u
 
-    return min_dist, min_dist_position
+    return min_dist, pos_ab, pos_cd
 
 
 def compute_intermediate_y_position(a:     np.ndarray,
