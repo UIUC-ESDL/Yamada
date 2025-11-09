@@ -285,7 +285,8 @@ def plot_spatial_graph_diagram(sgd):
     # plotter.show(title="Spatial Graph Diagram")
     return plotter
 
-def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, contiguous_sub_edge_positions):
+# def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, contiguous_sub_edge_positions):
+def plot_spatial_graph(nodes, edges, pos):
 
     # Define a list of colors to cycle through
     color_list = list(mcolors.TABLEAU_COLORS.keys())
@@ -299,11 +300,11 @@ def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, conti
     p.add_title("3D Spatial Graph")
 
 
-    for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
-        start_node = contiguous_edge[0]
-        end_node = contiguous_edge[-1]
-        start_position = contiguous_edge_positions_i[0][0]
-        end_position = contiguous_edge_positions_i[-1][1]
+    # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
+    #     start_node = contiguous_edge[0]
+    #     end_node = contiguous_edge[-1]
+    #     start_position = contiguous_edge_positions_i[0][0]
+    #     end_position = contiguous_edge_positions_i[-1][1]
 
         # TODO Use something more consistent than if "string" in node
         # color = "red" if "Crossing" in start_node else "black"
@@ -317,20 +318,38 @@ def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, conti
         # offset_end_position = calculate_offset_position(end_position)
         # p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
 
-    # Plot the Projected lines
-    for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-        lines = []
-        color = next(color_cycle)
-        for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-            start = sub_edge_position_1
-            end = sub_edge_position_2
+    # # Plot the Projected lines
+    # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+    #     lines = []
+    #     color = next(color_cycle)
+    #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
+    #         start = sub_edge_position_1
+    #         end = sub_edge_position_2
+    #
+    #         line = pv.Line(start, end)
+    #         lines.append(line)
+    #
+    #     linear_spline = pv.MultiBlock(lines)
+    #     # p.add_mesh(linear_spline, line_width=5, color=color)
+    #     p.add_mesh(linear_spline, line_width=5, color="k")
+    for node in nodes:
+        position = pos[node]
+        if 'crossing' in node:
+            color, size = "red", 0.2
+        else:
+            color, size = "black", 0.1
 
-            line = pv.Line(start, end)
-            lines.append(line)
+        sphere = pv.Sphere(radius=size, center=position)
+        p.add_mesh(sphere, color=color, opacity=0.5)
+        p.add_point_labels(position, [f"{node}"], point_size=0, font_size=12, text_color='black')
 
-        linear_spline = pv.MultiBlock(lines)
-        # p.add_mesh(linear_spline, line_width=5, color=color)
-        p.add_mesh(linear_spline, line_width=5, color="k")
+    for edge in edges:
+        start_node, end_node = edge
+        start_position = pos[start_node]
+        end_position = pos[end_node]
+        color_i = next(color_cycle)
+        line = pv.Line(start_position, end_position)
+        p.add_mesh(line, color=color_i, line_width=5)
 
     # Configure the plot
     # p.view_isometric()
@@ -340,23 +359,23 @@ def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, conti
     # Reset the color cycle for 2D edges
     color_cycle = itertools.cycle(color_list)
 
-    # Plot the 2D Projection in the second subplot
-    p.subplot(0, 1)
-    p.add_title("2D Projection")
-
-    # Plot the Projected lines in 2D
-    for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-        lines = []
-        color = next(color_cycle)
-        for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-            start = sub_edge_position_1
-            end = sub_edge_position_2
-
-            line = pv.Line((start[0], 0, start[2]), (end[0], 0, end[2]))
-            lines.append(line)
-
-        linear_spline = pv.MultiBlock(lines)
-        p.add_mesh(linear_spline, line_width=5, color=color, label=f"Edge {i}")
+    # # Plot the 2D Projection in the second subplot
+    # p.subplot(0, 1)
+    # p.add_title("2D Projection")
+    #
+    # # Plot the Projected lines in 2D
+    # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
+    #     lines = []
+    #     color = next(color_cycle)
+    #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
+    #         start = sub_edge_position_1
+    #         end = sub_edge_position_2
+    #
+    #         line = pv.Line((start[0], 0, start[2]), (end[0], 0, end[2]))
+    #         lines.append(line)
+    #
+    #     linear_spline = pv.MultiBlock(lines)
+    #     p.add_mesh(linear_spline, line_width=5, color=color, label=f"Edge {i}")
 
     # Configure the plot
     p.view_xz()

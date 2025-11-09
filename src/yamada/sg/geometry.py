@@ -206,7 +206,7 @@ def compute_intermediate_y_position(a:     np.ndarray,
 def compute_3D_intersection(a0_position, a1_position, a2_position, a3_position, x0z_coords):
     """
     If two 3D lines are projected onto the XZ plane and their projections intersect, then
-    calculate the correspond 3D coordinates of that intersection point for the two lines.
+    calculate the corresponding 3D coordinates of that intersection point for the two lines.
     """
 
     # Unpack the coordinates

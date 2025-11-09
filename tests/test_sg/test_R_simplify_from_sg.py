@@ -77,7 +77,7 @@ def test_reidemeister_simplify():
     # sg.plot()
 
     # Create the spatial graph diagram (necessary for calculating the Yamada polynomial)
-    sgd = sg.create_spatial_graph_diagram()
+    sgd = sg.to_spatial_graph_diagram()
 
     # print(f"Crossings: {len(sgd.crossings)}")
 

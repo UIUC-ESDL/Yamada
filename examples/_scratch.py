@@ -27,3 +27,7 @@ edges = [
 sg = SpatialGraph(nodes=nodes,
                   edges=edges,
                   pos=pos)
+
+sg.subdivide_edges()
+
+sg.plot()
