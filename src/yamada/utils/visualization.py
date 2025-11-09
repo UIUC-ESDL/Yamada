@@ -335,12 +335,12 @@ def plot_spatial_graph(nodes, edges, pos):
     for node in nodes:
         position = pos[node]
         if 'crossing' in node:
-            color, size = "red", 0.2
+            color, size = "red", 0.02
         else:
-            color, size = "black", 0.1
+            color, size = "black", 0.01
 
         sphere = pv.Sphere(radius=size, center=position)
-        p.add_mesh(sphere, color=color, opacity=0.5)
+        p.add_mesh(sphere, color=color, opacity=1.0)
         p.add_point_labels(position, [f"{node}"], point_size=0, font_size=12, text_color='black')
 
     for edge in edges:

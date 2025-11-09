@@ -28,6 +28,8 @@ sg = SpatialGraph(nodes=nodes,
                   edges=edges,
                   pos=pos)
 
-sg.subdivide_edges()
+# sg.subdivide_edges()
 
-sg.plot()
+sg.to_spatial_graph_diagram()
+
+# sg.plot()
