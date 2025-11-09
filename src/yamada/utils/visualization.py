@@ -359,10 +359,10 @@ def plot_spatial_graph(nodes, edges, pos):
     # Reset the color cycle for 2D edges
     color_cycle = itertools.cycle(color_list)
 
-    # # Plot the 2D Projection in the second subplot
-    # p.subplot(0, 1)
-    # p.add_title("2D Projection")
-    #
+    # Plot the 2D Projection in the second subplot
+    p.subplot(0, 1)
+    p.add_title("2D Projection")
+
     # # Plot the Projected lines in 2D
     # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
     #     lines = []
@@ -376,6 +376,14 @@ def plot_spatial_graph(nodes, edges, pos):
     #
     #     linear_spline = pv.MultiBlock(lines)
     #     p.add_mesh(linear_spline, line_width=5, color=color, label=f"Edge {i}")
+
+    for edge in edges:
+        start_node, end_node = edge
+        start_position = pos[start_node]
+        end_position = pos[end_node]
+        color_i = next(color_cycle)
+        line = pv.Line((start_position[0], 0, start_position[2]), (end_position[0], 0, end_position[2]))
+        p.add_mesh(line, color=color_i, line_width=5)
 
     # Configure the plot
     p.view_xz()
