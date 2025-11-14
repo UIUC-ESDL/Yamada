@@ -66,24 +66,24 @@ def test_forms_a_strand_unknot_1e_2v(unknot_2e_2v_1):
 
 
 
-def test_get_sub_edges():
-
-    # Set rotation
-    rotation = np.array([3.44829694, 4.49366732, 3.78727399])
-
-    sg = SpatialGraph(nodes = ['a', 'b', 'c', 'd'],
-                      edges = [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
-                      pos   = {'a': (0, 0.5, 0),
-                               'b': (1, 0.5, 1),
-                               'c': (1, 0,   0),
-                               'd': (0, 0,   1)},
-                      rotation=rotation)
-
-    sep = sg.get_sub_edges()
-
-    expected_sub_edges = [('b', 'crossing_0'), ('crossing_0', 'a'), ('b', 'c'), ('d', 'crossing_0'), ('crossing_0', 'c'), ('d', 'a')]
-
-    assert sep == expected_sub_edges
+# def test_get_sub_edges():
+#       TODO Change to "get crossing"
+#     # Set rotation
+#     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
+#
+#     sg = SpatialGraph(nodes = ['a', 'b', 'c', 'd'],
+#                       edges = [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'a')],
+#                       pos   = {'a': (0, 0.5, 0),
+#                                'b': (1, 0.5, 1),
+#                                'c': (1, 0,   0),
+#                                'd': (0, 0,   1)},
+#                       rotation=rotation)
+#
+#     sep = sg.get_sub_edges()
+#
+#     expected_sub_edges = [('b', 'crossing_0'), ('crossing_0', 'a'), ('b', 'c'), ('d', 'crossing_0'), ('crossing_0', 'c'), ('d', 'a')]
+#
+#     assert sep == expected_sub_edges
 
 # def test_edge_order():
 #

@@ -15,7 +15,7 @@ from ..sg.geometry import (rotate,
                                 compute_3D_intersection,
                                 compute_counter_clockwise_angle)
 
-from ..sgd.diagram_elements import Vertex, Crossing
+from ..sgd.diagram_elements import Vertex, Crossing, Edge
 from ..sgd.spatial_graph_diagrams import SpatialGraphDiagram
 from ..utils.visualization import plot_spatial_graph
 
@@ -216,10 +216,6 @@ class SpatialGraph:
             node_angle_dict = {}
 
 
-        # Get the projected node positions
-        # FIXME Nodes capture oer/under.. just get 2D?
-
-
         # Initialize lists to store the adjacent node and edge information
         # Crossings are not relevant for this calculation since they exist along edges
         if ref_node_type == 'vertex':
@@ -258,8 +254,19 @@ class SpatialGraph:
         ccw_node_ordering = {}
         ccw_angle_ordering = {}
         for node, idx, angle in zip(ordered_nodes, ordered_indices, ordered_angles):
+
+            # FIXME Strip _over/_under from crossing labels
+            if 'crossing' in node:
+                begin, middle, end = node.split("_")
+                node = begin + "_" + middle
+
             ccw_node_ordering[node]  = idx
             ccw_angle_ordering[node] = angle
+
+        # Make sure _over/_under stripped crossings are stored correctly
+        # if ref_node_type == 'crossing':
+        #     begin, middle, end = ref_node.split("_")
+        #     ref_node = begin + "_" + middle
 
         node_ordering_dict[ref_node] = ccw_node_ordering
         node_angle_dict[ref_node]    = ccw_angle_ordering
@@ -422,10 +429,10 @@ class SpatialGraph:
                 if np.isclose(min_dist, 0., atol=1e-4):
 
                     # Ensure that the crossing does not occur at an endpoint
-                    assert_1 = np.allclose(min_dist_pos, pos_a_2D, atol=1e-1)
-                    assert_2 = np.allclose(min_dist_pos, pos_b_2D, atol=1e-1)
-                    assert_3 = np.allclose(min_dist_pos, pos_c_2D, atol=1e-1)
-                    assert_4 = np.allclose(min_dist_pos, pos_d_2D, atol=1e-1)
+                    assert_1 = np.allclose(min_dist_pos, pos_a_2D, atol=1e-4)
+                    assert_2 = np.allclose(min_dist_pos, pos_b_2D, atol=1e-4)
+                    assert_3 = np.allclose(min_dist_pos, pos_c_2D, atol=1e-4)
+                    assert_4 = np.allclose(min_dist_pos, pos_d_2D, atol=1e-4)
                     if any([assert_1, assert_2, assert_3, assert_4]):
                         bad_rotation = True
                         print('These crossings should not intersect at endpoints.')
@@ -433,8 +440,6 @@ class SpatialGraph:
                     # elif crossing_position is np.inf:
                     #     raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
 
-                    # Now in 3D
-                    # _, pos_x_ab, pos_x_cd = compute_line_segment_intersection(pos_a_3D, pos_b_3D, pos_c_3D, pos_d_3D)
 
                     edges = (edge_1, edge_2)
                     label = f"crossing_{len(crossings)}"
@@ -470,29 +475,61 @@ class SpatialGraph:
         return pos_rot, crossings
 
     def to_spatial_graph_diagram(self):
+        #FIXME cyclic not catching adjacent crossins 1 and 2
+        # # Create a list of all nodes and crossings
+        # nodes_and_crossings = list(self.nodes) + list(self.crossings.keys())
+        nodes     = [node for node in self.nodes if "crossing" not in node]
+        edges     = list(self.edges)
+        crossings = list(self.crossings.keys())
 
-        # Create a list of all nodes and crossings
-        nodes_and_crossings = list(self.nodes) + list(self.crossings.keys())
+        node_degrees = [self.degree(node) for node in nodes]
 
-        # Create the vertex and crossing objects
-        vertex_node_degrees = [len([edge for edge in self.edges if node in edge]) for node in self.nodes]
-        vertices = [Vertex(degree, 'v_' + node) for node, degree in zip(self.nodes,vertex_node_degrees)]
+        # Create the vertex objects
+        sgd_vertices = [Vertex(degree, 'v_' + node) for node, degree in zip(nodes, node_degrees)]
 
-        if self.crossings is not None:
-            crossings = [Crossing('c_' + str(i)) for i in range(len(self.crossings))]
-        else:
-            crossings = []
+        # Create the edges
+        # sgd_edges = [Edge('e_' + str(i)) for i in range(len(edges))]
 
-        vertices_and_crossings = vertices + crossings
+        # # Create the vertex and crossing objects
+        # vertex_node_degrees = [len([edge for edge in self.edges if node in edge]) for node in self.nodes]
+        # vertices = [Vertex(degree, 'v_' + node) for node, degree in zip(self.nodes,vertex_node_degrees)]
+
+        # if self.crossings is not None:
+        #     crossings = [Crossing('c_' + str(i)) for i in range(len(self.crossings))]
+        # else:
+        #     crossings = []
+
+        # Create the crossing objects
+        sgd_crossings = [Crossing('c_' + crossing.split('_')[1]) for crossing in crossings]
+
 
         # Create a dictionary that contains the cyclical ordering of every node and crossing
-        node_ordering_dict = self.cyclic_order_vertices()
-        crossing_ordering_dict = self.cyclic_order_crossings()
+        # node_ordering_dict = self.cyclic_order_vertices()
+        # crossing_ordering_dict = self.cyclic_order_crossings()
+        # cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
 
-        cyclic_ordering_dict = {**node_ordering_dict, **crossing_ordering_dict}
+        cyclic_ordering_dict = self.node_ordering_dict
 
-        for sub_edge in self.edges:
-            node_a, node_b = sub_edge
+
+
+
+
+
+        # Assign the vertices to each other according to the cyclic orderings
+        nodes_and_crossings = nodes + crossings
+        vertices_and_crossings = sgd_vertices + sgd_crossings
+
+        for edge in self.edges:
+            # TODO Use more consistent lookup
+            node_a, node_b = edge
+
+            if "crossing" in node_a:
+                begin, middle, end = node_a.split("_")
+                node_a = begin + "_" + middle
+
+            if "crossing" in node_b:
+                begin, middle, end = node_b.split("_")
+                node_b = begin + "_" + middle
 
             node_a_index = nodes_and_crossings.index(node_a)
             node_b_index = nodes_and_crossings.index(node_b)
@@ -511,7 +548,27 @@ class SpatialGraph:
                 raise ValueError('The vertices are already assigned.')
 
 
-        sgd = SpatialGraphDiagram(vertices=vertices, crossings=crossings)
+        # for sub_edge in self.edges:
+        #     node_a, node_b = sub_edge
+        #
+        #     node_a_index = nodes_and_crossings.index(node_a)
+        #     node_b_index = nodes_and_crossings.index(node_b)
+        #
+        #     vertex_a = vertices_and_crossings[node_a_index]
+        #     vertex_b = vertices_and_crossings[node_b_index]
+        #
+        #     if not vertex_a.already_assigned(vertex_b) and not vertex_b.already_assigned(vertex_a):
+        #
+        #         vertex_b_index_for_vertex_a = cyclic_ordering_dict[node_a][node_b]
+        #         vertex_a_index_for_vertex_b = cyclic_ordering_dict[node_b][node_a]
+        #
+        #         vertex_a[vertex_b_index_for_vertex_a] = vertex_b[vertex_a_index_for_vertex_b]
+        #
+        #     else:
+        #         raise ValueError('The vertices are already assigned.')
+
+
+        sgd = SpatialGraphDiagram(vertices=sgd_vertices, crossings=sgd_crossings)
 
         return sgd
 
