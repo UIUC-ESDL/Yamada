@@ -63,13 +63,13 @@ class SpatialGraph:
         pos, crossings = self.project(forced_rotation=rotation)
         nx.set_node_attributes(self.SG, pos, 'pos')
 
-
-
         # TODO Delete...
         self.crossings = crossings
 
         # Subdivide edges to add crossings
         self.subdivide_edges()
+
+        self.node_ordering_dict, self.node_angle_dict = self.cyclic_orderings()
 
 
 
@@ -247,6 +247,7 @@ class SpatialGraph:
             angles.append(angle)
 
         ordered_nodes     = [node     for _, node     in sorted(zip(angles, nbrs))]
+        ordered_angles    = [angle    for angle, _ in sorted(zip(angles, nbrs))]
 
         if ref_node_type == 'vertex':
             ordered_indices = [i for i in range(len(ordered_nodes))]
@@ -256,9 +257,9 @@ class SpatialGraph:
 
         ccw_node_ordering = {}
         ccw_angle_ordering = {}
-        for node, idx in zip(ordered_nodes, ordered_indices):
+        for node, idx, angle in zip(ordered_nodes, ordered_indices, ordered_angles):
             ccw_node_ordering[node]  = idx
-            ccw_angle_ordering[node] = idx
+            ccw_angle_ordering[node] = angle
 
         node_ordering_dict[ref_node] = ccw_node_ordering
         node_angle_dict[ref_node]    = ccw_angle_ordering
@@ -282,7 +283,7 @@ class SpatialGraph:
                 node = begin + "_" + middle
 
             if node not in crossing_visited:
-                node_ordering_dict, node_angle_dict = self.cyclic_ordering(node, node_type, node_ordering_dict)
+                node_ordering_dict, node_angle_dict = self.cyclic_ordering(node, node_type, node_ordering_dict, node_angle_dict)
                 crossing_visited.add(node)
 
         return node_ordering_dict, node_angle_dict
@@ -435,8 +436,6 @@ class SpatialGraph:
                     # Now in 3D
                     # _, pos_x_ab, pos_x_cd = compute_line_segment_intersection(pos_a_3D, pos_b_3D, pos_c_3D, pos_d_3D)
 
-                    # pos_midpoint = 0.5 * (pos_x_ab + pos_x_cd)
-
                     edges = (edge_1, edge_2)
                     label = f"crossing_{len(crossings)}"
 
@@ -445,7 +444,8 @@ class SpatialGraph:
                     idx_under = np.argmin([pos_x_ab[1], pos_x_cd[1]])
                     assert idx_over != idx_under, "Error in determining over and under strands."
 
-                    orientation = ['over', 'under'] if pos_x_ab[1] > pos_x_cd[1] else ['under', 'over']
+                    # FIXME, reverse logic? Plotting y pointing away
+                    orientation = ['over', 'under'] if pos_x_ab[1] < pos_x_cd[1] else ['under', 'over']
                     # FIXME This information gets stale, maybe store % along edge instead?
                     crossings[label] = {'edges': edges,
                                         'pos_3D': [pos_x_ab, pos_x_cd],
@@ -455,12 +455,6 @@ class SpatialGraph:
             if bad_rotation:
                 continue
 
-                    # 'idx_over': idx_over,
-                    # 'idx_under': idx_under,
-                    # 'pos_over': pos_x_ab if idx_over == 0 else pos_x_cd,
-                    # 'pos_under': pos_x_ab if idx_under == 0 else pos_x_cd,
-                    # 'pos_midpoint': pos_midpoint,
-                    # 'pos_2D': (pos_midpoint[0], pos_midpoint[2])}
 
             # If all are satisfied
             break
@@ -523,10 +517,7 @@ class SpatialGraph:
 
     def plot(self):
 
-        edges = self.edges
-        nodes = self.nodes
-        pos = self.pos3D
-
-        plotter = plot_spatial_graph(nodes, edges, pos)
+        plotter = plot_spatial_graph(self.nodes, self.edges, self.pos3D,self.pos2D,
+                                     self.node_ordering_dict, self.node_angle_dict, self)
         plotter.show()
 

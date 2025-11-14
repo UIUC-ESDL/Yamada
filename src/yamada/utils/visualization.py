@@ -285,8 +285,8 @@ def plot_spatial_graph_diagram(sgd):
     # plotter.show(title="Spatial Graph Diagram")
     return plotter
 
-# def plot_spatial_graph(nodes, node_positions, edges, contiguous_sub_edges, contiguous_sub_edge_positions):
-def plot_spatial_graph(nodes, edges, pos):
+
+def plot_spatial_graph(nodes, edges, pos, pos2D, node_ordering_dict, node_angle_dict, sg):
 
     # Define a list of colors to cycle through
     color_list = list(mcolors.TABLEAU_COLORS.keys())
@@ -295,53 +295,26 @@ def plot_spatial_graph(nodes, edges, pos):
     # plotter = pv.Plotter()
     p = pv.Plotter(shape=(1, 2), window_size=[2000, 1000])
 
+    p.view_xz()
+
     # Plot the 3D Spatial Graph in the first subplot
     p.subplot(0, 0)
     p.add_title("3D Spatial Graph")
 
+    # Create glyphs for nodes
+    nodes_nodes     = [node for node in nodes if 'crossing' not in node]
+    nodes_crossings = [node for node in nodes if 'crossing' in node]
+    color_node = "black"
+    size_node  = 0.01
+    color_crossing = "red"
+    size_crossing  = 0.02
+    res=12
+    for node, color, size in [(nodes_nodes, color_node, size_node), (nodes_crossings, color_crossing, size_crossing)]:
+        positions = np.array([pos[n] for n in node])
+        sphere = pv.Sphere(radius=size, phi_resolution=res, theta_resolution=res)
+        glyphs = pv.PolyData(positions).glyph(orient=False, scale=False, geom=sphere)
+        p.add_mesh(glyphs, color=color, opacity=1.0)
 
-    # for contiguous_edge, contiguous_edge_positions_i in zip(contiguous_sub_edges, contiguous_sub_edge_positions):
-    #     start_node = contiguous_edge[0]
-    #     end_node = contiguous_edge[-1]
-    #     start_position = contiguous_edge_positions_i[0][0]
-    #     end_position = contiguous_edge_positions_i[-1][1]
-
-        # TODO Use something more consistent than if "string" in node
-        # color = "red" if "Crossing" in start_node else "black"
-        # p.add_mesh(pv.Sphere(radius=0.05, center=start_position), color=color, opacity=0.5)
-        # offset_start_position = calculate_offset_position(start_position)
-        # p.add_point_labels([offset_start_position], [f"{start_node}"], point_size=0, font_size=12, text_color='black')
-
-        # # TODO Use something more consistent than if "string" in node
-        # color = "red" if "Crossing" in end_node else "black"
-        # p.add_mesh(pv.Sphere(radius=0.05, center=end_position), color=color, opacity=0.5)
-        # offset_end_position = calculate_offset_position(end_position)
-        # p.add_point_labels([offset_end_position], [f"{end_node}"], point_size=0, font_size=12, text_color='black')
-
-    # # Plot the Projected lines
-    # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-    #     lines = []
-    #     color = next(color_cycle)
-    #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-    #         start = sub_edge_position_1
-    #         end = sub_edge_position_2
-    #
-    #         line = pv.Line(start, end)
-    #         lines.append(line)
-    #
-    #     linear_spline = pv.MultiBlock(lines)
-    #     # p.add_mesh(linear_spline, line_width=5, color=color)
-    #     p.add_mesh(linear_spline, line_width=5, color="k")
-    for node in nodes:
-        position = pos[node]
-        if 'crossing' in node:
-            color, size = "red", 0.02
-        else:
-            color, size = "black", 0.01
-
-        sphere = pv.Sphere(radius=size, center=position)
-        p.add_mesh(sphere, color=color, opacity=1.0)
-        p.add_point_labels(position, [f"{node}"], point_size=0, font_size=12, text_color='black')
 
     for edge in edges:
         start_node, end_node = edge
@@ -352,8 +325,6 @@ def plot_spatial_graph(nodes, edges, pos):
         p.add_mesh(line, color=color_i, line_width=5)
 
     # Configure the plot
-    # p.view_isometric()
-    # p.view_xz()
     p.show_axes()
 
     # Reset the color cycle for 2D edges
@@ -363,19 +334,6 @@ def plot_spatial_graph(nodes, edges, pos):
     p.subplot(0, 1)
     p.add_title("2D Projection")
 
-    # # Plot the Projected lines in 2D
-    # for i, contiguous_sub_edge_positions_i in enumerate(contiguous_sub_edge_positions):
-    #     lines = []
-    #     color = next(color_cycle)
-    #     for sub_edge_position_1, sub_edge_position_2 in contiguous_sub_edge_positions_i:
-    #         start = sub_edge_position_1
-    #         end = sub_edge_position_2
-    #
-    #         line = pv.Line((start[0], 0, start[2]), (end[0], 0, end[2]))
-    #         lines.append(line)
-    #
-    #     linear_spline = pv.MultiBlock(lines)
-    #     p.add_mesh(linear_spline, line_width=5, color=color, label=f"Edge {i}")
 
     for edge in edges:
         start_node, end_node = edge
@@ -385,10 +343,41 @@ def plot_spatial_graph(nodes, edges, pos):
         line = pv.Line((start_position[0], 0, start_position[2]), (end_position[0], 0, end_position[2]))
         p.add_mesh(line, color=color_i, line_width=5)
 
+    # Add node labels, placing each index number according to its angle
+    for node in nodes:
+        if "crossing" in node:
+            begin, middle, end = node.split('_')
+            node = begin + '_' + middle
+            position = sg.crossings[node]["pos_2D"]
+        else:
+            position = pos2D[node]
+
+        # p.add_point_labels(np.array([[position[0], 0, position[2]]]), f"{node}", point_size=0, font_size=12, text_color='black')
+        pos_arr = np.array([[position[0], 0, position[1]]])
+        p.add_point_labels(pos_arr, [f"{node}"], point_size=0, font_size=12, text_color='black')
+
+        # Draw a faint gray line to indicate the zero-degree angle
+        zero_angle_rad = np.radians(0)
+        zero_x = position[0] + 0.1 * np.cos(zero_angle_rad)
+        zero_z = position[1] + 0.1 * np.sin(zero_angle_rad)
+        p.add_mesh(pv.Line((position[0], 0, position[1]), (zero_x, 0, zero_z)), color='gray', line_width=2, opacity=0.5)
+        p.add_mesh(pv.Sphere(radius=0.002, center=(zero_x, 0, zero_z)), color='gray', opacity=0.5)
+
+        nbrs = list(node_ordering_dict[node].keys())
+        for nbr in nbrs:
+            angle = node_angle_dict[node][nbr]
+            radius = 0.05  # Distance from the node position to place the label
+            angle_rad = np.radians(angle)
+            label_x = position[0] + radius * np.cos(angle_rad)
+            label_y = 0  # Since it's a 2D projection on the xz
+            label_z = position[1] + radius * np.sin(angle_rad)
+            p.add_point_labels((label_x, label_y, label_z), [f"{node_ordering_dict[node][nbr]}"],
+                               font_size=12, text_color='black',show_points=False,background_color=None, background_opacity=0)
+
+
     # Configure the plot
-    p.view_xz()
+    # p.view_xz()
     p.show_axes()
-    # p.add_legend(size=(0.1, 0.5), border=True, bcolor='white', loc='center right')
 
     # Link the two plots
     p.link_views()

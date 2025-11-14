@@ -111,7 +111,7 @@ sg = SpatialGraph(nodes=nodes,
                   edges=edges,
                   rotation=rotation)
 
-ordering_dict = sg.cyclic_orderings()
+# ordering_dict = sg.cyclic_orderings()
 
 expected_dict = {'crossing_0': {'comp_c': 2, 'w_ef': 3, 'w_bc': 0, 'comp_f': 1},
                  'crossing_1': {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}}

@@ -19,8 +19,8 @@ def test_cyclic_node_ordering_vertex():
                       edges=edges,
                       rotation=rotation)
 
-    order = sg.cyclic_order_vertex('c')
-    expected_order = {'c': {'e': 3, 'f': 0, 'g': 2, 'h': 1}}
+    order = sg.node_ordering_dict['c']
+    expected_order = {'e': 3, 'f': 0, 'g': 2, 'h': 1}
 
     assert order == expected_order
 
@@ -101,12 +101,14 @@ def test_cyclic_ordering_crossing():
                       edges=edges,
                       rotation=rotation)
 
-    ordering_dict = sg.cyclic_order_crossings()
+    ordering_dict = sg.node_ordering_dict
 
-    expected_dict = {'crossing_0': {'comp_c': 2, 'w_ef': 3, 'w_bc': 0, 'comp_f': 1},
-                     'crossing_1': {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}}
+    crossing_0_expected = {'comp_c': 2, 'w_ef': 3, 'w_bc': 0, 'comp_f': 1}
+    crossing_1_expected = {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}
 
-    assert ordering_dict == expected_dict
+    assert ordering_dict['crossing_0'] == crossing_0_expected
+    assert ordering_dict['crossing_1'] == crossing_1_expected
+    # assert ordering_dict == expected_dict
 
 
 def test_cyclic_ordering_crossing_2():
@@ -185,7 +187,7 @@ def test_cyclic_ordering_crossing_2():
                       edges=edges,
                       rotation=rotation)
 
-    ordering_dict = sg.cyclic_order_crossings()
+    ordering_dict = sg.node_ordering_dict
 
     expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
                      'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
