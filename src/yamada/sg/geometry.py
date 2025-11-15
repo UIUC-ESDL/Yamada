@@ -253,15 +253,16 @@ def compute_3D_intersection(a0_position, a1_position, a2_position, a3_position, 
     return position_c_02, position_c_13
 
 
-def compute_counter_clockwise_angle(vector_a: np.ndarray,
-                                    vector_b: np.ndarray) -> float:
+def compute_counter_clockwise_angle(vector_a, vector_b):
     """
-    Returns the angle in degrees between vectors 'A' and 'B'.
+    Returns the counter-clockwise angle (in degrees) between the two vectors.
+    """
 
-    :param vector_a: A numpy array of shape (2,) representing containing positions x_a and y_a.
-    :param vector_b: A numpy array of shape (2,) representing containing positions x_b and y_b.
-    :return: The angle in degrees between vectors A and B, where 0 <= angle < 360.
-    """
+    # Validate inputs
+    assert isinstance(vector_a, np.ndarray)
+    assert isinstance(vector_b, np.ndarray)
+    assert vector_a.shape == (2,)
+    assert vector_b.shape == (2,)
 
     def length(v):
         return np.sqrt(v[0] ** 2 + v[1] ** 2)
@@ -278,9 +279,86 @@ def compute_counter_clockwise_angle(vector_a: np.ndarray,
         return rad * 180 / np.pi  # returns degrees
 
     inner = inner_angle(vector_a, vector_b)
-    det = determinant(vector_a, vector_b)
+    det   = determinant(vector_a, vector_b)
 
-    if det > 0:  # this is a property of the det. If the det < 0 then B is clockwise of A
+    # If the determinant is < 0, then B is clockwise of A
+    if det > 0:
         return inner
-    else:  # if the det > 0 then A is immediately clockwise of B
+    # If the determinant is > 0, then A is clockwise of B
+    else:
         return 360 - inner
+
+def compute_counter_clockwise_angles(reference_vector, vectors):
+    ccw_angles = []
+    for vector in vectors:
+        ccw_angle = compute_counter_clockwise_angle(reference_vector, vector)
+        ccw_angles.append(ccw_angle)
+    return ccw_angles
+
+
+def identify_overlapping_edges(pos3D_rot, nonadjacent_edge_pairs, atol=1e-4):
+    crossings = {}
+    invalid = False
+
+    for edge_1, edge_2 in nonadjacent_edge_pairs:
+        # Unpack edges
+        a, b = edge_1
+        c, d = edge_2
+
+        # 3D positions in this projection
+        pos_a_3D = pos3D_rot[a]
+        pos_b_3D = pos3D_rot[b]
+        pos_c_3D = pos3D_rot[c]
+        pos_d_3D = pos3D_rot[d]
+
+        # 2D projections to XZ plane
+        pos_a_2D = pos_a_3D[[0, 2]]
+        pos_b_2D = pos_b_3D[[0, 2]]
+        pos_c_2D = pos_c_3D[[0, 2]]
+        pos_d_2D = pos_d_3D[[0, 2]]
+
+        # Compute 2D segment intersection
+        min_dist, min_dist_pos, _ = compute_line_segment_intersection(
+            pos_a_2D, pos_b_2D, pos_c_2D, pos_d_2D
+        )
+
+        # Early reject if they don't intersect (in 2D)
+        if not np.isclose(min_dist, 0.0, atol=atol):
+            continue
+
+        # Ensure the crossing is not at an endpoint
+        at_endpoint = any([
+            np.allclose(min_dist_pos, pos_a_2D, atol=atol),
+            np.allclose(min_dist_pos, pos_b_2D, atol=atol),
+            np.allclose(min_dist_pos, pos_c_2D, atol=atol),
+            np.allclose(min_dist_pos, pos_d_2D, atol=atol),
+        ])
+        if at_endpoint:
+            # This projection is “bad” (you were printing and rejecting in project())
+            invalid = True
+            break
+
+        # Compute y-coordinates at the intersection for each 3D segment
+        x_int, z_int = min_dist_pos
+        y_ab = compute_intermediate_y_position(pos_a_3D, pos_b_3D, x_int=x_int, z_int=z_int)
+        y_cd = compute_intermediate_y_position(pos_c_3D, pos_d_3D, x_int=x_int, z_int=z_int)
+
+        pos_x_ab = np.array([x_int, y_ab, z_int])
+        pos_x_cd = np.array([x_int, y_cd, z_int])
+
+        # Define label and store crossing
+        edges = (edge_1, edge_2)
+        label = f"crossing_{len(crossings)}"
+
+        # Define over/under based on y position
+        # (keep your existing convention)
+        orientation = ["over", "under"] if pos_x_ab[1] < pos_x_cd[1] else ["under", "over"]
+
+        crossings[label] = {
+            "edges": edges,
+            "pos_3D": [pos_x_ab, pos_x_cd],
+            "orientation": orientation,
+            "pos_2D": np.array([x_int, z_int]),
+        }
+
+    return crossings, invalid

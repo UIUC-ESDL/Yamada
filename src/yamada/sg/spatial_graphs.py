@@ -13,7 +13,9 @@ from ..sg.geometry import (rotate,
                                 compute_line_segment_intersection,
                                 compute_intermediate_y_position,
                                 compute_3D_intersection,
-                                compute_counter_clockwise_angle)
+                                compute_counter_clockwise_angle,
+                                identify_overlapping_edges,
+                           compute_counter_clockwise_angles)
 
 from ..sgd.diagram_elements import Vertex, Crossing, Edge
 from ..sgd.spatial_graph_diagrams import SpatialGraphDiagram
@@ -200,12 +202,8 @@ class SpatialGraph:
         ordered_positions_2D = [adjacent_positions_2D[i] for i in idx_sorted]
         ordered_positions_3D = [adjacent_positions_3D[i] for i in idx_sorted]
 
-        # Attributes
-        edge_labels     = [str(edge)] * len(ordered_nodes)
-        sub_edge_labels = [str(i) for i in range(len(ordered_nodes) - 1)]
 
-
-        return ordered_nodes, ordered_positions_2D, ordered_positions_3D, edge_labels, sub_edge_labels
+        return ordered_nodes, ordered_positions_2D, ordered_positions_3D
 
     def cyclic_ordering(self, ref_node, ref_node_type, node_ordering_dict=None, node_angle_dict=None):
 
@@ -237,10 +235,8 @@ class SpatialGraph:
         # Horizontal line (reference for angles)
         ref_vector = np.array([1, 0])
 
-        angles = []
-        for pos_nbr in pos_nbrs:
-            angle = compute_counter_clockwise_angle(ref_vector, pos_nbr)
-            angles.append(angle)
+        angles = compute_counter_clockwise_angles(ref_vector, pos_nbrs)
+
 
         ordered_nodes     = [node     for _, node     in sorted(zip(angles, nbrs))]
         ordered_angles    = [angle    for angle, _ in sorted(zip(angles, nbrs))]
@@ -298,21 +294,20 @@ class SpatialGraph:
 
     def subdivide_edge(self, edge):
 
-        edge_nodes_and_or_crossings, positions_2D, positions_3D, edge_labels, sub_edge_labels = self.get_edge_vertices_and_or_crossings(edge)
+        edge_nodes_and_or_crossings, positions_2D, positions_3D = self.get_edge_vertices_and_or_crossings(edge)
 
         # If there are no crossings, return empty lists
         if len(edge_nodes_and_or_crossings) == 2:
-            return [], [], [], [], [], []
+            return [],[],[],[]
 
-        else:
-            # Sanity check nodes are only first and last
-            old_edges = [edge]
-            new_nodes = [node for node in edge_nodes_and_or_crossings[1:-1]]
-            new_edges = [(edge_nodes_and_or_crossings[i], edge_nodes_and_or_crossings[i + 1]) for i in
-                            range(len(edge_nodes_and_or_crossings) - 1)]
-            new_positions_3D = [tuple(positions_3D[i]) for i in range(1, len(positions_3D) - 1)]
 
-            return old_edges, new_nodes, new_edges, new_positions_3D, edge_labels, sub_edge_labels
+        # Sanity check nodes are only first and last
+        old_edges = [edge]
+        new_nodes = edge_nodes_and_or_crossings[1:-1]
+        new_edges = list(zip(edge_nodes_and_or_crossings[:-1], edge_nodes_and_or_crossings[1:]))
+        new_positions_3D = [tuple(p) for p in positions_3D[1:-1]]
+
+        return old_edges, new_nodes, new_edges, new_positions_3D
 
 
     def subdivide_edges(self):
@@ -321,16 +316,12 @@ class SpatialGraph:
         all_nodes_to_add    = []
         all_edges_to_add    = []
         all_pos_to_add      = []
-        all_edge_labels = []
-        all_sub_edge_labels = []
         for edge in self.edges:
-            edges_to_remove, nodes_to_add, edges_to_add, pos_to_add, edge_labels, sub_edge_labels = self.subdivide_edge(edge)
+            edges_to_remove, nodes_to_add, edges_to_add, pos_to_add = self.subdivide_edge(edge)
             all_edges_to_remove += edges_to_remove
             all_nodes_to_add    += nodes_to_add
             all_edges_to_add    += edges_to_add
             all_pos_to_add      += pos_to_add
-            all_edge_labels     += edge_labels
-            all_sub_edge_labels += sub_edge_labels
 
         # Update the Spatial Graph (remove old edges, add crossing nodes, add new edges)
         self.SG.remove_edges_from(all_edges_to_remove)
@@ -338,9 +329,6 @@ class SpatialGraph:
         self.SG.add_edges_from(all_edges_to_add)
         nx.set_node_attributes(self.SG, {node: pos for node, pos in zip(all_nodes_to_add, all_pos_to_add)}, 'pos')
         nx.set_node_attributes(self.SG, {node: 'crossing' for node in all_nodes_to_add}, 'type')
-        nx.set_edge_attributes(self.SG, {edge: edge_label for edge, edge_label in zip(all_edges_to_add, all_edge_labels)}, 'edge_label')
-        nx.set_edge_attributes(self.SG, {edge: sub_edge_label for edge, sub_edge_label in zip(all_edges_to_add, all_sub_edge_labels)}, 'sub_edge_label')
-        print("Done")
 
 
 
@@ -380,15 +368,15 @@ class SpatialGraph:
 
             # Rotate the node positions
             pos_arr_rot   = rotate(pos_arr, rotation)
+            pos3D_rot = {node: pos_arr_rot[i] for i, node in enumerate(self.nodes)}
 
             # First, check that no edges are perfectly vertical or perfectly horizontal.
             # While neither of these cases is technically incorrect, it's easier to implement looping through rotations
             # rather than add edge cases for each 2D and 3D line equation.
 
-            for edge in self.edges:
-                a, b      = edge
-                x1, _, z1 = pos_arr_rot[list(self.nodes).index(a)]
-                x2, _, z2 = pos_arr_rot[list(self.nodes).index(b)]
+            for (a, b) in self.edges:
+                x1, _, z1 = pos3D_rot[a]
+                x2, _, z2 = pos3D_rot[b]
 
                 if np.isclose(x1, x2) or np.isclose(z1, z2):
                     print('An edge is vertical or horizontal. This is not a valid spatial graph.')
@@ -398,68 +386,14 @@ class SpatialGraph:
             if bad_rotation:
                 continue
 
-            # Second, check adjacent edge pairs for validity.
-            # Since adjacent segments are straight lines, they should only intersect at a single endpoint.
-            # The only other possibility is for them to infinitely overlap, which is not a valid spatial graph.
+            crossings, invalid = identify_overlapping_edges(
+                pos3D_rot=pos3D_rot,
+                nonadjacent_edge_pairs=self.nonadjacent_edge_pairs,
+                atol=1e-4)
 
-            crossings = {}
-
-            for edge_1, edge_2 in self.nonadjacent_edge_pairs:
-
-                # Get the crossing in 2D and 3D
-                a, b = edge_1
-                c, d = edge_2
-                pos_a_3D = pos_arr_rot[list(self.nodes).index(a)]
-                pos_b_3D = pos_arr_rot[list(self.nodes).index(b)]
-                pos_c_3D = pos_arr_rot[list(self.nodes).index(c)]
-                pos_d_3D = pos_arr_rot[list(self.nodes).index(d)]
-
-                pos_a_2D = pos_a_3D[[0, 2]]
-                pos_b_2D = pos_b_3D[[0, 2]]
-                pos_c_2D = pos_c_3D[[0, 2]]
-                pos_d_2D = pos_d_3D[[0, 2]]
-
-                # First, in 2D
-                min_dist, min_dist_pos, _ = compute_line_segment_intersection(pos_a_2D, pos_b_2D, pos_c_2D, pos_d_2D)
-                y_ab = compute_intermediate_y_position(pos_a_3D, pos_b_3D, x_int=min_dist_pos[0], z_int=min_dist_pos[1])
-                y_cd = compute_intermediate_y_position(pos_c_3D, pos_d_3D, x_int=min_dist_pos[0], z_int=min_dist_pos[1])
-                pos_x_ab = np.array([min_dist_pos[0], y_ab, min_dist_pos[1]])
-                pos_x_cd = np.array([min_dist_pos[0], y_cd, min_dist_pos[1]])
-
-                if np.isclose(min_dist, 0., atol=1e-4):
-
-                    # Ensure that the crossing does not occur at an endpoint
-                    assert_1 = np.allclose(min_dist_pos, pos_a_2D, atol=1e-4)
-                    assert_2 = np.allclose(min_dist_pos, pos_b_2D, atol=1e-4)
-                    assert_3 = np.allclose(min_dist_pos, pos_c_2D, atol=1e-4)
-                    assert_4 = np.allclose(min_dist_pos, pos_d_2D, atol=1e-4)
-                    if any([assert_1, assert_2, assert_3, assert_4]):
-                        bad_rotation = True
-                        print('These crossings should not intersect at endpoints.')
-
-                    # elif crossing_position is np.inf:
-                    #     raise ValueError('The edges are overlapping. This is not a valid spatial graph.')
-
-
-                    edges = (edge_1, edge_2)
-                    label = f"crossing_{len(crossings)}"
-
-                    # Define the over and under strands, based on y position
-                    idx_over = np.argmax([pos_x_ab[1], pos_x_cd[1]])
-                    idx_under = np.argmin([pos_x_ab[1], pos_x_cd[1]])
-                    assert idx_over != idx_under, "Error in determining over and under strands."
-
-                    # FIXME, reverse logic? Plotting y pointing away
-                    orientation = ['over', 'under'] if pos_x_ab[1] < pos_x_cd[1] else ['under', 'over']
-                    # FIXME This information gets stale, maybe store % along edge instead?
-                    crossings[label] = {'edges': edges,
-                                        'pos_3D': [pos_x_ab, pos_x_cd],
-                                        'orientation': orientation,
-                                        'pos_2D': np.array([min_dist_pos[0], min_dist_pos[1]])}
-
-            if bad_rotation:
+            if invalid:
+                # crossings at endpoints or other invalid conditions
                 continue
-
 
             # If all are satisfied
             break
@@ -475,8 +409,8 @@ class SpatialGraph:
         return pos_rot, crossings
 
     def to_spatial_graph_diagram(self):
-        #FIXME cyclic not catching adjacent crossins 1 and 2
-        # # Create a list of all nodes and crossings
+        # FIXME cyclic not catching adjacent crossins 1 and 2
+        # Create a list of all nodes and crossings
         # nodes_and_crossings = list(self.nodes) + list(self.crossings.keys())
         nodes     = [node for node in self.nodes if "crossing" not in node]
         edges     = list(self.edges)

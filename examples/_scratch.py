@@ -78,13 +78,13 @@ sg = SpatialGraph(nodes=nodes,
 
 sgd = sg.to_spatial_graph_diagram()
 
-# ordering_dict = sg.node_ordering_dict
-#
-# expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
-#                  'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
-#                  'crossing_2': {'w_cg': 0, 'crossing_1': 1, 'comp_g': 2, 'w_bf': 3},
-#                  'crossing_3': {'w_gh': 0, 'w_bf': 1, 'comp_g': 2, 'comp_f': 3}}
-#
+ordering_dict = sg.node_ordering_dict
+
+expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
+                 'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
+                 'crossing_2': {'w_cg': 0, 'crossing_1': 1, 'comp_g': 2, 'w_bf': 3},
+                 'crossing_3': {'w_gh': 0, 'w_bf': 1, 'comp_g': 2, 'comp_f': 3}}
+
 # # assert ordering_dict == expected_dict
 #
 # sg.plot()
