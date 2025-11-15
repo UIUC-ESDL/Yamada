@@ -76,7 +76,7 @@ sg = SpatialGraph(nodes=nodes,
                   edges=edges,
                   rotation=rotation)
 
-sgd = sg.to_spatial_graph_diagram()
+# sgd = sg.to_spatial_graph_diagram()
 
 ordering_dict = sg.node_ordering_dict
 

@@ -10,10 +10,6 @@ from itertools import combinations
 from scipy.stats import qmc
 
 from ..sg.geometry import (rotate,
-                                compute_line_segment_intersection,
-                                compute_intermediate_y_position,
-                                compute_3D_intersection,
-                                compute_counter_clockwise_angle,
                                 identify_overlapping_edges,
                            compute_counter_clockwise_angles)
 
@@ -120,14 +116,6 @@ class SpatialGraph:
         pos = nx.get_node_attributes(self.SG, 'pos')
         return pos
 
-    @property
-    def pos_2D_proj(self):
-        pass
-
-    @property
-    def pos_3D_proj(self):
-        pass
-
 
     def get_adjacent_edge_pairs(self):
         # TODO Replace with nx functions?
@@ -174,7 +162,7 @@ class SpatialGraph:
             edge_pair = crossing_values['edges']
             if edge in edge_pair:
                 idx       = edge_pair.index(edge)
-                orientation = crossing_values['orientation'][idx]
+                orientation = crossing_values['edge_order'][idx]
                 pos2D     = crossing_values['pos_2D']
                 pos3D     = crossing_values['pos_3D'][idx]
                 label     = f"{crossing}_{orientation}"
@@ -222,7 +210,7 @@ class SpatialGraph:
             pos_nbrs = np.array([self.pos2D[node] for node in nbrs])
         else:
             edge_1, edge_2 = self.crossings[ref_node]['edges']
-            ori_ab, ori_cd = self.crossings[ref_node]['orientation']
+            ori_ab, ori_cd = self.crossings[ref_node]['edge_order']
             oris = [ori_ab, ori_ab, ori_cd, ori_cd]
             pos_x = self.crossings[ref_node]['pos_2D']
             (a, b), (c, d) = edge_1, edge_2
@@ -386,10 +374,7 @@ class SpatialGraph:
             if bad_rotation:
                 continue
 
-            crossings, invalid = identify_overlapping_edges(
-                pos3D_rot=pos3D_rot,
-                nonadjacent_edge_pairs=self.nonadjacent_edge_pairs,
-                atol=1e-4)
+            crossings, invalid = identify_overlapping_edges(pos=pos3D_rot, edge_pairs=self.nonadjacent_edge_pairs)
 
             if invalid:
                 # crossings at endpoints or other invalid conditions

@@ -203,55 +203,6 @@ def compute_intermediate_y_position(a:     np.ndarray,
     return y_int
 
 
-def compute_3D_intersection(a0_position, a1_position, a2_position, a3_position, x0z_coords):
-    """
-    If two 3D lines are projected onto the XZ plane and their projections intersect, then
-    calculate the corresponding 3D coordinates of that intersection point for the two lines.
-    """
-
-    # Unpack the coordinates
-    x0, y0, z0 = a0_position
-    x1, y1, z1 = a1_position
-    x2, y2, z2 = a2_position
-    x3, y3, z3 = a3_position
-    xc, yc, zc = x0z_coords
-
-    # Changes in position
-    dx02 = x2 - x0
-    dy02 = y2 - y0
-    dz02 = z2 - z0
-    dx13 = x3 - x1
-    dy13 = y3 - y1
-    dz13 = z3 - z1
-
-    # Relative position of the crossing
-    if dx02 != 0:
-        t02 = (xc - x0) / dx02
-    elif dy02 != 0:
-        t02 = (yc - y0) / dy02
-    elif dz02 != 0:
-        t02 = (zc - z0) / dz02
-    else:
-        raise ValueError("The start and stop nodes have the same position")
-
-    if dx13 != 0:
-        t13 = (xc - x1) / dx13
-    elif dy13 != 0:
-        t13 = (yc - y1) / dy13
-    elif dz13 != 0:
-        t13 = (zc - z1) / dz13
-    else:
-        raise ValueError("The start and stop nodes have the same position")
-
-    # Calculate the 3D position of the crossing
-    y_c_02 = y0 + t02 * dy02
-    y_c_13 = y1 + t13 * dy13
-
-    position_c_02 = np.array([xc, y_c_02, zc])
-    position_c_13 = np.array([xc, y_c_13, zc])
-
-    return position_c_02, position_c_13
-
 
 def compute_counter_clockwise_angle(vector_a, vector_b):
     """
@@ -288,6 +239,7 @@ def compute_counter_clockwise_angle(vector_a, vector_b):
     else:
         return 360 - inner
 
+
 def compute_counter_clockwise_angles(reference_vector, vectors):
     ccw_angles = []
     for vector in vectors:
@@ -296,20 +248,28 @@ def compute_counter_clockwise_angles(reference_vector, vectors):
     return ccw_angles
 
 
-def identify_overlapping_edges(pos3D_rot, nonadjacent_edge_pairs, atol=1e-4):
-    crossings = {}
-    invalid = False
+def identify_overlapping_edges(pos, edge_pairs):
 
-    for edge_1, edge_2 in nonadjacent_edge_pairs:
+    # Validate Inputs
+    assert isinstance(pos, dict)
+    assert all(isinstance(v, np.ndarray) and v.shape == (3,) for v in pos.values())
+    assert all(isinstance(edge, tuple) and len(edge) == 2 for edge in edge_pairs)
+
+    # Initialize outputs
+    crossings = {}
+    invalid   = False
+
+    for edge_1, edge_2 in edge_pairs:
+
         # Unpack edges
         a, b = edge_1
         c, d = edge_2
 
         # 3D positions in this projection
-        pos_a_3D = pos3D_rot[a]
-        pos_b_3D = pos3D_rot[b]
-        pos_c_3D = pos3D_rot[c]
-        pos_d_3D = pos3D_rot[d]
+        pos_a_3D = pos[a]
+        pos_b_3D = pos[b]
+        pos_c_3D = pos[c]
+        pos_d_3D = pos[d]
 
         # 2D projections to XZ plane
         pos_a_2D = pos_a_3D[[0, 2]]
@@ -318,47 +278,44 @@ def identify_overlapping_edges(pos3D_rot, nonadjacent_edge_pairs, atol=1e-4):
         pos_d_2D = pos_d_3D[[0, 2]]
 
         # Compute 2D segment intersection
-        min_dist, min_dist_pos, _ = compute_line_segment_intersection(
-            pos_a_2D, pos_b_2D, pos_c_2D, pos_d_2D
-        )
+        min_dist, min_dist_pos, _ = compute_line_segment_intersection(pos_a_2D, pos_b_2D, pos_c_2D, pos_d_2D)
 
         # Early reject if they don't intersect (in 2D)
-        if not np.isclose(min_dist, 0.0, atol=atol):
+        if not np.isclose(min_dist, 0.0):
             continue
 
         # Ensure the crossing is not at an endpoint
-        at_endpoint = any([
-            np.allclose(min_dist_pos, pos_a_2D, atol=atol),
-            np.allclose(min_dist_pos, pos_b_2D, atol=atol),
-            np.allclose(min_dist_pos, pos_c_2D, atol=atol),
-            np.allclose(min_dist_pos, pos_d_2D, atol=atol),
-        ])
-        if at_endpoint:
-            # This projection is “bad” (you were printing and rejecting in project())
+        intersects_at_endpoint = any([np.allclose(min_dist_pos, pos_a_2D),
+                                      np.allclose(min_dist_pos, pos_b_2D),
+                                      np.allclose(min_dist_pos, pos_c_2D),
+                                      np.allclose(min_dist_pos, pos_d_2D)])
+
+        # If edges intersect at an endpoint, mark as invalid and try another projection plane
+        if intersects_at_endpoint:
             invalid = True
             break
 
-        # Compute y-coordinates at the intersection for each 3D segment
-        x_int, z_int = min_dist_pos
-        y_ab = compute_intermediate_y_position(pos_a_3D, pos_b_3D, x_int=x_int, z_int=z_int)
-        y_cd = compute_intermediate_y_position(pos_c_3D, pos_d_3D, x_int=x_int, z_int=z_int)
-
-        pos_x_ab = np.array([x_int, y_ab, z_int])
-        pos_x_cd = np.array([x_int, y_cd, z_int])
+        # Given a pair of 3D edges that intersect when projected onto a 2D plane,
+        # find the 3D point along each edge that corresponds to this intersection.
+        x_intersect, z_intersect = min_dist_pos
+        y_ab     = compute_intermediate_y_position(pos_a_3D, pos_b_3D, x_int=x_intersect, z_int=z_intersect)
+        y_cd     = compute_intermediate_y_position(pos_c_3D, pos_d_3D, x_int=x_intersect, z_int=z_intersect)
+        pos_x_ab = np.array([x_intersect, y_ab, z_intersect])
+        pos_x_cd = np.array([x_intersect, y_cd, z_intersect])
 
         # Define label and store crossing
-        edges = (edge_1, edge_2)
         label = f"crossing_{len(crossings)}"
 
-        # Define over/under based on y position
-        # (keep your existing convention)
-        orientation = ["over", "under"] if pos_x_ab[1] < pos_x_cd[1] else ["under", "over"]
+        # Define which strand is in front of the other
+        # Left-handed convention (+y pointing away from the viewer)
+        # Probably should switch to right-handed convention later, but some tests are hard-coded.
+        edge_order = ["over", "under"] if pos_x_ab[1] < pos_x_cd[1] else ["under", "over"]
 
         crossings[label] = {
-            "edges": edges,
-            "pos_3D": [pos_x_ab, pos_x_cd],
-            "orientation": orientation,
-            "pos_2D": np.array([x_int, z_int]),
-        }
+                            "edges":       (edge_1, edge_2),
+                            "edge_order":  edge_order,
+                            "pos_2D":      np.array([x_intersect, z_intersect]),
+                            "pos_3D":      [pos_x_ab, pos_x_cd],
+                            }
 
     return crossings, invalid
