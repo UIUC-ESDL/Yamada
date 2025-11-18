@@ -13,6 +13,11 @@ def rotate(positions: np.ndarray,
     :return: new_positions:
     """
 
+    # assert isinstance(positions, np.ndarray)
+    # assert isinstance(rotation, np.ndarray)
+    # assert positions.shape[1] == 3
+    # assert rotation.shape == (1, 3)
+
     # Shift the object to origin
     reference_position = positions[0]
     origin_positions = positions - reference_position
@@ -216,7 +221,7 @@ def compute_counter_clockwise_angle(vector_a, vector_b):
     assert vector_b.shape == (2,)
 
     def length(v):
-        return np.sqrt(v[0] ** 2 + v[1] ** 2)
+        return np.hypot(v[0], v[1])
 
     def dot_product(v, w):
         return v[0] * w[0] + v[1] * w[1]
@@ -224,20 +229,40 @@ def compute_counter_clockwise_angle(vector_a, vector_b):
     def determinant(v, w):
         return v[0] * w[1] - v[1] * w[0]
 
-    def inner_angle(v, w):
-        cosx = dot_product(v, w) / (length(v) * length(w))
-        rad = np.arccos(cosx)     # in radians
-        return rad * 180 / np.pi  # returns degrees
+    # Basic values
+    dot = dot_product(vector_a, vector_b)
+    det = determinant(vector_a, vector_b)
 
-    inner = inner_angle(vector_a, vector_b)
-    det   = determinant(vector_a, vector_b)
+    # Lengths
+    la = length(vector_a)
+    lb = length(vector_b)
+
+    # Perfectly collinear
+    if det == 0:
+
+        # In the same direction
+        if dot > 0:
+            return 0.0
+
+        # In the opposite direction
+        else:
+            return 180.0
+
+    # Compute generic angle
+    cosx = dot / (la * lb)
+
+    # Clamp for floating-point safety
+    cosx = max(min(cosx, 1.0), -1.0)
+
+    angle = np.degrees(np.arccos(cosx))
 
     # If the determinant is < 0, then B is clockwise of A
     if det > 0:
-        return inner
-    # If the determinant is > 0, then A is clockwise of B
+        return angle
+
+    # If the determinant is > 0, then A is clockwise of B, so return the reflex angle
     else:
-        return 360 - inner
+        return 360.0 - angle
 
 
 def compute_counter_clockwise_angles(reference_vector, vectors):

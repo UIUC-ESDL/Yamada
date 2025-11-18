@@ -76,9 +76,10 @@ sg = SpatialGraph(nodes=nodes,
                   edges=edges,
                   rotation=rotation)
 
+# proj = sg.to_planar_embedding()
 # sgd = sg.to_spatial_graph_diagram()
 
-ordering_dict = sg.node_ordering_dict
+# ordering_dict = sg.node_ordering_dict
 
 expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
                  'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
@@ -87,4 +88,4 @@ expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
 
 # # assert ordering_dict == expected_dict
 #
-# sg.plot()
+sg.plot()

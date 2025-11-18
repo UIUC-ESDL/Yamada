@@ -641,7 +641,15 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
-    def plot(self):
-        plotter = plot_spatial_graph_diagram(self)
-        plotter.show()
+    def plot(self, show=True, filename=None, off_screen=False):
+        plotter = plot_spatial_graph_diagram(self, off_screen=off_screen)
+
+        if filename is not None:
+            # plotter.show(screenshot=filename, auto_close=True)
+            plotter.save_graphic(filename)
+
+        if show:
+            plotter.show()
+        # else:
+        #     plotter.close()
 
