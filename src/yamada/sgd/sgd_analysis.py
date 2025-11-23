@@ -140,6 +140,4 @@ def edges_form_a_strand(e1, e2):
     return does_form_strand
 
 
-def available_crossing_swaps(sgd):
-    crossing_labels = [c.label for c in sgd.crossings]
-    return crossing_labels
+
