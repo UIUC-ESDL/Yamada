@@ -122,15 +122,24 @@ def spatial_graph_diagrams_fixed_crossings(G, crossings):
                                 yield D
 
 
-def enumerate_yamada_classes(G, max_crossings):
+def enumerate_yamada_class(G, num_crossings):
     examined = 0
-    polys = dict()
+    polys    = dict()
+    for D in spatial_graph_diagrams_fixed_crossings(G, num_crossings):
+        p = D.yamada_polynomial()
+        if p not in polys:
+            polys[p] = D
+        examined += 1
+    return polys, examined
+
+
+def enumerate_yamada_classes(G, max_crossings):
+    examined   = 0
+    polys      = dict()
     for crossings in range(0, max_crossings + 1):
-        for D in spatial_graph_diagrams_fixed_crossings(G, crossings):
-            p = D.yamada_polynomial()
-            if p not in polys:
-                polys[p] = D
-            examined += 1
+        polys_c, examined_c = enumerate_yamada_class(G, crossings)
+        polys.update(polys_c)
+        examined += examined_c
     return polys, examined
 
 

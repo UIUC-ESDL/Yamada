@@ -10,7 +10,7 @@ from .sg.spatial_graphs import SpatialGraph
 # Spatial Graph Diagrams
 from .sgd.diagram_elements import Vertex, Edge, Crossing
 from .sgd.spatial_graph_diagrams import SpatialGraphDiagram
-from .sgd.enumeration import enumerate_yamada_classes
+from .sgd.enumeration import enumerate_yamada_class, enumerate_yamada_classes
 from .sgd.reidemeister import available_r1_moves, apply_r1_move, available_r2_moves, apply_r2_move, available_r3_moves, apply_r3_move
 
 

@@ -46,6 +46,7 @@ import pickle
 from cypari import pari
 import warnings
 import matplotlib
+import pyvista as pv
 matplotlib.use('TkAgg')   # Use a non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, PathPatch
@@ -62,7 +63,7 @@ class SpatialGraphDiagram:
     def __init__(self, *, edges=None, vertices=None, crossings=None,
                  standardize_labels=True,
                  correct_diagram=True,
-                 simplify_diagram=True):
+                 simplify_diagram=False):
 
         # Ensure inputs are lists (avoid mutable default arguments)
         edges = edges or []
@@ -650,6 +651,8 @@ class SpatialGraphDiagram:
 
         if show:
             plotter.show()
-        # else:
-        #     plotter.close()
+
+        plotter.close()
+        pv.close_all()
+
 
