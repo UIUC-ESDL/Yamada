@@ -53,12 +53,18 @@ class SpatialGraph:
 
 
         # Find the projection
-        projection_plane_normal, pos_proj, ccw_ordering, ccw_angles = self.to_planar_embedding()
-        self.projection_plane_normal = projection_plane_normal
-        self.pos_proj      = pos_proj
-        self.ccw_orderings = ccw_ordering
-        self.ccw_angles    = ccw_angles
-        self.PE            = PlanarEmbedding(ccw_ordering, pos=pos_proj)
+        self.rotation, self.projection_plane_normal, self.crossings = self.find_valid_projection_plane(forced_rotation=rotation)
+        # self.subdivide_edges()
+        # self.G2 = self.subdivide_edges()
+        self.H, self.pos2d, self.crossings = build_projected_graph_with_crossings(self.G, self.pos, normal=self.projection_plane_normal)
+
+
+        # projection_plane_normal, pos_proj, ccw_ordering, ccw_angles = self.to_planar_embedding()
+        # self.projection_plane_normal = projection_plane_normal
+        # self.pos_proj      = pos_proj
+        # self.ccw_orderings = ccw_ordering
+        # self.ccw_angles    = ccw_angles
+        # self.PE            = PlanarEmbedding(ccw_ordering, pos=pos_proj)
 
 
     def __getattr__(self, name):
@@ -96,7 +102,18 @@ class SpatialGraph:
 
     @property
     def pos(self):
-        return nx.get_node_attributes(self.G, 'pos')
+        pos = nx.get_node_attributes(self.G, 'pos')
+        return pos
+
+    @property
+    def pos_projected(self):
+        pos = nx.get_node_attributes(self.G, 'pos')
+        pos_rotated = {}
+        for node in pos:
+            position = np.array(pos[node])
+            position_rotated = rotate(position, self.rotation)
+            pos_rotated[node] = tuple(position_rotated)
+        return pos_rotated
 
 
     def get_adjacent_edge_pairs(self):
@@ -126,10 +143,101 @@ class SpatialGraph:
 
 
 
+    # @staticmethod
+    # def subdivide_projected_edge(edge:      tuple[str, str],
+    #                              positions: dict,
+    #                              crossings: dict):
+    #     """
+    #     Returns a list of the vertices and crossings along a give edge
+    #     specifically ordered from -x to +x.
+    #     """
+    #
+    #     # Get edge's two nodes and their positions
+    #     a, b         = edge
+    #     pos_a, pos_b = positions[a], positions[b]
+    #     if pos_a[0] < pos_b[0]:
+    #         leftmost_node, leftmost_pos = a, pos_a
+    #         rightmost_node, rightmost_pos = b, pos_b
+    #     elif pos_b[0] < pos_a[0]:
+    #         leftmost_node, leftmost_pos = b, pos_b
+    #         rightmost_node, rightmost_pos = a, pos_a
+    #     else:
+    #         raise ValueError(f"Edge {edge} is vertical in the projection; cannot subdivide.")
+    #
+    #     # Get the crossings, if applicable
+    #     node_labels    = [leftmost_node, rightmost_node]
+    #     node_positions = [leftmost_pos, rightmost_pos]
+    #     node_types     = ["vertex", "vertex"]
+    #
+    #     for crossing, crossing_values in crossings.items():
+    #         edge_pair = crossing_values['edges']
+    #         if edge in edge_pair:
+    #             node_label    = f"{crossing}"
+    #             node_position = crossing_values['pos_2D']
+    #             node_type     = "crossing"
+    #
+    #             is_between_x = leftmost_pos[0]  < node_position[0] < rightmost_pos[0]
+    #             assert is_between_x, f"Crossing {crossing} must occur between the X endpoints of edge {edge}."
+    #
+    #             is_between_y = leftmost_pos[1]  < node_position[1] < rightmost_pos[1] or \
+    #                            rightmost_pos[1] < node_position[1] < leftmost_pos[1]
+    #             assert is_between_y, f"Crossing {crossing} must occur between the Y endpoints of edge {edge}."
+    #
+    #             node_labels.append(node_label)
+    #             node_positions.append(node_position)
+    #             node_types.append(node_type)
+    #
+    #     # Convert positions from dictionary to list
+    #     node_positions = np.array(node_positions)
+    #
+    #     # Order vertices and crossings from left to right by x position (i.e., ascending position index 0)
+    #     x_positions = np.array(node_positions)[:, 0]
+    #     idx_sorted  = np.argsort(x_positions)
+    #
+    #     ordered_nodes     = [node_labels[i] for i in idx_sorted]
+    #     ordered_types     = [node_types[i] for i in idx_sorted]
+    #     ordered_edges     = [(ordered_nodes[i], ordered_nodes[i+1]) for i in range(len(ordered_nodes)-1)]
+    #
+    #     # TODO Update crossing dictionary
+    #
+    #     return ordered_nodes, ordered_edges, ordered_types
+    #
+    #
+    # def subdivide_projected_edges(self, positions, crossings):
+    #     all_nodes = []
+    #     all_edges = []
+    #     all_types = []
+    #     for edge in self.edges:
+    #         nodes, edges, types = self.subdivide_projected_edge(edge, positions, crossings)
+    #         all_nodes += nodes
+    #         all_edges += edges
+    #         all_types += types
+    #
+    #     # Remove any repeated nodes
+    #     # E.g., subdividing two edges that share the same node.
+    #     seen = set()
+    #     keep_indices = []
+    #
+    #     for i, node in enumerate(all_nodes):
+    #         if node not in seen:
+    #             seen.add(node)
+    #             keep_indices.append(i)
+    #
+    #     all_nodes = [all_nodes[i] for i in keep_indices]
+    #     all_types = [all_types[i] for i in keep_indices]
+    #
+    #     # Construct a networkx graph
+    #     G = nx.Graph()
+    #     for node, node_type in zip(all_nodes, all_types):
+    #         G.add_node(node, node_type=node_type)
+    #     G.add_edges_from(all_edges)
+    #
+    #     return G
+
     @staticmethod
-    def subdivide_projected_edge(edge:      tuple[str, str],
-                                 positions: dict,
-                                 crossings: dict):
+    def subdivide_edge(edge:      tuple[str, str],
+                       pos:       dict,
+                       crossings: dict):
         """
         Returns a list of the vertices and crossings along a give edge
         specifically ordered from -x to +x.
@@ -137,12 +245,12 @@ class SpatialGraph:
 
         # Get edge's two nodes and their positions
         a, b         = edge
-        pos_a, pos_b = positions[a], positions[b]
+        pos_a, pos_b = pos[a], pos[b]
         if pos_a[0] < pos_b[0]:
-            leftmost_node, leftmost_pos = a, pos_a
+            leftmost_node,  leftmost_pos  = a, pos_a
             rightmost_node, rightmost_pos = b, pos_b
         elif pos_b[0] < pos_a[0]:
-            leftmost_node, leftmost_pos = b, pos_b
+            leftmost_node,  leftmost_pos  = b, pos_b
             rightmost_node, rightmost_pos = a, pos_a
         else:
             raise ValueError(f"Edge {edge} is vertical in the projection; cannot subdivide.")
@@ -153,18 +261,27 @@ class SpatialGraph:
         node_types     = ["vertex", "vertex"]
 
         for crossing, crossing_values in crossings.items():
-            edge_pair = crossing_values['edges']
-            if edge in edge_pair:
-                node_label    = f"{crossing}"
-                node_position = crossing_values['pos_2D']
-                node_type     = "crossing"
+            (edge_1, edge_2) = crossing_values['edges']
 
-                is_between_x = leftmost_pos[0]  < node_position[0] < rightmost_pos[0]
-                assert is_between_x, f"Crossing {crossing} must occur between the X endpoints of edge {edge}."
+            if edge == edge_1 or edge == edge_2:
 
-                is_between_y = leftmost_pos[1]  < node_position[1] < rightmost_pos[1] or \
-                               rightmost_pos[1] < node_position[1] < leftmost_pos[1]
-                assert is_between_y, f"Crossing {crossing} must occur between the Y endpoints of edge {edge}."
+                edge_order   = crossing_values['edge_order']
+                positions_3D = crossing_values['pos_3D']
+                over_under   = edge_order[0] if edge == edge_1 else edge_order[1]
+
+                node_label    = f"{crossing}_{over_under}"
+                node_position = positions_3D[0] if edge == edge_1 else positions_3D[1]
+
+
+                # node_position = crossing_values['pos_2D']
+                node_type = "crossing"
+
+                # is_between_x = leftmost_pos[0] < node_position[0] < rightmost_pos[0]
+                # assert is_between_x, f"Crossing {crossing} must occur between the X endpoints of edge {edge}."
+                #
+                # is_between_y = leftmost_pos[1] < node_position[1] < rightmost_pos[1] or \
+                #                rightmost_pos[1] < node_position[1] < leftmost_pos[1]
+                # assert is_between_y, f"Crossing {crossing} must occur between the Y endpoints of edge {edge}."
 
                 node_labels.append(node_label)
                 node_positions.append(node_position)
@@ -175,24 +292,25 @@ class SpatialGraph:
 
         # Order vertices and crossings from left to right by x position (i.e., ascending position index 0)
         x_positions = np.array(node_positions)[:, 0]
-        idx_sorted  = np.argsort(x_positions)
-
-        ordered_nodes     = [node_labels[i] for i in idx_sorted]
-        ordered_types     = [node_types[i] for i in idx_sorted]
-        ordered_edges     = [(ordered_nodes[i], ordered_nodes[i+1]) for i in range(len(ordered_nodes)-1)]
-
-        # TODO Update crossing dictionary
-
-        return ordered_nodes, ordered_edges, ordered_types
+        idx_sorted = np.argsort(x_positions)
 
 
-    def subdivide_projected_edges(self, positions, crossings):
+        ordered_nodes = [node_labels[i] for i in idx_sorted]
+        ordered_positions = [node_positions[i] for i in idx_sorted]
+        ordered_types = [node_types[i] for i in idx_sorted]
+        ordered_edges = [(ordered_nodes[i], ordered_nodes[i + 1]) for i in range(len(ordered_nodes) - 1)]
+
+        return ordered_nodes, ordered_positions, ordered_edges, ordered_types
+
+    def subdivide_edges(self):
         all_nodes = []
+        all_positions = []
         all_edges = []
         all_types = []
         for edge in self.edges:
-            nodes, edges, types = self.subdivide_projected_edge(edge, positions, crossings)
+            nodes, node_positions, edges, types = self.subdivide_edge(edge, self.pos_projected, self.crossings)
             all_nodes += nodes
+            all_positions += node_positions
             all_edges += edges
             all_types += types
 
@@ -207,9 +325,22 @@ class SpatialGraph:
                 keep_indices.append(i)
 
         all_nodes = [all_nodes[i] for i in keep_indices]
+        all_positions = [all_positions[i] for i in keep_indices]
         all_types = [all_types[i] for i in keep_indices]
 
-        return all_nodes, all_edges, all_types
+        # Construct a networkx graph
+        G = nx.Graph()
+        for node, node_pos, node_type in zip(all_nodes, all_positions, all_types):
+            G.add_node(node, pos=node_pos, node_type=node_type)
+        G.add_edges_from(all_edges)
+        return G
+
+        # # Update the Spatial Graph
+        # self.remove_edges_from(self.edges)
+        # for node, node_position, node_type in zip(all_nodes, all_positions, all_types):
+        #     if node not in self.nodes:
+        #         self.add_node(node, pos=node_position, node_type=node_type)
+        # self.add_edges_from(all_edges)
 
 
     def find_valid_projection_plane(self, max_iter=10, forced_rotation=None):
@@ -228,6 +359,8 @@ class SpatialGraph:
 
         """
 
+        # Define the default XZ plane
+        projection_plane_normal = np.array([0.0, -1.0, 0.0])
 
         # Convert the node positions to a numpy array
         pos_arr = np.array([self.pos[node] for node in self.nodes])
@@ -280,11 +413,13 @@ class SpatialGraph:
             # No rotation succeeded
             raise RuntimeError("Failed to find a valid projection (all rotations invalid).")
 
+        # Rotate the projection plane
+        rotated_projection_plane_normal = rotate(projection_plane_normal, rotation)
 
-        return rotation, crossings
+        return rotation, rotated_projection_plane_normal, crossings
 
 
-    def cyclic_ordering_vertex(self, ref_node, edges, pos, node_ordering_dict=None, node_angle_dict=None):
+    def cyclic_ordering_vertex(self, G, ref_node, pos, node_ordering_dict=None, node_angle_dict=None):
 
         # If no node ordering dictionary is provided, use the default node ordering dictionary
         if node_ordering_dict is None:
@@ -294,12 +429,13 @@ class SpatialGraph:
 
 
         pos_x = np.array(pos[ref_node], dtype=np.float64).reshape((1,2))
-        nbrs = []
-        for (a, b) in edges:
-            if ref_node == a:
-                nbrs.append(b)
-            elif ref_node == b:
-                nbrs.append(a)
+        # nbrs = []
+        # for (a, b) in edges:
+        #     if ref_node == a:
+        #         nbrs.append(b)
+        #     elif ref_node == b:
+        #         nbrs.append(a)
+        nbrs = list(G.neighbors(ref_node))
         pos_nbrs = np.array([pos[node] for node in nbrs], dtype=np.float64)
 
 
@@ -331,7 +467,7 @@ class SpatialGraph:
         return node_ordering_dict, node_angle_dict
 
 
-    def cyclic_ordering_crossing(self, ref_node, pos, crossings, node_ordering_dict=None, node_angle_dict=None):
+    def cyclic_ordering_crossing(self, G, ref_node, pos, pos_3D, node_ordering_dict=None, node_angle_dict=None):
 
         # If no node ordering dictionary is provided, use the default node ordering dictionary
         if node_ordering_dict is None:
@@ -343,15 +479,17 @@ class SpatialGraph:
         # Initialize lists to store the adjacent node and edge information
         # Crossings are not relevant for this calculation since they exist along edges
         # FIXME Edges are stale
-        edge_1, edge_2 = crossings[ref_node]['edges']
-        ori_ab, ori_cd = crossings[ref_node]['edge_order']
-        oris           = [ori_ab, ori_ab, ori_cd, ori_cd]
-        pos_x          = np.array(crossings[ref_node]['pos_2D'], dtype=np.float64)
-        (a, b), (c, d) = edge_1, edge_2
-        nbrs           = [a, b, c, d]
+        # edge_1, edge_2 = crossings[ref_node]['edges']
+        # ori_ab, ori_cd = crossings[ref_node]['edge_order']
+        # oris           = [ori_ab, ori_ab, ori_cd, ori_cd]
+        # pos_x          = np.array(crossings[ref_node]['pos_2D'], dtype=np.float64)
+        # (a, b), (c, d) = edge_1, edge_2
+        # nbrs           = [a, b, c, d]
+        nbrs = list(G.neighbors(ref_node))
         pos_nbrs       = np.array([pos[node] for node in nbrs], dtype=np.float64)
 
         # Shift nodes to the origin
+        pos_x = np.array(pos[ref_node], dtype=np.float64).reshape((1,2))
         pos_nbrs -= pos_x
 
         # Horizontal line (reference for angles)
@@ -377,18 +515,18 @@ class SpatialGraph:
 
         return node_ordering_dict, node_angle_dict
 
-    def cyclic_orderings(self, nodes, edges, node_types, positions, crossings, edge_mappings):
+    def cyclic_orderings(self, G, positions, positions_3D):
         node_ordering_dict = {}
         node_angle_dict    = {}
 
-        for node, node_type in zip(nodes, node_types):
-            if node == "comp_f":
-                print("HERE")
+        # for node, node_type in zip(nodes, node_types):
+        for node in G.nodes:
 
+            node_type = G.nodes[node]['node_type']
             if node_type == "vertex":
-                node_ordering_dict, node_angle_dict = self.cyclic_ordering_vertex(node, edges, positions, node_ordering_dict, node_angle_dict)
+                node_ordering_dict, node_angle_dict = self.cyclic_ordering_vertex(G, node, positions, node_ordering_dict, node_angle_dict)
             elif node_type == "crossing":
-                node_ordering_dict, node_angle_dict = self.cyclic_ordering_crossing(node, positions, crossings,node_ordering_dict, node_angle_dict)
+                node_ordering_dict, node_angle_dict = self.cyclic_ordering_crossing(G, node, positions, positions_3D,node_ordering_dict, node_angle_dict)
 
         return node_ordering_dict, node_angle_dict
 
@@ -404,22 +542,25 @@ class SpatialGraph:
         rotated_projection_plane_normal = rotate(projection_plane_normal, rotation)
 
         # Rotate the positions
-        pos = {}
+        pos_2D_rot = {}
+        pos_3D_rot = {}
         for node in self.nodes:
             position_3D         = np.array(self.pos[node])
             position_3D_rotated = rotate(position_3D, rotation)
             position_2D_rotated = (position_3D_rotated[0], position_3D_rotated[2])
-            pos[node]           = position_2D_rotated
+            pos_2D_rot[node]    = position_2D_rotated
+            pos_3D_rot[node]    = position_3D_rotated
 
         # Subdivide edges to add crossings
-        nodes, edges, node_types, edge_mappings = self.subdivide_projected_edges(pos, crossings)
+        # nodes, edges, node_types = self.subdivide_projected_edges(pos, crossings)
+        G = self.subdivide_projected_edges(pos_2D_rot, crossings)
 
         # Add the crossings
-        pos.update({crossing: tuple(crossings[crossing]['pos_2D']) for crossing in crossings})
+        pos_2D_rot.update({crossing: tuple(crossings[crossing]['pos_2D']) for crossing in crossings})
 
-        ccw_ordering, ccw_angles = self.cyclic_orderings(nodes, edges, node_types, pos, crossings, edge_mappings)
+        ccw_ordering, ccw_angles = self.cyclic_orderings(G, pos_2D_rot, pos_3D_rot)
 
-        return rotated_projection_plane_normal, pos, ccw_ordering, ccw_angles
+        return rotated_projection_plane_normal, pos_2D_rot, ccw_ordering, ccw_angles
 
     def to_spatial_graph_diagram(self):
 
@@ -508,7 +649,319 @@ class SpatialGraph:
 
 
     def plot(self):
+        self.ccw_orderings, self.ccw_angles = {}, {}
+        # plotter = plot_spatial_graph(self.nodes, self.edges, self.pos,
+        #                              self.projection_plane_normal, self.pos_projected, self.ccw_orderings, self.ccw_angles)
+        # plotter.show()
 
-        plotter = plot_spatial_graph(self.nodes, self.edges, self.pos,
-                                     self.projection_plane_normal, self.pos_proj, self.ccw_orderings, self.ccw_angles)
+        G = self.H
+        pos = self.pos2d
+        # pos = nx.get_node_attributes(G, 'pos')
+        nodes = G.nodes()
+        edges = G.edges()
+        plotter = plot_spatial_graph(nodes, edges, pos,
+                                     self.projection_plane_normal, self.pos_projected, self.ccw_orderings, self.ccw_angles)
         plotter.show()
+
+
+import itertools
+from collections import defaultdict
+
+import networkx as nx
+import numpy as np
+
+
+# -----------------------------
+# Geometry helpers
+# -----------------------------
+
+def _orthonormal_basis_from_normal(n):
+    """
+    Given a normal vector n in R^3, return two orthonormal in-plane basis
+    vectors (e1, e2) spanning the plane orthogonal to n.
+    """
+    n = np.asarray(n, dtype=float)
+    n /= np.linalg.norm(n)
+
+    # Pick an arbitrary vector not parallel to n
+    if abs(n[0]) < 0.9:
+        tmp = np.array([1.0, 0.0, 0.0])
+    else:
+        tmp = np.array([0.0, 1.0, 0.0])
+
+    e1 = np.cross(n, tmp)
+    e1 /= np.linalg.norm(e1)
+    e2 = np.cross(n, e1)
+    e2 /= np.linalg.norm(e2)
+
+    return e1, e2, n
+
+
+def project_positions_onto_plane(pos3d, normal):
+    """
+    Project 3D positions onto a plane defined by `normal`, using an
+    orthonormal basis for the plane.
+
+    Parameters
+    ----------
+    pos3d : dict
+        node -> (x, y, z)
+    normal : array_like
+        Normal vector of the projection plane.
+
+    Returns
+    -------
+    pos2d : dict
+        node -> (u, v) in the 2D projected plane.
+    basis : dict
+        {'e1': e1, 'e2': e2, 'n': n} the basis used, as np arrays.
+    """
+    e1, e2, n = _orthonormal_basis_from_normal(normal)
+
+    pos2d = {}
+    for node, p in pos3d.items():
+        p = np.asarray(p, dtype=float)
+        u = np.dot(p, e1)
+        v = np.dot(p, e2)
+        pos2d[node] = (u, v)
+
+    basis = {'e1': e1, 'e2': e2, 'n': n}
+    return pos2d, basis
+
+
+def _segment_intersection(p, p2, q, q2, atol=1e-9):
+    """
+    Compute proper segment intersection of p-p2 and q-q2 in 2D.
+
+    Returns
+    -------
+    (x, y, t_p, t_q) if they intersect in their interiors (0 < t < 1),
+    where:
+      - intersection = p + t_p * (p2 - p) = q + t_q * (q2 - q)
+    or
+    None if there is no proper intersection.
+    """
+    p = np.asarray(p, dtype=float)
+    p2 = np.asarray(p2, dtype=float)
+    q = np.asarray(q, dtype=float)
+    q2 = np.asarray(q2, dtype=float)
+
+    r = p2 - p
+    s = q2 - q
+
+    def cross2(a, b):
+        return a[0] * b[1] - a[1] * b[0]
+
+    rxs = cross2(r, s)
+    q_p = q - p
+    q_pxr = cross2(q_p, r)
+
+    if abs(rxs) < atol:
+        # Parallel (or colinear) – ignore for typical knot-style crossings.
+        return None
+
+    t = cross2(q_p, s) / rxs
+    u = cross2(q_p, r) / rxs
+
+    if atol < t < 1 - atol and atol < u < 1 - atol:
+        intersection = p + t * r
+        return (intersection[0], intersection[1], t, u)
+
+    return None
+
+
+# -----------------------------
+# Main construction
+# -----------------------------
+
+def build_projected_graph_with_crossings(G, pos3d, normal=(0, 0, 1), atol=1e-9):
+    """
+    Project a 3D NetworkX graph onto a 2D plane and create a new graph that
+    includes "crossing" nodes at 2D edge intersections.
+
+    Each crossing node:
+        * Has four neighbors (two from each intersecting edge)
+        * Stores which neighbors are 'over' and which are 'under' in
+          node attribute:
+              H.nodes[c]['strand']  # dict neighbor -> 'over' / 'under'
+
+    Over/under is determined by the height along the plane normal.
+
+    Parameters
+    ----------
+    G : nx.Graph (or DiGraph, but treated as undirected here)
+        Original graph with 3D positions.
+    pos3d : dict
+        node -> (x, y, z)
+    normal : array_like, optional
+        Normal vector of the projection plane.
+        Default is (0, 0, 1): projection onto the XY plane.
+    atol : float
+        Numeric tolerance for intersection checks.
+
+    Returns
+    -------
+    H : nx.Graph
+        New graph including crossing nodes.
+    pos2d : dict
+        node -> (u, v) positions in 2D for all nodes in H.
+    crossings : dict
+        crossing_id -> {
+            'pos2d': (u, v),
+            'edges': [(u1, v1), (u2, v2)],   # original edges
+            'over_edge': (u, v),
+            'under_edge': (u, v),
+            'height': { (u1, v1): h1, (u2, v2): h2 },
+            't_params': { (u1, v1): t1, (u2, v2): t2 },
+        }
+    """
+    # 1) Project nodes to 2D
+    pos2d, basis = project_positions_onto_plane(pos3d, normal)
+    n_vec = basis['n']
+
+    # Ensure we work with an undirected view for intersections
+    if G.is_directed():
+        edges = list(G.to_undirected().edges())
+    else:
+        edges = list(G.edges())
+
+    # 2) Find all pairwise edge intersections in 2D
+    edge_crossings = defaultdict(list)  # (u, v) -> list of (t, crossing_id)
+    crossings = {}                      # crossing_id -> metadata
+
+    def edge_key(e):
+        # Use the exact orientation of the edge as iterated
+        return tuple(e)
+
+    crossing_counter = 0
+
+    for (u1, v1), (u2, v2) in itertools.combinations(edges, 2):
+        # Skip edges that share a node (touch at endpoints only)
+        if len({u1, v1, u2, v2}) < 4:
+            continue
+
+        p1, p2 = pos2d[u1], pos2d[v1]
+        q1, q2 = pos2d[u2], pos2d[v2]
+
+        res = _segment_intersection(p1, p2, q1, q2, atol=atol)
+        if res is None:
+            continue
+
+        x, y, t1, t2 = res
+
+        # 3D positions at intersection (interpolate along edges)
+        P1_3d = (1 - t1) * np.asarray(pos3d[u1]) + t1 * np.asarray(pos3d[v1])
+        P2_3d = (1 - t2) * np.asarray(pos3d[u2]) + t2 * np.asarray(pos3d[v2])
+
+        h1 = np.dot(P1_3d, n_vec)
+        h2 = np.dot(P2_3d, n_vec)
+
+        if abs(h1 - h2) < 1e-12:
+            # Very rare: they occupy basically same height; you might
+            # want special handling (e.g., treat as genuine intersection).
+            # For now, arbitrarily pick over/under.
+            over_edge = edge_key((u1, v1))
+            under_edge = edge_key((u2, v2))
+        elif h1 > h2:
+            over_edge = edge_key((u1, v1))
+            under_edge = edge_key((u2, v2))
+        else:
+            over_edge = edge_key((u2, v2))
+            under_edge = edge_key((u1, v1))
+
+        crossing_id = f"crossing_{crossing_counter}"
+        crossing_counter += 1
+
+        crossings[crossing_id] = {
+            'pos2d': (x, y),
+            'edges': [edge_key((u1, v1)), edge_key((u2, v2))],
+            'over_edge': over_edge,
+            'under_edge': under_edge,
+            'height': {
+                edge_key((u1, v1)): float(h1),
+                edge_key((u2, v2)): float(h2),
+            },
+            't_params': {
+                edge_key((u1, v1)): float(t1),
+                edge_key((u2, v2)): float(t2),
+            },
+        }
+
+        # Record that each edge has this crossing at parameter t
+        edge_crossings[edge_key((u1, v1))].append((t1, crossing_id))
+        edge_crossings[edge_key((u2, v2))].append((t2, crossing_id))
+
+    # 3) Build new graph H with subdivided edges
+    H = nx.Graph()
+    node_strand = defaultdict(dict)  # crossing_id -> neighbor -> 'over'/'under'
+
+    # Add original nodes and store 3D/2D positions
+    for node in G.nodes():
+        H.add_node(node, kind='original', pos3d=tuple(pos3d[node]), pos2d=tuple(pos2d[node]))
+
+    # Add crossing nodes with 2D position (3D is ambiguous; we could
+    # store mid-height or separate heights if you want)
+    for cid, data in crossings.items():
+        H.add_node(cid, kind='crossing', pos2d=data['pos2d'])
+
+    # Subdivide each edge by its crossings
+    for (u, v) in edges:
+        key = edge_key((u, v))
+        p1_2d = np.asarray(pos2d[u])
+        p2_2d = np.asarray(pos2d[v])
+
+        # No crossings: just copy edge
+        if key not in edge_crossings:
+            H.add_edge(u, v)
+            continue
+
+        # Sort crossings along this edge by parameter t
+        sorted_crossings = sorted(edge_crossings[key], key=lambda x: x[0])
+        # Build ordered chain of nodes along the edge
+        chain = [u] + [cid for (_, cid) in sorted_crossings] + [v]
+
+        # For each segment (a, b) in the chain, add an edge in H
+        for a, b in zip(chain[:-1], chain[1:]):
+            H.add_edge(a, b)
+
+            # If a or b is a crossing node, record its strand
+            for node_end in (a, b):
+                if node_end in crossings:
+                    cid = node_end
+                    cdata = crossings[cid]
+                    role = 'over' if key == cdata['over_edge'] else 'under'
+                    # neighbor of the crossing is the other endpoint
+                    neighbor = a if node_end == b else b
+                    node_strand[cid][neighbor] = role
+
+    # Attach strand info to crossing nodes
+    for cid, mapping in node_strand.items():
+        H.nodes[cid]['strand'] = mapping  # neighbor -> 'over'/'under'
+
+    # Extend pos2d for crossing nodes
+    for cid, data in crossings.items():
+        pos2d[cid] = data['pos2d']
+
+    return H, pos2d, crossings
+
+
+# import networkx as nx
+#
+# # Example: G with 3D positions
+# G = nx.Graph()
+# G.add_edge('A', 'B')
+# G.add_edge('C', 'D')
+#
+# pos3d = {
+#     'A': (0, 0, 0),
+#     'B': (1, 1, 0),
+#     'C': (0, 1, 1),
+#     'D': (1, 0, 1),
+# }
+#
+# # Project onto plane with normal (0, 0, 1) (i.e. XY plane)
+# H, pos2d, crossings = build_projected_graph_with_crossings(G, pos3d, normal=(0, 0, 1))
+#
+# print("Nodes in H:", H.nodes(data=True))
+# for cid, data in crossings.items():
+#     print(cid, "strand mapping:", H.nodes[cid]['strand'])
