@@ -59,7 +59,9 @@ from yamada.sgd.diagram_elements import Vertex, Edge, Crossing
 from ..utils.visualization import plot_spatial_graph_diagram
 
 class SpatialGraphDiagram:
-
+    """
+    TODO Create hash function for comparing diagrams quickly.
+    """
     def __init__(self, *, edges=None, vertices=None, crossings=None,
                  standardize_labels=True,
                  correct_diagram=True,

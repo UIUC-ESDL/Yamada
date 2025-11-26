@@ -169,51 +169,69 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
     Labels intermediate edges with index numbers and intermediate nodes with full index assignments.
     """
 
-    # Define a list of colors to cycle through
-    color_list = list(mcolors.TABLEAU_COLORS.keys())
-    color_cycle = itertools.cycle(color_list)
-
-    # plotter = pv.Plotter()
+    # Initialize the PyVista plotter
     plotter = pv.Plotter(window_size=[1000, 750], off_screen=off_screen)
     plotter.camera.SetClippingRange(1e-6, 1e6)
     plotter.view_isometric()
 
-    # Generate 2D positions for the planar embedding
-    # pos = nx.planar_layout(embedding)
+    # Get node positions
     nodes, node_positions, edges = position_spatial_graph_in_3d(sgd)
 
-    # Extend positions to 3D by adding a z-coordinate (all zero for planar layout)
-    # pos_3d = {node: np.array([x, y, 0]) for node, (x, y) in pos.items()}
-
+    node_sizes  = {}
+    node_colors = {}
+    node_types  = {}
+    for node in sgd.data.values():
+        node_label = node.label
+        if node in sgd.vertices:
+            node_sizes[node_label]  = 7
+            node_colors[node_label] = "blue"
+            node_types[node_label]  = "Vertex"
+        elif node in sgd.crossings:
+            node_sizes[node_label + "+"]  = 7
+            node_sizes[node_label + "-"]  = 7
+            node_colors[node_label + "+"] = "lightgreen"
+            node_colors[node_label + "-"] = "lightgreen"
+            node_types[node_label + "+"]  = "Crossing"
+            node_types[node_label + "-"]  = "Crossing"
+        elif node in sgd.edges:
+            node_sizes[node_label]  = 1
+            node_colors[node_label] = "black"
+            node_types[node_label]  = "Edge"
+        else:
+            raise ValueError("Unknown node type")
 
 
     # Plot nodes as spheres
     for node, coords in zip(nodes, node_positions):
-        sphere = pv.Sphere(radius=3.5, center=coords)
-        plotter.add_mesh(sphere, color="lightblue", edge_color="black",opacity=1.0, label=str(node))
+
+        size  = node_sizes[node]
+        color = node_colors[node]
+
+        sphere = pv.Sphere(radius=size, center=coords)
+        plotter.add_mesh(sphere, color=color, edge_color="black",opacity=1.0, label=str(node))
 
     # Plot edges as tubes
     pos_dict = dict(zip(nodes, node_positions))
 
     for edge in edges:
-
-        # line = pv.Line(pos_dict[edge[0]], pos_dict[edge[-1]])
-        # plotter.add_mesh(line.tube(radius=0.1), color="black", label=str(edge))
-
         line = pv.Line(pos_dict[edge[0]], pos_dict[edge[-1]])
-        plotter.add_mesh(line.tube(radius=0.5), color="black", label=str(edge), line_width=6)
+        plotter.add_mesh(line.tube(radius=1.0), color="black", line_width=6)
 
     # Add node labels
-    LABEL_OFFSET = np.array([0.05, 0.05, 0.05])
+    LABEL_OFFSET = np.array([1.3, 1.3, 1.3])
     for node, coords in zip(nodes, node_positions):
-        label = node
-        label_pos = coords + LABEL_OFFSET  # ← APPLY OFFSET HERE
+
+        if node_types[node] == "Edge":
+            continue  # Skip labeling edges here
+
+        label     = node
+        label_pos = coords + LABEL_OFFSET
 
         plotter.add_point_labels(
             [label_pos],
             [label],
-            point_size=10,
-            font_size=12,
+            point_size=22,
+            font_size=22,
             bold=True,
             text_color="black",
             shape_color="white",
@@ -221,78 +239,6 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
             always_visible=True
         )
 
-    # # Add nodes as spheres
-    # for node, coords in pos_3d.items():
-    #
-    #     if planar_graph.nodes[node]["type"] == "Edge":
-    #         color = "black"
-    #         opacity = 0.8
-    #         sphere = pv.Sphere(radius=0.01, center=coords)
-    #     elif planar_graph.nodes[node]["type"] == "Intermediate":
-    #         color = "black"
-    #         opacity = 0.8
-    #         sphere = pv.Sphere(radius=0.01, center=coords)
-    #     elif planar_graph.nodes[node]["type"] == "Vertex":
-    #         color = "lightblue"
-    #         opacity = 0.8
-    #         sphere = pv.Sphere(radius=0.05, center=coords)
-    #     elif planar_graph.nodes[node]["type"] == "Crossing":
-    #         color = "green"
-    #         opacity = 0.8
-    #         sphere = pv.Sphere(radius=0.05, center=coords)
-    #     else:
-    #         raise ValueError("Unknown node type!")
-    #         # color = "orange"
-    #         # opacity = 0.5
-    #         # sphere = pv.Sphere(radius=0.075, center=coords)
-    #
-    #     plotter.add_mesh(sphere, color=color, opacity=opacity, label=str(node))
-    #
-    # # Add edges as tubes
-    # for edge, edge_label in zip(planar_graph.edges, edge_labels.values()):
-    #     start, end = edge
-    #     line = pv.Line(pos_3d[start], pos_3d[end])
-    #     plotter.add_mesh(line.tube(radius=0.01), color="black", label=str(edge_label))
-    #
-    # # Add node labels
-    # for node, coords in pos_3d.items():
-    #     label = node_labels.get(node, str(node))
-    #     plotter.add_point_labels(
-    #         [coords],
-    #         [label],
-    #         point_size=10,
-    #         font_size=12,
-    #         bold=True,
-    #         text_color="black",
-    #     )
-    #
-    # # Add edge labels
-    # for edge, edge_label in zip(planar_graph.edges, edge_labels.values()):
-    #     midpoint = (pos_3d[edge[0]] + pos_3d[edge[1]]) / 2
-    #     plotter.add_point_labels(
-    #         [midpoint],
-    #         [str(edge_label)],
-    #         point_size=10,
-    #         font_size=10,
-    #         bold=False,
-    #         text_color="blue",
-    #     )
-    #
-    # # State all object-index assignments
-    # intermediate_label_text = "Object-Index Pairs \n" + "\n".join(f"{label}" for node, label in node_labels.items())
-    # text_coords = [0.8, 0.2, 0.0]  # Position the text box in normalized coordinates
-    # plotter.add_text(
-    #     intermediate_label_text,
-    #     position="upper_right",
-    #     font_size=10,
-    #     color="black",
-    #     viewport=True
-    # )
-    #
-    # # Finalize the plot
-    # plotter.add_axes()
-    # plotter.add_legend()
-    # plotter.show(title="Spatial Graph Diagram")
     return plotter
 
 

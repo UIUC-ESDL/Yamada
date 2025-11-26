@@ -273,7 +273,7 @@ def compute_counter_clockwise_angles(reference_vector, vectors):
     return ccw_angles
 
 
-def identify_overlapping_edges(pos, edge_pairs):
+def identify_crossings(pos, edge_pairs):
 
     # Validate Inputs
     assert isinstance(pos, dict)
@@ -335,6 +335,8 @@ def identify_overlapping_edges(pos, edge_pairs):
         # Left-handed convention (+y pointing away from the viewer)
         # Probably should switch to right-handed convention later, but some tests are hard-coded.
         edge_order = ["over", "under"] if pos_x_ab[1] < pos_x_cd[1] else ["under", "over"]
+
+        # Determine the cyclic order around the crossing
 
         crossings[label] = {
                             "edges":       (edge_1, edge_2),
