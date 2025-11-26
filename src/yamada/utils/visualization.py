@@ -1,6 +1,7 @@
 
 # Standard library imports
 import numpy as np
+import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import networkx as nx
 import pyvista as pv
@@ -256,9 +257,9 @@ def plot_spatial_graph(nodes_3d, edges_3d, pos_3d,
     p.view_isometric()
 
     # View plane normal
-    # projection_plane_normal = np.array(projection_plane_normal)
+    projection_plane_normal = np.array(projection_plane_normal)
     # projection_plane_normal[1] *= -1
-    # p.view_vector(projection_plane_normal)
+    p.view_vector(projection_plane_normal)
 
     # Plot the 3D Spatial Graph in the first subplot
     p.subplot(0, 0)
@@ -455,3 +456,28 @@ def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
         )
 
     return p
+
+def draw_sgd(G, pos, ccw_orderings, ccw_angles):
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, node_size=300, node_color='lightblue', ax=ax)
+    # Draw edges
+    nx.draw_networkx_edges(G, pos, width=2, edge_color='gray', ax=ax)
+    # Draw node labels
+    nx.draw_networkx_labels(G, pos, font_size=12, font_color='black', ax=ax)
+
+    # Add neighbor index labels
+    for node in G.nodes():
+        nbrs = list(ccw_orderings[node].keys())
+        for nbr in nbrs:
+            angle = ccw_angles[node][nbr]
+            radius = 0.05  # Distance from the node position to place the label
+            angle_rad = angle #np.radians(angle)
+            label_x = pos[node][0] + radius * np.cos(angle_rad)
+            label_y = pos[node][1] + radius * np.sin(angle_rad)
+            ax.text(label_x, label_y, f"{ccw_orderings[node][nbr]}", fontsize=10, color='red')
+
+    plt.show(block=True)
+

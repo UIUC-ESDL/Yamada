@@ -67,7 +67,7 @@ class PlanarEmbedding:
             for u in nbrs:
                 assert u in orderings,    f"Neighbor {u} is not a key in ordering."
                 assert v in orderings[u], f"Ordering is not symmetric: {v} not in ordering[{u}]."
-                ordered_nbrs = [v for v, _ in sorted(nbrs.items(), key=lambda kv: kv[1])]
+                ordered_nbrs = [v for k, v in sorted(nbrs.items(), key=lambda kv: kv[1])]
                 assert min(ordered_nbrs) == 0, "Indices must start at 0"
                 assert max(ordered_nbrs) == len(ordered_nbrs) - 1, "Indices must be consecutive integers."
 

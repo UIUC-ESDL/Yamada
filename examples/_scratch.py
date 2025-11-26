@@ -1,4 +1,10 @@
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+from yamada.utils.visualization import draw_sgd
+
+#
+
 from yamada import SpatialGraph
 
 component_a = 'comp_a'
@@ -81,13 +87,17 @@ sg = SpatialGraph(nodes=nodes,
 
 ordering_dict = sg.ccw_orderings
 
-expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
-                 'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
-                 'crossing_2': {'w_cg': 0, 'crossing_1': 1, 'comp_g': 2, 'w_bf': 3},
+expected_dict = {'crossing_0': {'comp_a': 3, 'comp_d': 0, 'w_ab': 1, 'w_dh': 2},
+                 'crossing_1': {'comp_b': 3, 'comp_c': 0, 'crossing_2': 1, 'w_cg': 2},
+                 'crossing_2': {'w_cg': 2, 'crossing_1': 3, 'comp_g': 0, 'w_bf': 1},
                  'crossing_3': {'w_gh': 0, 'w_bf': 1, 'comp_g': 2, 'comp_f': 3}}
 
 
+PE = sg.to_planar_embedding()
+SGD = sg.to_spatial_graph_diagram()
 
 # assert ordering_dict == expected_dict
 
-sg.plot()
+# sg.plot()
+
+# draw_sgd(sg.H, sg.pos2d, sg.ccw_orderings, sg.ccw_angles)

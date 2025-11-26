@@ -1,70 +1,45 @@
+"""Spatial Graphs
 
-
-
-
-
-
-
-
-
-
+This module contains classes and functions for working with spatial graphs.
 """
-Spatial Graphs
 
-Self-contained SpatialGraph class:
-- 3D -> 2D projection with a good rotation
-- Crossing detection + node insertion
-- CCW neighbor orderings with special rules for crossings
-"""
+# Standard Library Imports
+import bisect
+import numpy as np
+import networkx as nx
+from itertools import combinations
+from scipy.stats import qmc
+
+import numpy as np
+import networkx as nx
+from scipy.spatial.distance import cdist
+from itertools import combinations
+
+# Local Imports
+from ..sg.geometry import (rotate,
+                           identify_crossings,
+                           compute_counter_clockwise_angles)
+
+
+from ..sgd.diagram_elements import Vertex, Crossing, Edge
+from ..sgd.spatial_graph_diagrams import SpatialGraphDiagram
+from .planar_embedding import PlanarEmbedding
+
+
+from ..utils.visualization import plot_spatial_graph
+
 
 import numpy as np
 import networkx as nx
 from itertools import combinations
 from scipy.stats import qmc
 
+from .planar_embedding import PlanarEmbedding
+
 
 # ---------------------- low-level helpers ---------------------- #
 
-def rotate_points(points, rotation):
-    """
-    Rotate a set of 3D points by Euler angles (rx, ry, rz) using Rz @ Ry @ Rx.
 
-    Parameters
-    ----------
-    points : array_like, shape (N,3) or (3,)
-    rotation : array_like, shape (3,)
-        (rx, ry, rz)
-
-    Returns
-    -------
-    rotated : np.ndarray
-        Same shape as points.
-    """
-    points = np.asarray(points, dtype=float)
-    rotation = np.asarray(rotation, dtype=float)
-    rx, ry, rz = rotation
-
-    Rx = np.array([
-        [1.0, 0.0, 0.0],
-        [0.0, np.cos(rx), -np.sin(rx)],
-        [0.0, np.sin(rx), np.cos(rx)],
-    ])
-    Ry = np.array([
-        [np.cos(ry), 0.0, np.sin(ry)],
-        [0.0, 1.0, 0.0],
-        [-np.sin(ry), 0.0, np.cos(ry)],
-    ])
-    Rz = np.array([
-        [np.cos(rz), -np.sin(rz), 0.0],
-        [np.sin(rz), np.cos(rz), 0.0],
-        [0.0, 0.0, 1.0],
-    ])
-    R = Rz @ Ry @ Rx
-
-    if points.ndim == 1:
-        return R @ points
-    else:
-        return points @ R.T
 
 
 def seg_intersection(a, b, c, d, atol=1e-10):
@@ -355,7 +330,7 @@ class SpatialGraph:
 
         for rot in rotations:
             rot = np.asarray(rot, float)
-            pos_rot_arr = rotate_points(pos_arr, rot)
+            pos_rot_arr = rotate(pos_arr, rot)
             pos3d_rot = {n: tuple(pos_rot_arr[i]) for i, n in enumerate(nodes)}
             pos2d, basis = self._project_points(pos3d_rot, self.projection_plane_normal)
             ok, reason = self._validate_projection(G, pos2d)
@@ -486,7 +461,8 @@ class SpatialGraph:
 
         ccw_orderings = {}
         ccw_angles    = {}
-        ref_vec = np.array([0.0, 1.0])
+        # ref_vec = np.array([0.0, 1.0])
+        ref_vec = np.array([1.0, 0.0])
 
         for node in H.nodes():
             nbrs = list(H.neighbors(node))
@@ -525,6 +501,73 @@ class SpatialGraph:
             ccw_angles[node] = angle_map
 
         return ccw_orderings, ccw_angles
+
+    def to_planar_embedding(self):
+        PE = PlanarEmbedding(self.ccw_orderings, pos=self.pos2d)
+        return PE
+
+    def to_spatial_graph_diagram(self):
+
+
+            # Create a list of all nodes and crossings
+            # nodes_and_crossings = list(self.nodes) + list(self.crossings.keys())
+            nodes     = [node for node in self.H.nodes if "crossing" not in node]
+            edges     = list(self.H.edges)
+            crossings = [crossing for crossing in self.H.nodes if "crossing" in crossing]
+            # crossings = list(self.crossings.keys())
+
+            node_degrees = [self.H.degree(node) for node in nodes]
+
+            # Create the vertex objects
+            sgd_vertices = [Vertex(degree, 'v_' + node) for node, degree in zip(nodes, node_degrees)]
+
+            # Create the edges
+            # sgd_edges = [Edge('e_' + str(i)) for i in range(len(edges))]
+
+            # Create the crossing objects
+            sgd_crossings = [Crossing('c_' + crossing.split('_')[1]) for crossing in crossings]
+
+
+            # Create a dictionary that contains the cyclical ordering of every node and crossing
+            cyclic_ordering_dict = self.ccw_orderings
+
+
+            # Assign the vertices to each other according to the cyclic orderings
+            nodes_and_crossings = nodes + crossings
+            vertices_and_crossings = sgd_vertices + sgd_crossings
+
+            for edge in self.H.edges:
+                # TODO Use more consistent lookup
+                node_a, node_b = edge
+
+                # if "crossing" in node_a:
+                #     begin, middle, end = node_a.split("_")
+                #     node_a = begin + "_" + middle
+                #
+                # if "crossing" in node_b:
+                #     begin, middle, end = node_b.split("_")
+                #     node_b = begin + "_" + middle
+
+                node_a_index = nodes_and_crossings.index(node_a)
+                node_b_index = nodes_and_crossings.index(node_b)
+
+                vertex_a = vertices_and_crossings[node_a_index]
+                vertex_b = vertices_and_crossings[node_b_index]
+
+                if not vertex_a.already_assigned(vertex_b) and not vertex_b.already_assigned(vertex_a):
+
+                    vertex_b_index_for_vertex_a = cyclic_ordering_dict[node_a][node_b]
+                    vertex_a_index_for_vertex_b = cyclic_ordering_dict[node_b][node_a]
+
+                    vertex_a[vertex_b_index_for_vertex_a] = vertex_b[vertex_a_index_for_vertex_b]
+
+                else:
+                    raise ValueError('The vertices are already assigned.')
+
+
+            sgd = SpatialGraphDiagram(vertices=sgd_vertices, crossings=sgd_crossings)
+
+            return sgd
 
     def plot(self):
         from ..utils.visualization import plot_spatial_graph
