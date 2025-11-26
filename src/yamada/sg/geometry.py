@@ -2,12 +2,12 @@ import numpy as np
 from numpy import sin, cos
 
 
-def rotate(positions: np.ndarray,
+def rotate(points:   np.ndarray,
            rotation: np.ndarray) -> np.ndarray:
     """
     Rotates a set of points about the first 3D point in the array.
 
-    :param positions: A numpy array of 3D points.
+    :param points: A numpy array of 3D points.
     :param rotation: A numpy array of 3 Euler angles in radians.
 
     :return: new_positions:
@@ -19,8 +19,8 @@ def rotate(positions: np.ndarray,
     # assert rotation.shape == (1, 3)
 
     # Shift the object to origin
-    reference_position = positions[0]
-    origin_positions = positions - reference_position
+    reference_point  = points[0]
+    origin_points = points - reference_point
 
     alpha, beta, gamma = rotation
 
@@ -41,10 +41,10 @@ def rotate(positions: np.ndarray,
     r = r_z @ r_y @ r_x
 
     # Transpose positions from [[x1,y1,z1],[x2... ] to [[x1,x2,x3],[y1,... ]
-    rotated_origin_positions = (r @ origin_positions.T).T
+    rotated_origin_positions = (r @ origin_points.T).T
 
     # Shift back from origin
-    new_positions = rotated_origin_positions + reference_position
+    new_positions = rotated_origin_positions + reference_point
 
     rotated_node_positions = new_positions
 

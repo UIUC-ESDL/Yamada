@@ -10,6 +10,11 @@ import networkx as nx
 from itertools import combinations
 from scipy.stats import qmc
 
+import numpy as np
+import networkx as nx
+from scipy.spatial.distance import cdist
+from itertools import combinations
+
 # Local Imports
 from ..sg.geometry import (rotate,
                            identify_crossings,
@@ -343,81 +348,179 @@ class SpatialGraph:
         # self.add_edges_from(all_edges)
 
 
-    def find_valid_projection_plane(self, max_iter=10, forced_rotation=None):
-        """
-        Project the spatial graph onto a random 2D plane.
+    # def find_valid_projection_plane(self, max_iter=10, forced_rotation=None):
+    #     """
+    #     Project the spatial graph onto a random 2D plane.
+    #
+    #     The projection is done by applying a random 3D rotation to the graph and then projecting it onto a 2D plane.
+    #     For simplicity, we use the transformed XZ plane. When the rotation is complete, the program checks that the
+    #     projected graph for several things.
+    #
+    #     First, it checks to make sure that no combinations of edges and/or nodes are overlapping.
+    #
+    #     Second, it checks to make sure that no edges are perfectly vertical or perfectly horizontal. While neither of
+    #     these cases are technically incorrect, it's easier to implement looping through rotations rather than add edge cases
+    #     in for these cases.
+    #
+    #     """
+    #
+    #     # Define the default XZ plane
+    #     projection_plane_normal = np.array([0.0, -1.0, 0.0])
+    #
+    #     # Convert the node positions to a numpy array
+    #     pos_arr = np.array([self.pos[node] for node in self.nodes])
+    #
+    #     # Either use the forced rotation or generate a random sequence of candidate rotations.
+    #     if forced_rotation is not None:
+    #         rotations = [forced_rotation]
+    #     else:
+    #         # Define the random rotations (in a deterministic manner w/ a Halton sequence)
+    #         sampler        = qmc.Halton(d=3, scramble=False)
+    #         halton_samples = sampler.random(n=max_iter)
+    #         rotations      = 2 * np.pi * halton_samples
+    #
+    #     for rotation in rotations:
+    #
+    #         # Initialize the bad rotation flag
+    #         bad_rotation = False
+    #
+    #         # Rotate the node positions
+    #         pos_arr_rot   = rotate(pos_arr, rotation)
+    #         pos3D_rot = {node: pos_arr_rot[i] for i, node in enumerate(self.nodes)}
+    #
+    #         # First, check that no edges are perfectly vertical or perfectly horizontal.
+    #         # While neither of these cases is technically incorrect, it's easier to implement looping through rotations
+    #         # rather than add edge cases for each 2D and 3D line equation.
+    #
+    #         for (a, b) in self.edges:
+    #             x1, _, z1 = pos3D_rot[a]
+    #             x2, _, z2 = pos3D_rot[b]
+    #
+    #             if np.isclose(x1, x2) or np.isclose(z1, z2):
+    #                 print('An edge is vertical or horizontal. This is not a valid spatial graph.')
+    #                 bad_rotation = True
+    #                 break
+    #
+    #         if bad_rotation:
+    #             continue
+    #
+    #         crossings, invalid = identify_crossings(pos=pos3D_rot, edge_pairs=self.nonadjacent_edge_pairs)
+    #
+    #         if invalid:
+    #             # crossings at endpoints or other invalid conditions
+    #             continue
+    #
+    #         # If all are satisfied
+    #         break
+    #
+    #
+    #     else:
+    #         # No rotation succeeded
+    #         raise RuntimeError("Failed to find a valid projection (all rotations invalid).")
+    #
+    #     # Rotate the projection plane
+    #     rotated_projection_plane_normal = rotate(projection_plane_normal, rotation)
+    #
+    #     return rotation, rotated_projection_plane_normal, crossings
 
-        The projection is done by applying a random 3D rotation to the graph and then projecting it onto a 2D plane.
-        For simplicity, we use the transformed XZ plane. When the rotation is complete, the program checks that the
-        projected graph for several things.
+    def orthonormal_basis_from_normal(self, n):
+        """Return e1, e2 spanning plane normal to n."""
+        n = np.asarray(n, float)
+        n /= np.linalg.norm(n)
 
-        First, it checks to make sure that no combinations of edges and/or nodes are overlapping.
-
-        Second, it checks to make sure that no edges are perfectly vertical or perfectly horizontal. While neither of
-        these cases are technically incorrect, it's easier to implement looping through rotations rather than add edge cases
-        in for these cases.
-
-        """
-
-        # Define the default XZ plane
-        projection_plane_normal = np.array([0.0, -1.0, 0.0])
-
-        # Convert the node positions to a numpy array
-        pos_arr = np.array([self.pos[node] for node in self.nodes])
-
-        # Either use the forced rotation or generate a random sequence of candidate rotations.
-        if forced_rotation is not None:
-            rotations = [forced_rotation]
+        if abs(n[0]) < 0.9:
+            tmp = np.array([1, 0, 0])
         else:
-            # Define the random rotations (in a deterministic manner w/ a Halton sequence)
-            sampler        = qmc.Halton(d=3, scramble=False)
-            halton_samples = sampler.random(n=max_iter)
-            rotations      = 2 * np.pi * halton_samples
+            tmp = np.array([0, 1, 0])
 
-        for rotation in rotations:
+        e1 = np.cross(n, tmp);
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(n, e1);
+        e2 /= np.linalg.norm(e2)
+        return e1, e2, n
 
-            # Initialize the bad rotation flag
-            bad_rotation = False
+    def project_points(self, pos3d_dict, normal):
+        """Return dict node->2D, and basis for debugging."""
+        e1, e2, n = self.orthonormal_basis_from_normal(normal)
+        pos2d = {}
+        for k, p in pos3d_dict.items():
+            p = np.asarray(p)
+            pos2d[k] = (p @ e1, p @ e2)
+        return pos2d, {'e1': e1, 'e2': e2, 'n': n}
 
-            # Rotate the node positions
-            pos_arr_rot   = rotate(pos_arr, rotation)
-            pos3D_rot = {node: pos_arr_rot[i] for i, node in enumerate(self.nodes)}
+    @staticmethod
+    def validate_projection(G, pos2d, atol=1e-8):
+        """
+        Hard constraints:
+        ---------------
+        A. No node-node overlap
+        B. No node lies on edge interior
+        C. No edge-edge degeneracy (multiple crossings, or non-proper)
+        D. No identical crossing coordinates
+        """
+        nodes = list(G.nodes())
+        edges = list(G.edges())
 
-            # First, check that no edges are perfectly vertical or perfectly horizontal.
-            # While neither of these cases is technically incorrect, it's easier to implement looping through rotations
-            # rather than add edge cases for each 2D and 3D line equation.
+        # ----- A. Node-node overlap
+        pts = np.array([pos2d[n] for n in nodes])
+        d = cdist(pts, pts)
+        np.fill_diagonal(d, 9999)
+        if np.any(d < atol):
+            return False, "node-node collision"
 
-            for (a, b) in self.edges:
-                x1, _, z1 = pos3D_rot[a]
-                x2, _, z2 = pos3D_rot[b]
+        # helper
+        def pt_seg_dist(p, a, b):
+            p = np.asarray(p);
+            a = np.asarray(a);
+            b = np.asarray(b)
+            t = np.dot(p - a, b - a) / np.dot(b - a, b - a)
+            t = np.clip(t, 0, 1)
+            proj = a + t * (b - a)
+            return np.linalg.norm(p - proj), t
 
-                if np.isclose(x1, x2) or np.isclose(z1, z2):
-                    print('An edge is vertical or horizontal. This is not a valid spatial graph.')
-                    bad_rotation = True
-                    break
+        # for gathering crossings
+        crossing_points = []
 
-            if bad_rotation:
-                continue
+        # ----- B. Node on edge
+        for n in nodes:
+            p = np.asarray(pos2d[n])
+            for u, v in edges:
+                if n in (u, v): continue
+                dist, t = pt_seg_dist(p, pos2d[u], pos2d[v])
+                if dist < atol and 0 < t < 1:
+                    return False, f"node {n} lies on edge ({u},{v})"
 
-            crossings, invalid = identify_crossings(pos=pos3D_rot, edge_pairs=self.nonadjacent_edge_pairs)
+        # ----- C & D. Edge-edge intersections
+        for (u1, v1), (u2, v2) in combinations(edges, 2):
+            if len({u1, v1, u2, v2}) < 4: continue  # share endpoint -> ignore
+            res = seg_intersection(pos2d[u1], pos2d[v1], pos2d[u2], pos2d[v2], atol)
+            if res:
+                p, _, _ = res
+                # Check uniqueness
+                for q in crossing_points:
+                    if np.linalg.norm(p - q) < atol:
+                        return False, "duplicate crossing point"
+                crossing_points.append(p)
 
-            if invalid:
-                # crossings at endpoints or other invalid conditions
-                continue
+        return True, None
 
-            # If all are satisfied
-            break
+    def find_valid_projection(self, G, pos3d_original, rotation_candidates, projection_plane_normal, atol=1e-8):
 
+        for rot in rotation_candidates:
 
-        else:
-            # No rotation succeeded
-            raise RuntimeError("Failed to find a valid projection (all rotations invalid).")
+            # 1) rotate points
+            pos_rot = rotate(pos3d_original, rot)
 
-        # Rotate the projection plane
-        rotated_projection_plane_normal = rotate(projection_plane_normal, rotation)
+            # 2) project to 2D
+            pos2d, _ = project_points(pos_rot, projection_plane_normal)
 
-        return rotation, rotated_projection_plane_normal, crossings
+            # 3) validate projection
+            ok, reason = self.validate_projection(G, pos2d, atol)
 
+            if ok:
+                return pos2d, rot
+
+        raise RuntimeError("Could not find valid rotation.")
 
     def cyclic_ordering_vertex(self, G, ref_node, pos, node_ordering_dict=None, node_angle_dict=None):
 
@@ -664,304 +767,24 @@ class SpatialGraph:
         plotter.show()
 
 
-import itertools
-from collections import defaultdict
-
-import networkx as nx
-import numpy as np
 
 
-# -----------------------------
-# Geometry helpers
-# -----------------------------
-
-def _orthonormal_basis_from_normal(n):
-    """
-    Given a normal vector n in R^3, return two orthonormal in-plane basis
-    vectors (e1, e2) spanning the plane orthogonal to n.
-    """
-    n = np.asarray(n, dtype=float)
-    n /= np.linalg.norm(n)
-
-    # Pick an arbitrary vector not parallel to n
-    if abs(n[0]) < 0.9:
-        tmp = np.array([1.0, 0.0, 0.0])
-    else:
-        tmp = np.array([0.0, 1.0, 0.0])
-
-    e1 = np.cross(n, tmp)
-    e1 /= np.linalg.norm(e1)
-    e2 = np.cross(n, e1)
-    e2 /= np.linalg.norm(e2)
-
-    return e1, e2, n
 
 
-def project_positions_onto_plane(pos3d, normal):
-    """
-    Project 3D positions onto a plane defined by `normal`, using an
-    orthonormal basis for the plane.
+def seg_intersection(a,b,c,d, atol=1e-10):
+    """Return intersection point + parameters or None."""
+    a=np.asarray(a); b=np.asarray(b); c=np.asarray(c); d=np.asarray(d)
 
-    Parameters
-    ----------
-    pos3d : dict
-        node -> (x, y, z)
-    normal : array_like
-        Normal vector of the projection plane.
+    r=b-a; s=d-c
+    cross=lambda x,y: x[0]*y[1]-x[1]*y[0]
 
-    Returns
-    -------
-    pos2d : dict
-        node -> (u, v) in the 2D projected plane.
-    basis : dict
-        {'e1': e1, 'e2': e2, 'n': n} the basis used, as np arrays.
-    """
-    e1, e2, n = _orthonormal_basis_from_normal(normal)
+    denom = cross(r,s)
+    if abs(denom)<atol: return None
 
-    pos2d = {}
-    for node, p in pos3d.items():
-        p = np.asarray(p, dtype=float)
-        u = np.dot(p, e1)
-        v = np.dot(p, e2)
-        pos2d[node] = (u, v)
+    t = cross(c-a, s)/denom
+    u = cross(c-a, r)/denom
 
-    basis = {'e1': e1, 'e2': e2, 'n': n}
-    return pos2d, basis
-
-
-def _segment_intersection(p, p2, q, q2, atol=1e-9):
-    """
-    Compute proper segment intersection of p-p2 and q-q2 in 2D.
-
-    Returns
-    -------
-    (x, y, t_p, t_q) if they intersect in their interiors (0 < t < 1),
-    where:
-      - intersection = p + t_p * (p2 - p) = q + t_q * (q2 - q)
-    or
-    None if there is no proper intersection.
-    """
-    p = np.asarray(p, dtype=float)
-    p2 = np.asarray(p2, dtype=float)
-    q = np.asarray(q, dtype=float)
-    q2 = np.asarray(q2, dtype=float)
-
-    r = p2 - p
-    s = q2 - q
-
-    def cross2(a, b):
-        return a[0] * b[1] - a[1] * b[0]
-
-    rxs = cross2(r, s)
-    q_p = q - p
-    q_pxr = cross2(q_p, r)
-
-    if abs(rxs) < atol:
-        # Parallel (or colinear) – ignore for typical knot-style crossings.
-        return None
-
-    t = cross2(q_p, s) / rxs
-    u = cross2(q_p, r) / rxs
-
-    if atol < t < 1 - atol and atol < u < 1 - atol:
-        intersection = p + t * r
-        return (intersection[0], intersection[1], t, u)
-
+    if atol < t < 1-atol and atol < u < 1-atol:
+        p=a+t*r
+        return (p,t,u)
     return None
-
-
-# -----------------------------
-# Main construction
-# -----------------------------
-
-def build_projected_graph_with_crossings(G, pos3d, normal=(0, 0, 1), atol=1e-9):
-    """
-    Project a 3D NetworkX graph onto a 2D plane and create a new graph that
-    includes "crossing" nodes at 2D edge intersections.
-
-    Each crossing node:
-        * Has four neighbors (two from each intersecting edge)
-        * Stores which neighbors are 'over' and which are 'under' in
-          node attribute:
-              H.nodes[c]['strand']  # dict neighbor -> 'over' / 'under'
-
-    Over/under is determined by the height along the plane normal.
-
-    Parameters
-    ----------
-    G : nx.Graph (or DiGraph, but treated as undirected here)
-        Original graph with 3D positions.
-    pos3d : dict
-        node -> (x, y, z)
-    normal : array_like, optional
-        Normal vector of the projection plane.
-        Default is (0, 0, 1): projection onto the XY plane.
-    atol : float
-        Numeric tolerance for intersection checks.
-
-    Returns
-    -------
-    H : nx.Graph
-        New graph including crossing nodes.
-    pos2d : dict
-        node -> (u, v) positions in 2D for all nodes in H.
-    crossings : dict
-        crossing_id -> {
-            'pos2d': (u, v),
-            'edges': [(u1, v1), (u2, v2)],   # original edges
-            'over_edge': (u, v),
-            'under_edge': (u, v),
-            'height': { (u1, v1): h1, (u2, v2): h2 },
-            't_params': { (u1, v1): t1, (u2, v2): t2 },
-        }
-    """
-    # 1) Project nodes to 2D
-    pos2d, basis = project_positions_onto_plane(pos3d, normal)
-    n_vec = basis['n']
-
-    # Ensure we work with an undirected view for intersections
-    if G.is_directed():
-        edges = list(G.to_undirected().edges())
-    else:
-        edges = list(G.edges())
-
-    # 2) Find all pairwise edge intersections in 2D
-    edge_crossings = defaultdict(list)  # (u, v) -> list of (t, crossing_id)
-    crossings = {}                      # crossing_id -> metadata
-
-    def edge_key(e):
-        # Use the exact orientation of the edge as iterated
-        return tuple(e)
-
-    crossing_counter = 0
-
-    for (u1, v1), (u2, v2) in itertools.combinations(edges, 2):
-        # Skip edges that share a node (touch at endpoints only)
-        if len({u1, v1, u2, v2}) < 4:
-            continue
-
-        p1, p2 = pos2d[u1], pos2d[v1]
-        q1, q2 = pos2d[u2], pos2d[v2]
-
-        res = _segment_intersection(p1, p2, q1, q2, atol=atol)
-        if res is None:
-            continue
-
-        x, y, t1, t2 = res
-
-        # 3D positions at intersection (interpolate along edges)
-        P1_3d = (1 - t1) * np.asarray(pos3d[u1]) + t1 * np.asarray(pos3d[v1])
-        P2_3d = (1 - t2) * np.asarray(pos3d[u2]) + t2 * np.asarray(pos3d[v2])
-
-        h1 = np.dot(P1_3d, n_vec)
-        h2 = np.dot(P2_3d, n_vec)
-
-        if abs(h1 - h2) < 1e-12:
-            # Very rare: they occupy basically same height; you might
-            # want special handling (e.g., treat as genuine intersection).
-            # For now, arbitrarily pick over/under.
-            over_edge = edge_key((u1, v1))
-            under_edge = edge_key((u2, v2))
-        elif h1 > h2:
-            over_edge = edge_key((u1, v1))
-            under_edge = edge_key((u2, v2))
-        else:
-            over_edge = edge_key((u2, v2))
-            under_edge = edge_key((u1, v1))
-
-        crossing_id = f"crossing_{crossing_counter}"
-        crossing_counter += 1
-
-        crossings[crossing_id] = {
-            'pos2d': (x, y),
-            'edges': [edge_key((u1, v1)), edge_key((u2, v2))],
-            'over_edge': over_edge,
-            'under_edge': under_edge,
-            'height': {
-                edge_key((u1, v1)): float(h1),
-                edge_key((u2, v2)): float(h2),
-            },
-            't_params': {
-                edge_key((u1, v1)): float(t1),
-                edge_key((u2, v2)): float(t2),
-            },
-        }
-
-        # Record that each edge has this crossing at parameter t
-        edge_crossings[edge_key((u1, v1))].append((t1, crossing_id))
-        edge_crossings[edge_key((u2, v2))].append((t2, crossing_id))
-
-    # 3) Build new graph H with subdivided edges
-    H = nx.Graph()
-    node_strand = defaultdict(dict)  # crossing_id -> neighbor -> 'over'/'under'
-
-    # Add original nodes and store 3D/2D positions
-    for node in G.nodes():
-        H.add_node(node, kind='original', pos3d=tuple(pos3d[node]), pos2d=tuple(pos2d[node]))
-
-    # Add crossing nodes with 2D position (3D is ambiguous; we could
-    # store mid-height or separate heights if you want)
-    for cid, data in crossings.items():
-        H.add_node(cid, kind='crossing', pos2d=data['pos2d'])
-
-    # Subdivide each edge by its crossings
-    for (u, v) in edges:
-        key = edge_key((u, v))
-        p1_2d = np.asarray(pos2d[u])
-        p2_2d = np.asarray(pos2d[v])
-
-        # No crossings: just copy edge
-        if key not in edge_crossings:
-            H.add_edge(u, v)
-            continue
-
-        # Sort crossings along this edge by parameter t
-        sorted_crossings = sorted(edge_crossings[key], key=lambda x: x[0])
-        # Build ordered chain of nodes along the edge
-        chain = [u] + [cid for (_, cid) in sorted_crossings] + [v]
-
-        # For each segment (a, b) in the chain, add an edge in H
-        for a, b in zip(chain[:-1], chain[1:]):
-            H.add_edge(a, b)
-
-            # If a or b is a crossing node, record its strand
-            for node_end in (a, b):
-                if node_end in crossings:
-                    cid = node_end
-                    cdata = crossings[cid]
-                    role = 'over' if key == cdata['over_edge'] else 'under'
-                    # neighbor of the crossing is the other endpoint
-                    neighbor = a if node_end == b else b
-                    node_strand[cid][neighbor] = role
-
-    # Attach strand info to crossing nodes
-    for cid, mapping in node_strand.items():
-        H.nodes[cid]['strand'] = mapping  # neighbor -> 'over'/'under'
-
-    # Extend pos2d for crossing nodes
-    for cid, data in crossings.items():
-        pos2d[cid] = data['pos2d']
-
-    return H, pos2d, crossings
-
-
-# import networkx as nx
-#
-# # Example: G with 3D positions
-# G = nx.Graph()
-# G.add_edge('A', 'B')
-# G.add_edge('C', 'D')
-#
-# pos3d = {
-#     'A': (0, 0, 0),
-#     'B': (1, 1, 0),
-#     'C': (0, 1, 1),
-#     'D': (1, 0, 1),
-# }
-#
-# # Project onto plane with normal (0, 0, 1) (i.e. XY plane)
-# H, pos2d, crossings = build_projected_graph_with_crossings(G, pos3d, normal=(0, 0, 1))
-#
-# print("Nodes in H:", H.nodes(data=True))
-# for cid, data in crossings.items():
-#     print(cid, "strand mapping:", H.nodes[cid]['strand'])
