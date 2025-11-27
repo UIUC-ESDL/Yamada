@@ -3,13 +3,13 @@ from yamada import SpatialGraph
 
 
 def test_cyclic_node_ordering_vertex():
-    nodes = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    nodes = ['v_a', 'v_b', 'v_c', 'v_d', 'v_e', 'v_f', 'v_g', 'v_h']
 
-    pos = {'a': (0, 0, 0), 'b': (1, 0, 0), 'c': (0.5, 1, 0), 'd': (0.5, 0.5, 0), 'e': (0.25, 0.75, 0),
-                      'f': (0.75, 0.75, 0), 'g': (0, 1, 0), 'h': (1, 1, 0)}
+    pos = {'v_a': (0, 0, 0), 'v_b': (1, 0, 0), 'v_c': (0.5, 1, 0), 'v_d': (0.5, 0.5, 0), 'v_e': (0.25, 0.75, 0),
+                      'v_f': (0.75, 0.75, 0), 'v_g': (0, 1, 0), 'v_h': (1, 1, 0)}
 
-    edges = [('a', 'b'), ('a', 'g'), ('a', 'd'), ('b', 'd'), ('b', 'h'), ('d', 'e'), ('d', 'f'), ('e', 'c'), ('f', 'c'),
-             ('g', 'c'), ('h', 'c')]
+    edges = [('v_a', 'v_b'), ('v_a', 'v_g'), ('v_a', 'v_d'), ('v_b', 'v_d'), ('v_b', 'v_h'), ('v_d', 'v_e'),
+             ('v_d', 'v_f'), ('v_e', 'v_c'), ('v_f', 'v_c'), ('v_g', 'v_c'), ('v_h', 'v_c')]
 
     # Use a predefined rotation (from a random seed) that previously produced an error
     rotation = np.array([3.44829694, 4.49366732, 3.78727399])
@@ -19,22 +19,24 @@ def test_cyclic_node_ordering_vertex():
                       edges=edges,
                       rotation=rotation)
 
-    order = sg.node_ordering_dict['c']
-    expected_order = {'e': 3, 'f': 0, 'g': 2, 'h': 1}
+    order = sg.ccw_orderings['v_c']
+    expected_order = {'v_e': 1, 'v_f': 2, 'v_g': 0, 'v_h': 3}
 
     assert order == expected_order
 
 
 def test_cyclic_ordering_crossing():
-    # TODO Re-label these! Or Find out what the actual rotations are and update them!
-    component_a = 'comp_a'
-    component_b = 'comp_b'
-    component_c = 'comp_c'
-    component_d = 'comp_d'
-    component_e = 'comp_e'
-    component_f = 'comp_f'
-    component_g = 'comp_g'
-    component_h = 'comp_h'
+    """
+    See ./figures_cyclic_ordering/test_cyclic_ordering_crossing.png
+    """
+    component_a = 'v_a'
+    component_b = 'v_b'
+    component_c = 'v_c'
+    component_d = 'v_d'
+    component_e = 'v_e'
+    component_f = 'v_f'
+    component_g = 'v_g'
+    component_h = 'v_h'
 
     waypoint_ab = 'w_ab'
     waypoint_ad = 'w_ad'
@@ -101,25 +103,27 @@ def test_cyclic_ordering_crossing():
                       edges=edges,
                       rotation=rotation)
 
-    ordering_dict = sg.node_ordering_dict
+    ordering_dict = sg.ccw_orderings
 
-    crossing_0_expected = {'comp_c': 2, 'w_ef': 3, 'w_bc': 0, 'comp_f': 1}
-    crossing_1_expected = {'w_cd': 0, 'w_eh': 1, 'comp_d': 2, 'comp_e': 3}
+    expected_dict = {'crossing_0': {'v_c': 0, 'w_ef': 1, 'w_bc': 2, 'v_f': 3},
+                     'crossing_1': {'w_cd': 0, 'w_eh': 1, 'v_d': 2, 'v_e': 3}}
 
-    assert ordering_dict['crossing_0'] == crossing_0_expected
-    assert ordering_dict['crossing_1'] == crossing_1_expected
-    # assert ordering_dict == expected_dict
+    for k, v in expected_dict.items():
+        assert ordering_dict[k] == v, f"Mismatch at {k}: expected {v}, got {ordering_dict[k]}"
 
 
 def test_cyclic_ordering_crossing_2():
-    component_a = 'comp_a'
-    component_b = 'comp_b'
-    component_c = 'comp_c'
-    component_d = 'comp_d'
-    component_e = 'comp_e'
-    component_f = 'comp_f'
-    component_g = 'comp_g'
-    component_h = 'comp_h'
+    """
+    See ./figures_cyclic_ordering/test_cyclic_ordering_crossing_2.png
+    """
+    component_a = 'v_a'
+    component_b = 'v_b'
+    component_c = 'v_c'
+    component_d = 'v_d'
+    component_e = 'v_e'
+    component_f = 'v_f'
+    component_g = 'v_g'
+    component_h = 'v_h'
 
     waypoint_ab = 'w_ab'
     waypoint_ad = 'w_ad'
@@ -187,11 +191,12 @@ def test_cyclic_ordering_crossing_2():
                       edges=edges,
                       rotation=rotation)
 
-    ordering_dict = sg.node_ordering_dict
+    ordering_dict = sg.ccw_orderings
 
-    expected_dict = {'crossing_0': {'comp_a': 1, 'comp_d': 2, 'w_ab': 3, 'w_dh': 0},
-                     'crossing_1': {'comp_b': 1, 'comp_c': 2, 'crossing_2': 3, 'w_cg': 0},
-                     'crossing_2': {'w_cg': 0, 'crossing_1': 1, 'comp_g': 2, 'w_bf': 3},
-                     'crossing_3': {'w_gh': 0, 'w_bf': 1, 'comp_g': 2, 'comp_f': 3}}
+    expected_dict = {'crossing_0': {'v_a': 3, 'v_d': 0, 'w_ab': 1, 'w_dh': 2},
+                     'crossing_1': {'v_b': 3, 'v_c': 0, 'crossing_2': 1, 'w_cg': 2},
+                     'crossing_2': {'w_cg': 2, 'crossing_1': 3, 'v_g': 0, 'w_bf': 1},
+                     'crossing_3': {'w_gh': 0, 'w_bf': 1, 'v_g': 2, 'v_f': 3}}
 
-    assert ordering_dict == expected_dict
+    for k, v in expected_dict.items():
+        assert ordering_dict[k] == v, f"Mismatch at {k}: expected {v}, got {ordering_dict[k]}"

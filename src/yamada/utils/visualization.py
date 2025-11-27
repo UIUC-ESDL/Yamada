@@ -457,7 +457,7 @@ def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
 
     return p
 
-def draw_sgd(G, pos, ccw_orderings, ccw_angles):
+def draw_sgd(G, pos, ccw_orderings, ccw_angles, save_filepath=None):
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -468,16 +468,32 @@ def draw_sgd(G, pos, ccw_orderings, ccw_angles):
     # Draw node labels
     nx.draw_networkx_labels(G, pos, font_size=12, font_color='black', ax=ax)
 
+    # Add a faint gray line to indicate the zero-degree angle for each node
+    for node in G.nodes():
+        angle_rad = 0  # 0 degrees in radians
+        radius = 0.1  # Length of the guide line
+        start_x = pos[node][0]
+        start_y = pos[node][1]
+        end_x = start_x + radius * np.cos(angle_rad)
+        end_y = start_y + radius * np.sin(angle_rad)
+        ax.plot([start_x, end_x], [start_y, end_y], color='gray', linewidth=1, linestyle='--', alpha=0.5)
+        ax.plot(end_x, end_y, marker='o', color='gray', markersize=5, alpha=0.5)
+
     # Add neighbor index labels
     for node in G.nodes():
         nbrs = list(ccw_orderings[node].keys())
         for nbr in nbrs:
             angle = ccw_angles[node][nbr]
             radius = 0.05  # Distance from the node position to place the label
-            angle_rad = angle #np.radians(angle)
+            angle_rad = angle
             label_x = pos[node][0] + radius * np.cos(angle_rad)
             label_y = pos[node][1] + radius * np.sin(angle_rad)
-            ax.text(label_x, label_y, f"{ccw_orderings[node][nbr]}", fontsize=10, color='red')
+            ax.text(label_x, label_y, f"{ccw_orderings[node][nbr]}", fontsize=10, color='darkgreen')
 
-    plt.show(block=True)
+    if save_filepath is None:
+        plt.show(block=True)
+    else:
+        plt.savefig(save_filepath, dpi=300)
+        plt.close()
+
 
