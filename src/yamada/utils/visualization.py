@@ -242,91 +242,20 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
 
     return plotter
 
+def draw_spatial_graph_2d(plotter, nodes_2d, edges_2d, pos_2d, ccw_orderings, ccw_angles):
 
-def plot_spatial_graph(nodes_3d, edges_3d, pos_3d,
-                       nodes_2d, edges_2d, pos_2d,
-                       projection_plane_normal, ccw_orderings, ccw_angles):
-
-    # Define a list of colors to cycle through
+    # Reset the color cycle for 2D edges
     color_list = list(mcolors.TABLEAU_COLORS.keys())
     color_cycle = itertools.cycle(color_list)
 
-    # plotter = pv.Plotter()
-    p = pv.Plotter(shape=(1, 2), window_size=[2000, 1000])
-    p.camera.SetClippingRange(0.0001, 100000)
-    p.view_isometric()
-
-    # View plane normal
-    projection_plane_normal = np.array(projection_plane_normal)
-    # projection_plane_normal[1] *= -1
-    p.view_vector(projection_plane_normal)
-
-    # Plot the 3D Spatial Graph in the first subplot
-    p.subplot(0, 0)
-    p.add_title("3D Spatial Graph")
-
-    # Create glyphs for nodes
-    # nodes_nodes     = [node for node in nodes if 'crossing' not in node]
-    # nodes_crossings = [node for node in nodes if 'crossing' in node]
-    color_node = "black"
-    size_node  = 0.01
-    # color_crossing = "red"
-    # size_crossing  = 0.02
-    res=12
-    # for node, color, size in [(nodes_nodes, color_node, size_node), (nodes_crossings, color_crossing, size_crossing)]:
-    #     positions = np.array([pos[n] for n in node])
-    #     sphere = pv.Sphere(radius=size, phi_resolution=res, theta_resolution=res)
-    #     glyphs = pv.PolyData(positions).glyph(orient=False, scale=False, geom=sphere)
-    #     p.add_mesh(glyphs, color=color, opacity=1.0)
-
-    for node in nodes_3d:
-        positions = np.array(pos_3d[node])
-        sphere = pv.Sphere(radius=size_node, phi_resolution=res, theta_resolution=res)
-        glyphs = pv.PolyData(positions).glyph(orient=False, scale=False, geom=sphere)
-        p.add_mesh(glyphs, color=color_node, opacity=1.0)
-
-    for edge in edges_3d:
-        start_node, end_node = edge
-        start_position       = pos_3d[start_node]
-        end_position         = pos_3d[end_node]
-        color_i              = next(color_cycle)
-        line                 = pv.Line(start_position, end_position)
-        p.add_mesh(line, color=color_i, line_width=5)
-
-    # Add node labels
-    for node in nodes_3d:
-        position = pos_3d[node]
-        pos_arr = np.array([[position[0], position[1], position[2]]])
-        p.add_point_labels(pos_arr, [f"{node}"], point_size=0, font_size=12, text_color='black',always_visible=True)
-
-    # Plot the projection plane
-    # center = np.mean(np.array(list(pos.values())), axis=0)
-    # projected_plane = pv.Plane(center=center, direction=projection_plane_normal,
-    #                            i_size=2, j_size=2)
-    # p.add_mesh(projected_plane, color='lightgray', opacity=0.1)
-
-
-    # Configure the plot
-    p.show_axes()
-
-    # Reset the color cycle for 2D edges
-    color_cycle = itertools.cycle(color_list)
-
-    # Plot the 2D Projection in the second subplot
-    p.subplot(0, 1)
-    p.add_title("2D Projection")
-
-    # # nodes = list(pos_proj.keys())
-    # # edges = PE.edges()
-    # # pos   = nx.get_node_attributes(PE, 'pos')
+    res=6
 
     for node in nodes_2d:
         positions = np.array([pos_2d[node]])
-        # Insert y=0 for 2D projection
         positions = np.array([[positions[0][0], 0, positions[0][1]]])
-        sphere = pv.Sphere(radius=0.01, phi_resolution=12, theta_resolution=12)
+        sphere = pv.Sphere(radius=0.01, phi_resolution=res, theta_resolution=res)
         glyphs = pv.PolyData(positions).glyph(orient=False, scale=False, geom=sphere)
-        p.add_mesh(glyphs, color="black", opacity=1.0)
+        plotter.add_mesh(glyphs, color="black", opacity=1.0)
 
     for edge in edges_2d:
         start_node, end_node = edge
@@ -337,51 +266,122 @@ def plot_spatial_graph(nodes_3d, edges_3d, pos_3d,
         end_position   = np.array([end_position[0], 0, end_position[1]])
         color_i = next(color_cycle)
         line = pv.Line(start_position, end_position)
-        p.add_mesh(line, color=color_i, line_width=5)
+        plotter.add_mesh(line, color=color_i, line_width=5)
 
     # Add node labels, placing each index number according to its angle
+    node_labels          = [f"{node}" for node in nodes_2d]
+    node_label_positions = np.array([[pos_2d[node][0], 0, pos_2d[node][1]] for node in nodes_2d])
+    plotter.add_point_labels(node_label_positions, node_labels, point_size=0, font_size=12, text_color='black')
+
+    # Draw zero-angles as a glyph
+    a0      = np.array([0, 0, 0])
+    b0      = np.array([0.1, 0, 0])
+    offsets = [np.array([pos_2d[node][0], 0, pos_2d[node][1]]) for node in nodes_2d]
+    points = []
+    endpoints = []
+    lines = []
+    for i, offset in enumerate(offsets):
+        a = a0 + offset
+        b = b0 + offset
+
+        idx0 = len(points)
+        idx1 = idx0 + 1
+        points.append(a)
+        points.append(b)
+        endpoints.append(b)
+        lines.extend([2, idx0, idx1])
+
+    # Draw a faint gray line at each node to indicate the zero-degree angle
+    polyLines     = pv.PolyData(np.array(points), lines=np.array(lines))
+    polyEndpoints = pv.PolyData(np.array(endpoints))
+    sphere      = pv.Sphere(radius=0.005, phi_resolution=8, theta_resolution=8)
+    sphereGlyph = polyEndpoints.glyph(orient=False, scale=False, geom=sphere)
+    plotter.add_mesh(polyLines, color="gray", line_width=2, opacity=0.5)
+    plotter.add_mesh(sphereGlyph, color="gray", opacity=0.5)
+
+    # Add neighbor index labels
+    node_labels = []
+    node_positions = []
     for node in nodes_2d:
+        for nbr in list(ccw_orderings[node].keys()):
+            angle   = ccw_angles[node][nbr]
+            radius  = 0.05
+            label_x = pos_2d[node][0] + radius * np.cos(angle)
+            label_y = 0
+            label_z = pos_2d[node][1] + radius * np.sin(angle)
 
-        position = pos_2d[node]
+            node_labels.append(f"{ccw_orderings[node][nbr]}")
+            node_positions.append([label_x, label_y, label_z])
 
-        # p.add_point_labels(np.array([[position[0], 0, position[2]]]), f"{node}", point_size=0, font_size=12, text_color='black')
-        pos_arr = np.array([[position[0], 0, position[1]]])
-        p.add_point_labels(pos_arr, [f"{node}"], point_size=0, font_size=12, text_color='black')
+    plotter.add_point_labels(node_positions, node_labels,
+                       font_size=12, text_color='black', show_points=False,background_color=None, background_opacity=0)
 
-        # Draw a faint gray line to indicate the zero-degree angle
-        zero_angle_rad = np.radians(0)
-        zero_x = position[0] + 0.1 * np.cos(zero_angle_rad)
-        zero_z = position[1] + 0.1 * np.sin(zero_angle_rad)
-        p.add_mesh(pv.Line((position[0], 0, position[1]), (zero_x, 0, zero_z)), color='gray', line_width=2, opacity=0.5)
-        p.add_mesh(pv.Sphere(radius=0.002, center=(zero_x, 0, zero_z)), color='gray', opacity=0.5)
+    # Configure the plot
+    plotter.view_xz()
+    plotter.show_axes()
 
-        nbrs = list(ccw_orderings[node].keys())
-        for nbr in nbrs:
-            angle = ccw_angles[node][nbr]
-            radius = 0.05  # Distance from the node position to place the label
-            angle_rad = angle #np.radians(angle)
-            label_x = position[0] + radius * np.cos(angle_rad)
-            label_y = 0  # Since it's a 2D projection on the xz
-            label_z = position[1] + radius * np.sin(angle_rad)
-            p.add_point_labels((label_x, label_y, label_z), [f"{ccw_orderings[node][nbr]}"],
-                               font_size=12, text_color='black',show_points=False,background_color=None, background_opacity=0)
+
+def draw_spatial_graph_3d(plotter, nodes_3d, edges_3d, pos_3d,
+                          projection_plane_normal):
+
+    # Define a list of colors to cycle through
+    color_list = list(mcolors.TABLEAU_COLORS.keys())
+    color_cycle = itertools.cycle(color_list)
+
+    # Create a PyVista plotter
+    plotter.view_isometric()
+
+    # Plot the projection plane
+    center = np.mean(np.array(list(pos_3d.values())), axis=0)
+    projected_plane = pv.Plane(center=center, direction=projection_plane_normal,
+                               i_size=2, j_size=2)
+    plotter.add_mesh(projected_plane, color='lightgray', opacity=0.1)
+
+    # Create glyphs for nodes
+    nodes_nodes     = [node for node in nodes_3d if 'crossing' not in node]
+    nodes_crossings = [node for node in nodes_3d if 'crossing' in node]
+    color_node = "black"
+    size_node  = 0.01
+    color_crossing = "red"
+    size_crossing  = 0.02
+    res=6
+
+    if nodes_nodes:
+        nodeVertex = pv.Sphere(radius=size_node, phi_resolution=res, theta_resolution=res)
+        nodeVertexGlyphs = pv.PolyData(np.array([pos_3d[n] for n in nodes_nodes])).glyph(orient=False, scale=False,
+                                                                                         geom=nodeVertex)
+        plotter.add_mesh(nodeVertexGlyphs, color=color_node, opacity=1.0)
+
+    if nodes_crossings:
+        nodeCrossing = pv.Sphere(radius=size_crossing, phi_resolution=res, theta_resolution=res)
+        nodeCrossingGlyphs = pv.PolyData(np.array([pos_3d[n] for n in nodes_crossings])).glyph(orient=False, scale=False, geom=nodeCrossing)
+        plotter.add_mesh(nodeCrossingGlyphs, color=color_crossing, opacity=1.0)
+
+
+    for edge in edges_3d:
+        start_node, end_node = edge
+        start_position       = pos_3d[start_node]
+        end_position         = pos_3d[end_node]
+        color_i              = next(color_cycle)
+        line                 = pv.Line(start_position, end_position)
+        plotter.add_mesh(line, color=color_i, line_width=5)
+
+    # Add node labels
+    node_labels          = [f"{node}" for node in nodes_3d]
+    node_label_positions = np.array([pos_3d[node] for node in nodes_3d])
+    plotter.add_point_labels(node_label_positions, node_labels , point_size=0, font_size=12, text_color='black', always_visible=True)
 
 
     # Configure the plot
-    # p.view_xz()
-    # p.show_axes()
+    plotter.show_axes()
 
-    # # Link the two plots
-    # p.link_views()
 
-    return p
 
 def plot_projection():
     pass
 
 
-import numpy as np
-import pyvista as pv
+
 
 def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
     # Collect all node label positions and texts
