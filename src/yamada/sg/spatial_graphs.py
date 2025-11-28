@@ -121,7 +121,7 @@ class SpatialGraph:
     """
 
     def __init__(self, nodes, pos, edges, rotation=None,
-                 max_iter=200,
+                 max_iter=100,
                  projection_plane_normal=np.array([0.0, -1.0, 0.0]),
                  node_tol=1e-6,
                  node_edge_tol=1e-6,
@@ -249,7 +249,6 @@ class SpatialGraph:
             pos2d[k] = (p @ e1, p @ e2)
         return pos2d, {"e1": e1, "e2": e2, "n": n}
 
-    # -------------------- projection validation -------------------- #
 
     @staticmethod
     def _pt_seg_dist(p, a, b):
@@ -264,6 +263,27 @@ class SpatialGraph:
         t = max(0.0, min(1.0, t))
         proj = a + t * ab
         return float(np.linalg.norm(p - proj)), t
+
+    def _count_crossings_2d(self, G, pos2d, atol=1e-12):
+        """
+        Count proper edge-edge crossings in the 2D projection.
+
+        Only counts intersections between non-adjacent edges
+        (i.e., edges that don't share a node).
+        """
+        edges = list(G.edges())
+        count = 0
+        for (u1, v1), (u2, v2) in combinations(edges, 2):
+            # Skip edges that share a node
+            if len({u1, v1, u2, v2}) < 4:
+                continue
+
+            if seg_intersection(pos2d[u1], pos2d[v1],
+                                pos2d[u2], pos2d[v2],
+                                atol=atol) is not None:
+                count += 1
+        return count
+
 
     def _validate_projection(self, G, pos2d):
         """
@@ -310,7 +330,6 @@ class SpatialGraph:
 
         return True, None
 
-    # -------------------- rotation search -------------------- #
 
     def _find_valid_projection(self):
         """
@@ -329,18 +348,33 @@ class SpatialGraph:
             samples = sampler.random(n=self.max_iter)
             rotations = [2*np.pi * row for row in samples]
 
-        for rot in rotations:
+        best_data = None
+        best_crossings = None
+        for i, rot in enumerate(rotations):
             rot = np.asarray(rot, float)
             pos_rot_arr = rotate(pos_arr, rot)
             pos3d_rot = {n: tuple(pos_rot_arr[i]) for i, n in enumerate(nodes)}
             pos2d, basis = self._project_points(pos3d_rot, self.projection_plane_normal)
             ok, reason = self._validate_projection(G, pos2d)
-            if ok:
-                return rot, pos3d_rot, pos2d, basis
+            # if ok:
+            #     return rot, pos3d_rot, pos2d, basis
+            if not ok:
+                continue
 
-        raise RuntimeError("Failed to find a valid projection rotation")
+            n_cross = self._count_crossings_2d(G, pos2d)
 
-    # -------------------- crossing graph construction -------------------- #
+            if (best_crossings is None) or (n_cross < best_crossings):
+                best_crossings = n_cross
+                best_data = (rot, pos3d_rot, pos2d, basis)
+
+                # Best-case scenario
+                if n_cross == 0:
+                    break
+
+        if best_data is None:
+            raise RuntimeError("Failed to find a valid projection rotation")
+        else:
+            return best_data
 
     def _build_projected_graph_with_crossings(self, pos3d_rot, pos2d, normal):
         """
@@ -445,8 +479,6 @@ class SpatialGraph:
         pos2d_full = {n: H.nodes[n]["pos2d"] for n in H.nodes()}
         return H, pos2d_full, crossings, strand
 
-    # -------------------- CCW adjacency (planar embedding) -------------------- #
-
     def _compute_cyclic_orderings(self):
         """
         Compute, for every node in H, a CCW neighbor index:
@@ -509,13 +541,10 @@ class SpatialGraph:
 
     def to_spatial_graph_diagram(self):
 
-
             # Create a list of all nodes and crossings
-            # nodes_and_crossings = list(self.nodes) + list(self.crossings.keys())
             nodes     = [node for node in self.H.nodes if "crossing" not in node]
             edges     = list(self.H.edges)
             crossings = [crossing for crossing in self.H.nodes if "crossing" in crossing]
-            # crossings = list(self.crossings.keys())
 
             node_degrees = [self.H.degree(node) for node in nodes]
 
@@ -528,10 +557,8 @@ class SpatialGraph:
             # Create the crossing objects
             sgd_crossings = [Crossing('c_' + crossing.split('_')[1]) for crossing in crossings]
 
-
             # Create a dictionary that contains the cyclical ordering of every node and crossing
             cyclic_ordering_dict = self.ccw_orderings
-
 
             # Assign the vertices to each other according to the cyclic orderings
             nodes_and_crossings = nodes + crossings
@@ -557,7 +584,6 @@ class SpatialGraph:
 
                 else:
                     raise ValueError('The vertices are already assigned.')
-
 
             sgd = SpatialGraphDiagram(vertices=sgd_vertices, crossings=sgd_crossings)
 
