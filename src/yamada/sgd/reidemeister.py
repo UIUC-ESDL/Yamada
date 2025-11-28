@@ -141,62 +141,137 @@ def apply_r2_move(sgd, crossing_labels, simplify=True):
 
 # %% Reidemeister 3
 
+# def available_r3_moves(sgd):
+#     """
+#     Criteria:
+#     1. The face must have exactly 3 crossings and 3 edges.
+#     2. At least one of the edges of the face must pass either fully under or fully over its two crossings.
+#
+#     Note: A face can have more than one possible R3 move.
+#
+#     Terminology:
+#     - stationary_crossing: The crossing that is not being moved by R3.
+#     - moving_edge: The edge that is moving across the stationary crossing
+#     - moving_crossings (1 & 2): The two crossings connected to the moving_edge and therefore move with it.
+#     - stationary_edges (1 & 2): The two edges that form the stationary_crossing.
+#     """
+#
+#     # Initialize the lists
+#     r3_inputs = []
+#
+#     # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
+#     candidate_faces = []
+#     for face in sgd.faces():
+#         if face_has_exactly_3_crossings_and_3_edges(face):
+#             candidate_faces.append(face)
+#
+#     # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
+#     for face in candidate_faces:
+#         candidate_edges = edges_that_are_fully_under_or_over(face)
+#         for candidate_edge in candidate_edges:
+#             r3_input = {}
+#
+#             # In a triangular face (3 crossings, 3 edges), the stationary crossing is opposite of the moving edge.
+#             stationary_crossing = find_opposite_crossing(face, candidate_edge)
+#
+#             face_entry_points = [ep.vertex for ep in face]
+#
+#             # Determine the starting point (stationary crossing)
+#             start_index = face_entry_points.index(stationary_crossing)
+#
+#             # Reorder the face to start from the stationary crossing
+#             ordered_face = face_entry_points[start_index:] + face_entry_points[:start_index]
+#
+#             # Identify the two moving crossings (next clockwise crossings after the stationary crossing)
+#             moving_crossings = [ep for ep in ordered_face if isinstance(ep, Crossing) and ep != stationary_crossing]
+#
+#             stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
+#             stationary_edge_2 = find_common_edge(stationary_crossing, moving_crossings[1])
+#
+#             r3_input['stationary_crossing'] = stationary_crossing.label
+#             r3_input['stationary_edge_1'] = stationary_edge_1.label
+#             r3_input['stationary_edge_2'] = stationary_edge_2.label
+#             r3_input['moving_crossing_1'] = moving_crossings[0].label
+#             r3_input['moving_crossing_2'] = moving_crossings[1].label
+#             r3_input['moving_edge'] = candidate_edge.label
+#             r3_inputs.append(r3_input)
+#
+#     return r3_inputs
+
 def available_r3_moves(sgd):
     """
+    Identify candidate R3 moves.
+
     Criteria:
-    1. The face must have exactly 3 crossings and 3 edges.
-    2. At least one of the edges of the face must pass either fully under or fully over its two crossings.
+    1. The face must have exactly 3 crossings and 3 edges (no vertices).
+    2. At least one of the edges of the face must pass either fully under
+       or fully over its two crossings.
 
-    Note: A face can have more than one possible R3 move.
-
-    Terminology:
-    - stationary_crossing: The crossing that is not being moved by R3.
-    - moving_edge: The edge that is moving across the stationary crossing
-    - moving_crossings (1 & 2): The two crossings connected to the moving_edge and therefore move with it.
-    - stationary_edges (1 & 2): The two edges that form the stationary_crossing.
+    Returns
+    -------
+    r3_inputs : list[dict]
+        Each dict has keys:
+        - 'stationary_crossing'
+        - 'stationary_edge_1'
+        - 'stationary_edge_2'
+        - 'moving_crossing_1'
+        - 'moving_crossing_2'
+        - 'moving_edge'
     """
 
-    # Initialize the lists
     r3_inputs = []
 
-    # Criteria 1: There must be a face with exactly three crossings (i.e., no vertices).
+    # Step 1: find candidate faces
     candidate_faces = []
     for face in sgd.faces():
         if face_has_exactly_3_crossings_and_3_edges(face):
             candidate_faces.append(face)
 
-    # Criteria 2: At least one of the edges of the face must pass either fully under or fully over two crossings.
+    # Step 2: for each face, see which edges are fully over/under
     for face in candidate_faces:
         candidate_edges = edges_that_are_fully_under_or_over(face)
+        if not candidate_edges:
+            continue
+
+        # Extract vertex objects from entrypoints
+        face_vertices = [ep.vertex for ep in face]
+
         for candidate_edge in candidate_edges:
             r3_input = {}
 
-            # In a triangular face (3 crossings, 3 edges), the stationary crossing is opposite of the moving edge.
+            # Stationary crossing is opposite the moving edge
             stationary_crossing = find_opposite_crossing(face, candidate_edge)
 
-            face_entry_points = [ep.vertex for ep in face]
+            # Rotate face vertices so stationary_crossing appears first
+            start_index = face_vertices.index(stationary_crossing)
+            ordered_vertices = face_vertices[start_index:] + face_vertices[:start_index]
 
-            # Determine the starting point (stationary crossing)
-            start_index = face_entry_points.index(stationary_crossing)
+            # Collect distinct crossings other than stationary_crossing
+            moving_crossings = []
+            for v in ordered_vertices:
+                if isinstance(v, Crossing) and v is not stationary_crossing and v not in moving_crossings:
+                    moving_crossings.append(v)
 
-            # Reorder the face to start from the stationary crossing
-            ordered_face = face_entry_points[start_index:] + face_entry_points[:start_index]
+            # Need exactly two distinct moving crossings
+            if len(moving_crossings) != 2:
+                continue
 
-            # Identify the two moving crossings (next clockwise crossings after the stationary crossing)
-            moving_crossings = [ep for ep in ordered_face if isinstance(ep, Crossing) and ep != stationary_crossing]
+            mc1, mc2 = moving_crossings
 
-            stationary_edge_1 = find_common_edge(stationary_crossing, moving_crossings[0])
-            stationary_edge_2 = find_common_edge(stationary_crossing, moving_crossings[1])
+            stationary_edge_1 = find_common_edge(stationary_crossing, mc1)
+            stationary_edge_2 = find_common_edge(stationary_crossing, mc2)
 
-            r3_input['stationary_crossing'] = stationary_crossing.label
-            r3_input['stationary_edge_1'] = stationary_edge_1.label
-            r3_input['stationary_edge_2'] = stationary_edge_2.label
-            r3_input['moving_crossing_1'] = moving_crossings[0].label
-            r3_input['moving_crossing_2'] = moving_crossings[1].label
-            r3_input['moving_edge'] = candidate_edge.label
+            r3_input["stationary_crossing"] = stationary_crossing.label
+            r3_input["stationary_edge_1"]   = stationary_edge_1.label
+            r3_input["stationary_edge_2"]   = stationary_edge_2.label
+            r3_input["moving_crossing_1"]   = mc1.label
+            r3_input["moving_crossing_2"]   = mc2.label
+            r3_input["moving_edge"]         = candidate_edge.label
+
             r3_inputs.append(r3_input)
 
     return r3_inputs
+
 
 
 def apply_r3_move(sgd, r3_input, simplify=True):
@@ -306,33 +381,31 @@ def has_r6(sgd):
 
 def r1_and_r2_simplify(sgd):
     max_iter = 1000
-    i = 0
-    r1_count = 0
-    r2_count = 0
-    sgd_has_r1 = True
-    sgd_has_r2 = True
-    while sgd_has_r1 and sgd_has_r2:
+    r1_count = r2_count = 0
+
+    for i in range(max_iter):
+        changed = False
 
         r1_crossing_labels = available_r1_moves(sgd)
-        if len(r1_crossing_labels) > 0:
+        if r1_crossing_labels:
             sgd = apply_r1_move(sgd, r1_crossing_labels[0])
             r1_count += 1
-        else:
-            sgd_has_r1 = False
+            changed = True
 
         r2_crossing_labels = available_r2_moves(sgd)
-        if len(r2_crossing_labels) > 0:
+        if r2_crossing_labels:
             sgd = apply_r2_move(sgd, r2_crossing_labels[0])
             r2_count += 1
-        else:
-            sgd_has_r2 = False
+            changed = True
 
-        if i > max_iter:
-            raise ValueError(f"R1 and R2 simplification has been looping for {i} times. This is likely an error.")
+        if not changed:
+            break
 
-        i += 1
+    else:
+        raise ValueError("R1/R2 simplification exceeded max_iter. Likely infinite loop.")
 
     return sgd, r1_count, r2_count
+
 
 
 def reidemeister_simplify(sgd, n_tries=10):

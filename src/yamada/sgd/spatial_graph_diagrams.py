@@ -229,60 +229,50 @@ class SpatialGraphDiagram:
         is_planar = euler == 2 * len(list(nx.connected_components(self.graph())))
         assert is_planar
 
-
     def __eq__(self, other):
 
-        # Check the individual elements
-
         if not isinstance(other, SpatialGraphDiagram):
-            raise ValueError("This must be a SpatialGraphDiagram.")
-
-        # Compare edges
-        edges_s = [edge.label for edge in self.edges]
-        edges_o = [edge.label for edge in other.edges]
-
-        if len(edges_s) != len(edges_o):
             return False
 
-        for edge_s, edge_o in zip(sorted(edges_s), sorted(edges_o)):
-            if edge_s != edge_o:
-                return False
-
-        # Compare vertices
-        vertices_s = [vertex.label for vertex in self.vertices]
-        vertices_o = [vertex.label for vertex in other.vertices]
-
-        if len(vertices_s) != len(vertices_o):
+        # Compare label sets first
+        if set(self.data.keys()) != set(other.data.keys()):
             return False
 
-        for vertex_s, vertex_o in zip(sorted(vertices_s), sorted(vertices_o)):
-            if vertex_s != vertex_o:
-                return False
-
-        # Compare crossings
-        crossings_s = [crossing.label for crossing in self.crossings]
-        crossings_o = [crossing.label for crossing in other.crossings]
-
-        if len(crossings_s) != len(crossings_o):
+        # Compare edges / vertices / crossings by label sets
+        edges_s = sorted(e.label for e in self.edges)
+        edges_o = sorted(e.label for e in other.edges)
+        if edges_s != edges_o:
             return False
 
-        for crossing_s, crossing_o in zip(sorted(crossings_s), sorted(crossings_o)):
-            if crossing_s != crossing_o:
+        vertices_s = sorted(v.label for v in self.vertices)
+        vertices_o = sorted(v.label for v in other.vertices)
+        if vertices_s != vertices_o:
+            return False
+
+        crossings_s = sorted(c.label for c in self.crossings)
+        crossings_o = sorted(c.label for c in other.crossings)
+        if crossings_s != crossings_o:
+            return False
+
+        # Compare adjacency structure by label, not insertion order
+        for label in sorted(self.data.keys()):
+            obj_s = self.data[label]
+            obj_o = other.data[label]
+
+            if obj_s.degree != obj_o.degree:
                 return False
 
-        # Check the index assignments
-
-        for obj_s, obj_o in zip(self.data.values(), other.data.values()):
             for i in range(obj_s.degree):
                 adj_s, idx_s = obj_s.adjacent[i]
                 adj_o, idx_o = obj_o.adjacent[i]
+
                 if adj_s.label != adj_o.label or idx_s != idx_o:
                     return False
 
         return True
 
-    def __neq__(self, other):
-        return not self == other
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def _create_edge(self, A, i, B, j):
         """Creates and adds an edge to the diagram."""
