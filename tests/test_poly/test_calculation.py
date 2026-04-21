@@ -36,5 +36,18 @@ def test_reverse_poly():
 
     assert reverse_poly(a ** -1 + 2) == a + 2
 
-# TODO Implement tests for normalize_poly
-# def test_normalize_poly():
+
+def test_normalize_poly_zero():
+    assert normalize_poly(pari(0)) == 0
+
+
+def test_yamada_polynomial_cut_edge_diagram_is_zero():
+    e1 = Edge('e1')
+    v1 = Vertex(1, 'v1')
+    v2 = Vertex(1, 'v2')
+    v1[0] = e1[0]
+    v2[0] = e1[1]
+
+    sgd = SpatialGraphDiagram(edges=[e1], vertices=[v1, v2])
+
+    assert sgd.yamada_polynomial() == 0

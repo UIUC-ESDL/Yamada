@@ -147,7 +147,7 @@ class SpatialGraph:
         self.G = nx.Graph()
 
         nodes   = self._validate_nodes(nodes)
-        edges   = self._validate_edges(edges)
+        edges   = self._validate_edges(edges, nodes)
         pos     = self._validate_positions(nodes, pos)
         self.G.add_nodes_from(nodes)
         self.G.add_edges_from(edges)
@@ -199,12 +199,14 @@ class SpatialGraph:
         return nodes
 
     @staticmethod
-    def _validate_edges(edges):
+    def _validate_edges(edges, nodes):
         assert isinstance(edges, list), "Edges must be a list."
+        node_set = set(nodes)
         for e in edges:
             assert isinstance(e, tuple) and len(e) == 2, "Each edge must be (u,v)."
             u, v = e
             assert isinstance(u, str) and isinstance(v, str), "Edge endpoints must be strings."
+            assert u in node_set and v in node_set, f"Edge endpoint {u!r} or {v!r} is not in nodes."
         assert len(edges) == len(set(edges)), "Edges must be unique."
         return edges
 
@@ -542,9 +544,9 @@ class SpatialGraph:
     def to_spatial_graph_diagram(self):
 
             # Create a list of all nodes and crossings
-            nodes     = [node for node in self.H.nodes if "crossing" not in node]
+            nodes     = [node for node in self.H.nodes if self.H.nodes[node].get("node_type") == "vertex"]
             edges     = list(self.H.edges)
-            crossings = [crossing for crossing in self.H.nodes if "crossing" in crossing]
+            crossings = [node for node in self.H.nodes if self.H.nodes[node].get("node_type") == "crossing"]
 
             node_degrees = [self.H.degree(node) for node in nodes]
 

@@ -81,6 +81,9 @@ class SpatialGraphDiagram:
         self.vertices = vertices
         self.crossings = crossings
         self.data = {d.label: d for d in self.edges + self.vertices + self.crossings}
+        self.edge_counter = self._label_counter(self.edges, "e")
+        self.vertex_counter = self._label_counter(self.vertices, "v")
+        self.crossing_counter = self._label_counter(self.crossings, "c")
 
         if standardize_labels:
             self._standardize_labels()
@@ -103,11 +106,9 @@ class SpatialGraphDiagram:
         if not e_are_e or not v_are_v or not c_are_c:
             raise TypeError("Some elements are incorrectly categorized.")
 
-        # Ensure all elements are unique
-        e_are_unique = len(edges) == len(set(e.label for e in edges))
-        v_are_unique = len(vertices) == len(set(v.label for v in vertices))
-        c_are_unique = len(crossings) == len(set(c.label for c in crossings))
-        if not e_are_unique or not v_are_unique or not c_are_unique:
+        # Ensure all element labels are globally unique.
+        labels = [d.label for d in data]
+        if len(labels) != len(set(labels)):
             raise ValueError("Labels must be unique.")
 
         # Ensure all indices are assigned to other diagram elements
@@ -129,6 +130,20 @@ class SpatialGraphDiagram:
             raise ValueError("Indices must be unique.")
 
         return edges, vertices, crossings
+
+    @staticmethod
+    def _label_counter(elements, prefix):
+        """
+        Returns the next-safe numeric counter for generated labels.
+        """
+        counter = len(elements)
+
+        for element in elements:
+            label = str(element.label)
+            if label.startswith(prefix) and label[len(prefix):].isdigit():
+                counter = max(counter, int(label[len(prefix):]))
+
+        return counter
 
     def _correct_diagram(self):
         """
@@ -165,32 +180,21 @@ class SpatialGraphDiagram:
         """
         # Renumber edges
         for i, edge in enumerate(self.edges, start=1):
-            old_label = edge.label
-            new_label = f"e{i}"
-            edge.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = edge
+            edge.label = f"e{i}"
 
         # Renumber vertices
         for i, vertex in enumerate(self.vertices, start=1):
-            old_label = vertex.label
-            new_label = f"v{i}"
-            vertex.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = vertex
+            vertex.label = f"v{i}"
 
         # Renumber crossings
         for i, crossing in enumerate(self.crossings, start=1):
-            old_label = crossing.label
-            new_label = f"c{i}"
-            crossing.label = new_label
-            self.data.pop(old_label)
-            self.data[new_label] = crossing
+            crossing.label = f"c{i}"
 
         # Update counters
         self.edge_counter = len(self.edges)
         self.vertex_counter = len(self.vertices)
         self.crossing_counter = len(self.crossings)
+        self.data = {d.label: d for d in self.edges + self.vertices + self.crossings}
 
     def simplify_diagram(self):
         """Merges edges sharing 2-valent vertices until no more simplifications can be made."""

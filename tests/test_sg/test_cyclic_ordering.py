@@ -1,5 +1,32 @@
 import numpy as np
+import pytest
 from yamada import SpatialGraph
+
+
+def test_edge_endpoint_must_be_declared_node():
+    with pytest.raises(AssertionError, match="not in nodes"):
+        SpatialGraph(nodes=['a'],
+                     pos={'a': (0, 0, 0)},
+                     edges=[('a', 'b')])
+
+
+def test_node_label_containing_crossing_converts_to_diagram():
+    nodes = ['crossing_anchor', 'b', 'c']
+    pos = {
+        'crossing_anchor': (0, 0, 0),
+        'b': (1, 0, 0),
+        'c': (0, 0, 1),
+    }
+    edges = [('crossing_anchor', 'b'), ('b', 'c'), ('c', 'crossing_anchor')]
+
+    sg = SpatialGraph(nodes=nodes,
+                      pos=pos,
+                      edges=edges,
+                      rotation=np.array([0.0, 0.0, 0.0]))
+    sgd = sg.to_spatial_graph_diagram()
+
+    assert len(sgd.vertices) == 3
+    assert len(sgd.crossings) == 0
 
 
 def test_cyclic_node_ordering_vertex():

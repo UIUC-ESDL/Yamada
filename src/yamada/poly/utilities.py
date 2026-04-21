@@ -57,6 +57,9 @@ def normalize_poly(yamada_polynomial):
     """normalized_yamada_polynomial
     """
 
+    if yamada_polynomial == 0:
+        return pari(0)
+
     a = pari('A')
 
     _, exps = get_coefficients_and_exponents(yamada_polynomial)
