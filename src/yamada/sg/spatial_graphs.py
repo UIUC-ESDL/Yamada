@@ -121,7 +121,7 @@ class SpatialGraph:
     """
 
     def __init__(self, nodes, pos, edges, rotation=None,
-                 max_iter=100,
+                 max_iter=25,
                  projection_plane_normal=np.array([0.0, -1.0, 0.0]),
                  node_tol=1e-6,
                  node_edge_tol=1e-6,

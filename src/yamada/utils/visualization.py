@@ -164,7 +164,7 @@ def position_spatial_graph_in_3d(G, z_height=20):
 
     return nodes, node_positions, segments
 
-def plot_spatial_graph_diagram(sgd, off_screen=False):
+def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=False):
     """
     Plots the spatial graph diagram in 3D using PyVista.
     Labels intermediate edges with index numbers and intermediate nodes with full index assignments.
@@ -190,8 +190,10 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
         elif node in sgd.crossings:
             node_sizes[node_label + "+"]  = 7
             node_sizes[node_label + "-"]  = 7
-            node_colors[node_label + "+"] = "lightgreen"
-            node_colors[node_label + "-"] = "lightgreen"
+            # node_colors[node_label + "+"] = "lightgreen"
+            # node_colors[node_label + "-"] = "lightgreen"
+            node_colors[node_label + "+"] = "gray"
+            node_colors[node_label + "-"] = "gray"
             node_types[node_label + "+"]  = "Crossing"
             node_types[node_label + "-"]  = "Crossing"
         elif node in sgd.edges:
@@ -200,6 +202,10 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
             node_types[node_label]  = "Edge"
         else:
             raise ValueError("Unknown node type")
+
+        if color_map is not None and node_label in color_map:
+            cur_color = node_colors[node_label]
+            node_colors[node_label] = color_map.get(node_label, cur_color)
 
 
     # Plot nodes as spheres
@@ -227,6 +233,9 @@ def plot_spatial_graph_diagram(sgd, off_screen=False):
 
         label     = node
         label_pos = coords + LABEL_OFFSET
+
+        if label_map is not None:
+            label = label_map.get(label, label)
 
         plotter.add_point_labels(
             [label_pos],

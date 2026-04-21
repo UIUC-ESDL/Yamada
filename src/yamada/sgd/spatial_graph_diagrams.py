@@ -47,6 +47,7 @@ from cypari import pari
 import warnings
 import matplotlib
 import pyvista as pv
+import copy
 matplotlib.use('TkAgg')   # Use a non-interactive backend
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, PathPatch
@@ -493,9 +494,63 @@ class SpatialGraphDiagram:
 
     def copy(self):
         """
-        Returns a serialized copy of the diagram.
+        Return a structural copy of the diagram.
+
+        This avoids pickle/deepcopy recursion by:
+        - cloning Edge/Vertex/Crossing objects by label/degree
+        - reconstructing adjacency using labels
+        - skipping __init__ validation/correction
         """
-        return pickle.loads(pickle.dumps(self))
+
+        # Create a new empty diagram instance (skip __init__)
+        new = object.__new__(SpatialGraphDiagram)
+
+        # Clone the primitive elements (edges, vertices, crossings)
+
+        # Edges: always degree 2
+        new_edges = []
+        for e in self.edges:
+            new_e = Edge(e.label)
+            new_edges.append(new_e)
+
+        # Vertices: preserve degree
+        new_vertices = []
+        for v in self.vertices:
+            new_v = Vertex(v.degree, v.label)
+            new_vertices.append(new_v)
+
+        # Crossings: degree is fixed (4)
+        new_crossings = []
+        for c in self.crossings:
+            new_c = Crossing(c.label)
+            new_crossings.append(new_c)
+
+        new.edges = new_edges
+        new.vertices = new_vertices
+        new.crossings = new_crossings
+
+        # Build label -> new object mapping
+        new.data = {d.label: d for d in (new_edges + new_vertices + new_crossings)}
+
+        # Copy counters
+        new.edge_counter = self.edge_counter
+        new.vertex_counter = self.vertex_counter
+        new.crossing_counter = self.crossing_counter
+
+        # Rebuild adjacency lists non-recursively
+        # Assume:
+        #   - old_element.adjacent is a list of (other_obj, index)
+        #   - labels are unique and consistent
+        for old_elem in (self.edges + self.vertices + self.crossings):
+            new_elem = new.data[old_elem.label]
+            new_adjacent = []
+            for (nbr, idx) in old_elem.adjacent:
+                new_nbr = new.data[nbr.label]
+                new_adjacent.append((new_nbr, idx))
+            # Assign directly to avoid triggering any __setitem__ cross-link logic
+            new_elem.adjacent = new_adjacent
+
+        return new
 
     def graph(self):
         G = nx.MultiGraph()
@@ -634,12 +689,13 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
-    def plot(self, show=True, filename=None, off_screen=False):
-        plotter = plot_spatial_graph_diagram(self, off_screen=off_screen)
+    def plot(self, show=True, filename=None, label_map=None, color_map=None, off_screen=False):
+        plotter = plot_spatial_graph_diagram(self, label_map=label_map, color_map=color_map, off_screen=off_screen)
 
         if filename is not None:
             # plotter.show(screenshot=filename, auto_close=True)
-            plotter.save_graphic(filename)
+            # plotter.save_graphic(filename)
+            plotter.show(screenshot=filename, auto_close=False)
 
         if show:
             plotter.show()

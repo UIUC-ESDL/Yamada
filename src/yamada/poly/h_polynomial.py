@@ -20,7 +20,7 @@ import collections
 from cypari import pari
 
 
-def has_cut_edge(abstract_graph):
+def has_cut_edge(abstract_graph: nx.Graph):
 
     """
     Determines if the abstract graph has a cut edge. A cut edge is an edge that, if removed, would increase the number
@@ -36,7 +36,7 @@ def has_cut_edge(abstract_graph):
     return False
 
 
-def an_edge(graph):
+def an_edge(graph: nx.Graph):
 
     """
     A generator that returns the next edge in the graph.
@@ -45,7 +45,7 @@ def an_edge(graph):
     return next(iter(graph.edges()))
 
 
-def remove_valence_two_vertices(graph):
+def remove_valence_two_vertices(graph: nx.Graph):
 
     """
     TODO Why this?

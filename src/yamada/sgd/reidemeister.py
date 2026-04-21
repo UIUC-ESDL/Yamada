@@ -380,7 +380,7 @@ def has_r6(sgd):
 
 
 def r1_and_r2_simplify(sgd):
-    max_iter = 1000
+    max_iter = 999
     r1_count = r2_count = 0
 
     for i in range(max_iter):
