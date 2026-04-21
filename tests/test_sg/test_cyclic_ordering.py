@@ -10,6 +10,37 @@ def test_edge_endpoint_must_be_declared_node():
                      edges=[('a', 'b')])
 
 
+def test_self_loop_requires_explicit_intermediate_vertices():
+    with pytest.raises(AssertionError, match="Self-loop edges"):
+        SpatialGraph(nodes=['a'],
+                     pos={'a': (0, 0, 0)},
+                     edges=[('a', 'a')])
+
+
+def test_reversed_duplicate_edges_are_preserved_as_parallel_edges():
+    sg = SpatialGraph(nodes=['a', 'b'],
+                      pos={'a': (0, 0, 0), 'b': (1, 0, 0)},
+                      edges=[('a', 'b'), ('b', 'a')],
+                      rotation=np.array([0.0, 0.0, 0.0]))
+    sgd = sg.to_spatial_graph_diagram()
+
+    assert sg.G.number_of_edges('a', 'b') == 2
+    assert len(sgd.edges) == 2
+    assert sgd.graph().number_of_edges() == 2
+
+
+def test_exact_duplicate_edges_are_preserved_as_parallel_edges():
+    sg = SpatialGraph(nodes=['a', 'b'],
+                      pos={'a': (0, 0, 0), 'b': (1, 0, 0)},
+                      edges=[('a', 'b'), ('a', 'b')],
+                      rotation=np.array([0.0, 0.0, 0.0]))
+    sgd = sg.to_spatial_graph_diagram()
+
+    assert sg.G.number_of_edges('a', 'b') == 2
+    assert len(sgd.edges) == 2
+    assert sgd.graph().number_of_edges() == 2
+
+
 def test_node_label_containing_crossing_converts_to_diagram():
     nodes = ['crossing_anchor', 'b', 'c']
     pos = {

@@ -144,7 +144,7 @@ class SpatialGraph:
         node_tol, node_edge_tol, crossing_tol : float
             Tolerances for geometric validity checks.
         """
-        self.G = nx.Graph()
+        self.G = nx.MultiGraph()
 
         nodes   = self._validate_nodes(nodes)
         edges   = self._validate_edges(edges, nodes)
@@ -183,7 +183,8 @@ class SpatialGraph:
 
         # 3) Compute CCW adjacency index for each node
         (self.ccw_orderings,
-         self.ccw_angles) = self._compute_cyclic_orderings()
+         self.ccw_angles,
+         self.ccw_edge_orderings) = self._compute_cyclic_orderings()
 
     # Delegate unknown attributes to underlying original graph if useful
     def __getattr__(self, name):
@@ -207,7 +208,7 @@ class SpatialGraph:
             u, v = e
             assert isinstance(u, str) and isinstance(v, str), "Edge endpoints must be strings."
             assert u in node_set and v in node_set, f"Edge endpoint {u!r} or {v!r} is not in nodes."
-        assert len(edges) == len(set(edges)), "Edges must be unique."
+            assert u != v, "Self-loop edges require explicit intermediate vertices in SpatialGraph."
         return edges
 
     @staticmethod
@@ -221,6 +222,13 @@ class SpatialGraph:
             x, y, z = p
             cleaned[k] = (float(x), float(y), float(z))
         return cleaned
+
+    @staticmethod
+    def _edge_id(u, v, key):
+        """
+        Canonical undirected edge identity for a NetworkX MultiGraph edge.
+        """
+        return (u, v, key) if u <= v else (v, u, key)
 
     @property
     def pos3d(self):
@@ -273,9 +281,9 @@ class SpatialGraph:
         Only counts intersections between non-adjacent edges
         (i.e., edges that don't share a node).
         """
-        edges = list(G.edges())
+        edges = list(G.edges(keys=True))
         count = 0
-        for (u1, v1), (u2, v2) in combinations(edges, 2):
+        for (u1, v1, _), (u2, v2, _) in combinations(edges, 2):
             # Skip edges that share a node
             if len({u1, v1, u2, v2}) < 4:
                 continue
@@ -295,7 +303,7 @@ class SpatialGraph:
         - no multiple edges crossing at the same 2D point
         """
         nodes = list(G.nodes())
-        edges = list(G.edges())
+        edges = list(G.edges(keys=True))
 
         # A) node-node overlap
         pts = np.array([pos2d[n] for n in nodes], float)
@@ -308,7 +316,7 @@ class SpatialGraph:
         # B) node-on-edge
         for n in nodes:
             p = pos2d[n]
-            for u, v in edges:
+            for u, v, _ in edges:
                 if n == u or n == v:
                     continue
                 d, t = self._pt_seg_dist(p, pos2d[u], pos2d[v])
@@ -317,7 +325,7 @@ class SpatialGraph:
 
         # C + D) edge-edge intersections & uniqueness of crossing coords
         crossing_points = []
-        for (u1, v1), (u2, v2) in combinations(edges, 2):
+        for (u1, v1, _), (u2, v2, _) in combinations(edges, 2):
             if len({u1, v1, u2, v2}) < 4:
                 continue
             res = seg_intersection(pos2d[u1], pos2d[v1],
@@ -384,16 +392,13 @@ class SpatialGraph:
         with crossing nodes inserted, and determine over/under strands.
         """
         G = self.G
-        H = nx.Graph()
+        H = nx.MultiGraph()
 
         # add original nodes
         for n in G.nodes():
             H.add_node(n, pos2d=pos2d[n], pos3d=pos3d_rot[n])
 
-        def edge_key(u, v):
-            return tuple(sorted((u, v)))
-
-        edges = list(G.edges())
+        edges = list(G.edges(keys=True))
         n_vec = np.asarray(normal, float)
         n_vec /= np.linalg.norm(n_vec)
 
@@ -403,7 +408,7 @@ class SpatialGraph:
         crossing_points = []
 
         counter = 0
-        for (u1, v1), (u2, v2) in combinations(edges, 2):
+        for (u1, v1, k1), (u2, v2, k2) in combinations(edges, 2):
             if len({u1, v1, u2, v2}) < 4:
                 continue
 
@@ -425,8 +430,8 @@ class SpatialGraph:
             h1 = float(P1_3d @ n_vec)
             h2 = float(P2_3d @ n_vec)
 
-            e1 = edge_key(u1, v1)
-            e2 = edge_key(u2, v2)
+            e1 = self._edge_id(u1, v1, k1)
+            e2 = self._edge_id(u2, v2, k2)
 
             if abs(h1 - h2) < 1e-12:
                 over_edge, under_edge = e1, e2  # arbitrary tie-break
@@ -435,8 +440,11 @@ class SpatialGraph:
             else:
                 over_edge, under_edge = e2, e1
 
-            cid = f"crossing_{counter}"
-            counter += 1
+            while True:
+                cid = f"crossing_{counter}"
+                counter += 1
+                if cid not in G.nodes and cid not in crossings:
+                    break
 
             crossings[cid] = {
                 "pos2d": tuple(inter2d),
@@ -457,26 +465,26 @@ class SpatialGraph:
             H.add_node(cid, pos2d=data["pos2d"], node_type="crossing")
 
         # Subdivide each original edge
-        for (u, v) in edges:
-            key = edge_key(u, v)
+        for (u, v, k) in edges:
+            key = self._edge_id(u, v, k)
             pts = edge_crossings.get(key, [])
             if not pts:
-                H.add_edge(u, v)
+                H.add_edge(u, v, original_edge=key)
                 continue
 
             pts_sorted = sorted(pts, key=lambda x: x[0])
             chain = [u] + [cid for (_, cid) in pts_sorted] + [v]
 
             for a, b in zip(chain[:-1], chain[1:]):
-                H.add_edge(a, b)
+                h_key = H.add_edge(a, b, original_edge=key)
+                h_edge_id = self._edge_id(a, b, h_key)
                 # record strand per crossing neighbor
                 for node in (a, b):
                     if node in crossings:
                         cid = node
                         crossing_data = crossings[cid]
                         role = "over" if key == crossing_data["over_edge"] else "under"
-                        neighbor = b if node == a else a
-                        strand[cid][neighbor] = role
+                        strand[cid][h_edge_id] = role
 
         pos2d_full = {n: H.nodes[n]["pos2d"] for n in H.nodes()}
         return H, pos2d_full, crossings, strand
@@ -496,23 +504,32 @@ class SpatialGraph:
 
         ccw_orderings = {}
         ccw_angles    = {}
+        ccw_edge_orderings = {}
         # ref_vec = np.array([0.0, 1.0])
         ref_vec = np.array([1.0, 0.0])
 
         for node in H.nodes():
-            nbrs = list(H.neighbors(node))
-            if not nbrs:
+            edge_records = []
+            for u, v, key in H.edges(node, keys=True):
+                nbr = v if u == node else u
+                edge_records.append((nbr, self._edge_id(u, v, key)))
+
+            if not edge_records:
                 ccw_orderings[node] = {}
                 ccw_angles[node] = {}
+                ccw_edge_orderings[node] = {}
                 continue
 
             origin  = np.asarray(pos2d[node], float)
+            nbrs = [nbr for nbr, _ in edge_records]
             nbr_pts = np.array([pos2d[n] for n in nbrs], float)
             rel     = nbr_pts - origin
             angles  = compute_counter_clockwise_angles(ref_vec, rel)
 
-            order         = np.argsort(angles)
-            nbrs_sorted   = [nbrs[i] for i in order]
+            order         = sorted(range(len(edge_records)), key=lambda i: (angles[i], repr(edge_records[i][1])))
+            edge_records_sorted = [edge_records[i] for i in order]
+            nbrs_sorted   = [nbr for nbr, _ in edge_records_sorted]
+            edge_ids_sorted = [edge_id for _, edge_id in edge_records_sorted]
             angles_sorted = [float(angles[i]) for i in order]
 
             if H.nodes[node].get("node_type", "vertex") == "vertex":
@@ -520,7 +537,7 @@ class SpatialGraph:
                 idxs = list(range(len(nbrs_sorted)))
             else:
                 # crossing: 4 neighbors with over/under info
-                oris = [strand[node][nbr] for nbr in nbrs_sorted]
+                oris = [strand[node][edge_id] for edge_id in edge_ids_sorted]
                 if oris[0] == "under":
                     idxs = [0, 1, 2, 3]
                 else:
@@ -528,14 +545,17 @@ class SpatialGraph:
 
             node_map = {}
             angle_map = {}
-            for nbr, idx, ang in zip(nbrs_sorted, idxs, angles_sorted):
-                node_map[nbr] = idx
-                angle_map[nbr] = ang
+            edge_map = {}
+            for nbr, edge_id, idx, ang in zip(nbrs_sorted, edge_ids_sorted, idxs, angles_sorted):
+                node_map.setdefault(nbr, idx)
+                angle_map.setdefault(nbr, ang)
+                edge_map[edge_id] = idx
 
             ccw_orderings[node] = node_map
             ccw_angles[node] = angle_map
+            ccw_edge_orderings[node] = edge_map
 
-        return ccw_orderings, ccw_angles
+        return ccw_orderings, ccw_angles, ccw_edge_orderings
 
     def to_planar_embedding(self):
         PE = PlanarEmbedding(self.ccw_orderings, pos=self.pos2d)
@@ -545,7 +565,7 @@ class SpatialGraph:
 
             # Create a list of all nodes and crossings
             nodes     = [node for node in self.H.nodes if self.H.nodes[node].get("node_type") == "vertex"]
-            edges     = list(self.H.edges)
+            edges     = list(self.H.edges(keys=True))
             crossings = [node for node in self.H.nodes if self.H.nodes[node].get("node_type") == "crossing"]
 
             node_degrees = [self.H.degree(node) for node in nodes]
@@ -559,16 +579,14 @@ class SpatialGraph:
             # Create the crossing objects
             sgd_crossings = [Crossing('c_' + crossing.split('_')[1]) for crossing in crossings]
 
-            # Create a dictionary that contains the cyclical ordering of every node and crossing
-            cyclic_ordering_dict = self.ccw_orderings
-
             # Assign the vertices to each other according to the cyclic orderings
             nodes_and_crossings = nodes + crossings
             vertices_and_crossings = sgd_vertices + sgd_crossings
 
             for edge, sgd_edge in zip(edges, sgd_edges):
                 # TODO Use more consistent lookup
-                node_a, node_b = edge
+                node_a, node_b, edge_key = edge
+                h_edge_id = self._edge_id(node_a, node_b, edge_key)
 
                 node_a_index = nodes_and_crossings.index(node_a)
                 node_b_index = nodes_and_crossings.index(node_b)
@@ -576,16 +594,16 @@ class SpatialGraph:
                 vertex_a = vertices_and_crossings[node_a_index]
                 vertex_b = vertices_and_crossings[node_b_index]
 
-                if not vertex_a.already_assigned(vertex_b) and not vertex_b.already_assigned(vertex_a):
+                vertex_b_index_for_vertex_a = self.ccw_edge_orderings[node_a][h_edge_id]
+                vertex_a_index_for_vertex_b = self.ccw_edge_orderings[node_b][h_edge_id]
 
-                    vertex_b_index_for_vertex_a = cyclic_ordering_dict[node_a][node_b]
-                    vertex_a_index_for_vertex_b = cyclic_ordering_dict[node_b][node_a]
-
+                if (vertex_a.adjacent[vertex_b_index_for_vertex_a] is None and
+                        vertex_b.adjacent[vertex_a_index_for_vertex_b] is None):
                     vertex_a[vertex_b_index_for_vertex_a] = sgd_edge[0]
                     vertex_b[vertex_a_index_for_vertex_b] = sgd_edge[1]
 
                 else:
-                    raise ValueError('The vertices are already assigned.')
+                    raise ValueError('The vertex indices are already assigned.')
 
             sgd = SpatialGraphDiagram(vertices=sgd_vertices, crossings=sgd_crossings, edges=sgd_edges)
 
