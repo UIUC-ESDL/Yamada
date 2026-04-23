@@ -445,11 +445,16 @@ class SpatialGraphDiagram:
         for V in self.data.values():
             entry_points += V.entry_points()
 
+        def entry_point_key(entry_point):
+            return str(entry_point.vertex.label), entry_point.index
+
         corners = set(entry_points)
         faces = []
 
         while len(corners):
-            face = [corners.pop()]
+            first_corner = min(corners, key=entry_point_key)
+            corners.remove(first_corner)
+            face = [first_corner]
             while True:
                 next_ep = face[-1].next_corner()
                 if next_ep == face[0]:

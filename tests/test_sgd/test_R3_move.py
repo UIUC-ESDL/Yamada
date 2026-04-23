@@ -1,7 +1,9 @@
 from cypari import pari
+from types import SimpleNamespace
 from yamada import (SpatialGraphDiagram, Edge, Crossing,
                     available_r3_moves, apply_r3_move,
                     available_r2_moves, available_r1_moves)
+from yamada.sgd.sgd_analysis import face_has_exactly_3_crossings_and_3_edges
 
 
 def test_does_not_have_r3():
@@ -87,6 +89,39 @@ def test_has_r3(two_unknots_1):
     assert r3_7 in r3_moves
     assert r3_3 in r3_moves
 
+
+def test_r3_face_requires_distinct_crossings_and_edges():
+    c1 = Crossing('c1')
+    c2 = Crossing('c2')
+    e1 = Edge('e1')
+    e2 = Edge('e2')
+    e3 = Edge('e3')
+
+    face = [
+        SimpleNamespace(vertex=c1),
+        SimpleNamespace(vertex=e1),
+        SimpleNamespace(vertex=c1),
+        SimpleNamespace(vertex=e2),
+        SimpleNamespace(vertex=c2),
+        SimpleNamespace(vertex=e3),
+    ]
+
+    assert not face_has_exactly_3_crossings_and_3_edges(face)
+
+
+def test_available_r3_moves_are_deterministically_sorted(two_unknots_1):
+    r3_moves = available_r3_moves(two_unknots_1)
+    expected_order = sorted(r3_moves, key=lambda move: (
+        move["stationary_crossing"],
+        move["stationary_edge_1"],
+        move["stationary_edge_2"],
+        move["moving_crossing_1"],
+        move["moving_crossing_2"],
+        move["moving_edge"],
+    ))
+
+    assert r3_moves == expected_order
+
 def test_apply_r3(two_unknots_1, two_unknots_2, poly_two_unknots):
 
     sgd = two_unknots_1
@@ -142,18 +177,18 @@ def test_reverse_r3(two_unknots_1, poly_two_unknots):
     assert sgd_post_rev_r3.yamada_polynomial() == poly_two_unknots
     # TODO assert sgd_post_rev_r3 == sgd
 
-# def test_try_each_available_r3(two_unknots_1, poly_two_unknots):
-#     """With one diagram, try each available R3 move in parallel."""
-#
-#     sgd = two_unknots_1
-#     assert sgd.yamada_polynomial() == poly_two_unknots
-#     r3_moves = available_r3_moves(sgd)
-#     assert len(r3_moves) == 8
-#     sgd_copies = [sgd.copy() for _ in range(len(r3_moves))]
-#
-#     for sgd_copy, r3_move in zip(sgd_copies, r3_moves):
-#         sgd_copy = apply_r3_move(sgd_copy, r3_move)
-#         assert sgd_copy.yamada_polynomial() == poly_two_unknots
+def test_try_each_available_r3(two_unknots_1, poly_two_unknots):
+    """With one diagram, try each available R3 move in parallel."""
+
+    sgd = two_unknots_1
+    assert sgd.yamada_polynomial() == poly_two_unknots
+    r3_moves = available_r3_moves(sgd)
+    assert len(r3_moves) == 8
+    sgd_copies = [sgd.copy() for _ in range(len(r3_moves))]
+
+    for sgd_copy, r3_move in zip(sgd_copies, r3_moves):
+        sgd_copy = apply_r3_move(sgd_copy, r3_move)
+        assert sgd_copy.yamada_polynomial() == poly_two_unknots
 
 def test_multiple_r3_moves(two_unknots_1,
                            two_unknots_3,

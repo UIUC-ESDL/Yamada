@@ -6,8 +6,8 @@ def face_has_exactly_3_crossings_and_3_edges(face):
     crossings = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Crossing)]
     vertices = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Vertex)]
 
-    has_3_edges = len(edges) == 3
-    has_3_crossings = len(crossings) == 3
+    has_3_edges = len(edges) == 3 and len(set(edges)) == 3
+    has_3_crossings = len(crossings) == 3 and len(set(crossings)) == 3
     has_no_vertices = len(vertices) == 0
     has_exactly_3_crossings_and_3_edges = has_3_edges and has_3_crossings and has_no_vertices
     return has_exactly_3_crossings_and_3_edges
@@ -17,7 +17,7 @@ def edges_that_are_fully_under_or_over(face):
     edges = [entrypoint.vertex for entrypoint in face if isinstance(entrypoint.vertex, Edge)]
     candidate_edges = []
     for edge in edges:
-        if edge_is_double_over_or_under(edge):
+        if edge not in candidate_edges and edge_is_double_over_or_under(edge):
             candidate_edges.append(edge)
     return candidate_edges
 
@@ -74,6 +74,24 @@ def find_common_edge(crossing1, crossing2):
             if adjacent1[0] == adjacent2[0]:
                 return adjacent1[0]
     raise Exception('Common edge not found in crossings')
+
+
+def find_common_edge_on_face(face, crossing1, crossing2):
+    common_edges = []
+
+    for entrypoint in face:
+        edge = entrypoint.vertex
+        if not isinstance(edge, Edge):
+            continue
+
+        adjacent_vertices = {adjacent[0] for adjacent in edge.adjacent}
+        if crossing1 in adjacent_vertices and crossing2 in adjacent_vertices:
+            common_edges.append(edge)
+
+    if len(common_edges) == 1:
+        return common_edges[0]
+
+    raise Exception('Unique common face edge not found in crossings')
 
 
 def get_index_of_crossing_corner(crossing, corner, idx, opposite_side=False):

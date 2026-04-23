@@ -1,7 +1,7 @@
 from yamada.sgd.diagram_elements import Edge, Crossing
 from yamada.sgd.sgd_analysis import face_has_exactly_3_crossings_and_3_edges, edges_that_are_fully_under_or_over, \
-    edge_is_double_over_or_under, find_opposite_crossing, find_common_edge, get_index_of_crossing_corner, \
-    edges_form_a_strand
+    edge_is_double_over_or_under, find_opposite_crossing, get_index_of_crossing_corner, \
+    edges_form_a_strand, find_common_edge_on_face
 
 
 # %% Reidemeister 1
@@ -258,8 +258,11 @@ def available_r3_moves(sgd):
 
             mc1, mc2 = moving_crossings
 
-            stationary_edge_1 = find_common_edge(stationary_crossing, mc1)
-            stationary_edge_2 = find_common_edge(stationary_crossing, mc2)
+            try:
+                stationary_edge_1 = find_common_edge_on_face(face, stationary_crossing, mc1)
+                stationary_edge_2 = find_common_edge_on_face(face, stationary_crossing, mc2)
+            except Exception:
+                continue
 
             r3_input["stationary_crossing"] = stationary_crossing.label
             r3_input["stationary_edge_1"]   = stationary_edge_1.label
@@ -268,7 +271,17 @@ def available_r3_moves(sgd):
             r3_input["moving_crossing_2"]   = mc2.label
             r3_input["moving_edge"]         = candidate_edge.label
 
-            r3_inputs.append(r3_input)
+            if r3_input not in r3_inputs:
+                r3_inputs.append(r3_input)
+
+    r3_inputs.sort(key=lambda move: (
+        move["stationary_crossing"],
+        move["stationary_edge_1"],
+        move["stationary_edge_2"],
+        move["moving_crossing_1"],
+        move["moving_crossing_2"],
+        move["moving_edge"],
+    ))
 
     return r3_inputs
 
