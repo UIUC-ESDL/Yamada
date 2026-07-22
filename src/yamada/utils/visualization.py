@@ -241,17 +241,20 @@ def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=F
             [label_pos],
             [label],
             point_size=22,
-            font_size=22,
+            font_size=24,
             bold=True,
             text_color="black",
-            shape_color="white",
-            shape_opacity=0.5,
-            always_visible=True
+            # shape_color="white",
+            # shape_opacity=0.5,
+            background_color=None,
+            background_opacity=0.0,
+            always_visible=True,
+            shape=None,
         )
 
     return plotter
 
-def draw_spatial_graph_2d(plotter, nodes_2d, edges_2d, pos_2d, ccw_orderings, ccw_angles):
+def draw_spatial_graph_2d(plotter, nodes_2d, edges_2d, pos_2d, ccw_orderings, ccw_angles, show_index_labels):
 
     # Reset the color cycle for 2D edges
     color_list = list(mcolors.TABLEAU_COLORS.keys())
@@ -267,7 +270,7 @@ def draw_spatial_graph_2d(plotter, nodes_2d, edges_2d, pos_2d, ccw_orderings, cc
         plotter.add_mesh(glyphs, color="black", opacity=1.0)
 
     for edge in edges_2d:
-        start_node, end_node = edge
+        start_node, end_node, _ = edge
         start_position = pos_2d[start_node]
         end_position = pos_2d[end_node]
         # Insert y=0 for 2D projection
@@ -278,56 +281,73 @@ def draw_spatial_graph_2d(plotter, nodes_2d, edges_2d, pos_2d, ccw_orderings, cc
         plotter.add_mesh(line, color=color_i, line_width=5)
 
     # Add node labels, placing each index number according to its angle
-    node_labels          = [f"{node}" for node in nodes_2d]
+    # node_labels          = [f"{node}" for node in nodes_2d]
+    # node_label_positions = np.array([[pos_2d[node][0], 0, pos_2d[node][1]] for node in nodes_2d])
+    # plotter.add_point_labels(node_label_positions, node_labels, point_size=0, font_size=12, text_color='black')
+    node_labels = [f"{node}".replace("crossing_", "X") for node in nodes_2d]
     node_label_positions = np.array([[pos_2d[node][0], 0, pos_2d[node][1]] for node in nodes_2d])
-    plotter.add_point_labels(node_label_positions, node_labels, point_size=0, font_size=12, text_color='black')
+    plotter.add_point_labels(node_label_positions, node_labels,
+                             point_size=0,
+                             font_size=62,
+                             text_color='black',background_color=None,shape=None,
+            background_opacity=0.0, always_visible=True)
 
-    # Draw zero-angles as a glyph
-    a0      = np.array([0, 0, 0])
-    b0      = np.array([0.1, 0, 0])
-    offsets = [np.array([pos_2d[node][0], 0, pos_2d[node][1]]) for node in nodes_2d]
-    points = []
-    endpoints = []
-    lines = []
-    for i, offset in enumerate(offsets):
-        a = a0 + offset
-        b = b0 + offset
-
-        idx0 = len(points)
-        idx1 = idx0 + 1
-        points.append(a)
-        points.append(b)
-        endpoints.append(b)
-        lines.extend([2, idx0, idx1])
-
-    # Draw a faint gray line at each node to indicate the zero-degree angle
-    polyLines     = pv.PolyData(np.array(points), lines=np.array(lines))
-    polyEndpoints = pv.PolyData(np.array(endpoints))
-    sphere      = pv.Sphere(radius=0.005, phi_resolution=8, theta_resolution=8)
-    sphereGlyph = polyEndpoints.glyph(orient=False, scale=False, geom=sphere)
-    plotter.add_mesh(polyLines, color="gray", line_width=2, opacity=0.5)
-    plotter.add_mesh(sphereGlyph, color="gray", opacity=0.5)
 
     # Add neighbor index labels
-    node_labels = []
-    node_positions = []
-    for node in nodes_2d:
-        for nbr in list(ccw_orderings[node].keys()):
-            angle   = ccw_angles[node][nbr]
-            radius  = 0.05
-            label_x = pos_2d[node][0] + radius * np.cos(angle)
-            label_y = 0
-            label_z = pos_2d[node][1] + radius * np.sin(angle)
+    if show_index_labels:
 
-            node_labels.append(f"{ccw_orderings[node][nbr]}")
-            node_positions.append([label_x, label_y, label_z])
+        # Draw zero-angles as a glyph
+        a0 = np.array([0, 0, 0])
+        b0 = np.array([0.1, 0, 0])
+        offsets = [np.array([pos_2d[node][0], 0, pos_2d[node][1]]) for node in nodes_2d]
+        points = []
+        endpoints = []
+        lines = []
+        for i, offset in enumerate(offsets):
+            a = a0 + offset
+            b = b0 + offset
 
-    plotter.add_point_labels(node_positions, node_labels,
-                       font_size=12, text_color='black', show_points=False,background_color=None, background_opacity=0)
+            idx0 = len(points)
+            idx1 = idx0 + 1
+            points.append(a)
+            points.append(b)
+            endpoints.append(b)
+            lines.extend([2, idx0, idx1])
+
+        # Draw a faint gray line at each node to indicate the zero-degree angle
+        polyLines = pv.PolyData(np.array(points), lines=np.array(lines))
+        polyEndpoints = pv.PolyData(np.array(endpoints))
+        sphere = pv.Sphere(radius=0.005, phi_resolution=8, theta_resolution=8)
+        sphereGlyph = polyEndpoints.glyph(orient=False, scale=False, geom=sphere)
+        plotter.add_mesh(polyLines, color="gray", line_width=2, opacity=0.5)
+        plotter.add_mesh(sphereGlyph, color="gray", opacity=0.5)
+
+        node_labels = []
+        node_positions = []
+        for node in nodes_2d:
+            for nbr in list(ccw_orderings[node].keys()):
+                angle   = ccw_angles[node][nbr]
+                radius  = 0.1
+                label_x = pos_2d[node][0] + radius * np.cos(angle)
+                label_y = 0
+                label_z = pos_2d[node][1] + radius * np.sin(angle)
+
+                node_labels.append(f"{ccw_orderings[node][nbr]}")
+                node_positions.append([label_x, label_y, label_z])
+
+        # plotter.add_point_labels(node_positions, node_labels,
+        #                    font_size=12, text_color='black', show_points=False,background_color=None, background_opacity=0)
+        plotter.add_point_labels(node_positions, node_labels,
+                                 font_size=42,
+                                 text_color='black',
+                                 show_points=False,
+                                 background_color=None,
+                                 background_opacity=0,
+                                 shape=None)
 
     # Configure the plot
     plotter.view_xz()
-    plotter.show_axes()
+    # plotter.show_axes()
 
 
 def draw_spatial_graph_3d(plotter, nodes_3d, edges_3d, pos_3d,
@@ -368,7 +388,7 @@ def draw_spatial_graph_3d(plotter, nodes_3d, edges_3d, pos_3d,
 
 
     for edge in edges_3d:
-        start_node, end_node = edge
+        start_node, end_node, _ = edge
         start_position       = pos_3d[start_node]
         end_position         = pos_3d[end_node]
         color_i              = next(color_cycle)
@@ -378,7 +398,9 @@ def draw_spatial_graph_3d(plotter, nodes_3d, edges_3d, pos_3d,
     # Add node labels
     node_labels          = [f"{node}" for node in nodes_3d]
     node_label_positions = np.array([pos_3d[node] for node in nodes_3d])
-    plotter.add_point_labels(node_label_positions, node_labels , point_size=0, font_size=12, text_color='black', always_visible=True)
+    plotter.add_point_labels(node_label_positions, node_labels , point_size=0, font_size=42, text_color='black', always_visible=True,background_color=None, shape=None,
+            background_opacity=0.0,)
+
 
 
     # Configure the plot
@@ -428,7 +450,8 @@ def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
         nbrs = list(ccw_orderings[node].keys())
         for nbr in nbrs:
             angle = ccw_angles[node][nbr]  # assuming degrees; if radians, drop np.radians
-            radius = 0.05
+            # radius = 0.05
+            radius = 0.3
             angle_rad = np.radians(angle)
 
             label_x = x + radius * np.cos(angle_rad)
@@ -445,9 +468,12 @@ def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
             node_label_points,
             node_label_texts,
             point_size=0,
-            font_size=12,
+            font_size=42,
             text_color="black",
             show_points=False,
+            background_color=None,
+            background_opacity=0.0,
+            shape = None,
         )
 
     # ----- Batch-add neighbor index labels -----
@@ -457,11 +483,12 @@ def add_labels(p, nodes_2d, pos_2d, ccw_orderings, ccw_angles):
             angle_label_points,
             angle_label_texts,
             point_size=0,
-            font_size=12,
+            font_size=24,
             text_color="black",
             show_points=False,
             background_color=None,
             background_opacity=0.0,
+            shape=None,
         )
 
     return p
@@ -475,12 +502,12 @@ def draw_sgd(G, pos, ccw_orderings, ccw_angles, save_filepath=None):
     # Draw edges
     nx.draw_networkx_edges(G, pos, width=2, edge_color='gray', ax=ax)
     # Draw node labels
-    nx.draw_networkx_labels(G, pos, font_size=12, font_color='black', ax=ax)
+    nx.draw_networkx_labels(G, pos, font_size=36, font_color='black', ax=ax)
 
     # Add a faint gray line to indicate the zero-degree angle for each node
     for node in G.nodes():
         angle_rad = 0  # 0 degrees in radians
-        radius = 0.1  # Length of the guide line
+        radius = 0.2  # Length of the guide line
         start_x = pos[node][0]
         start_y = pos[node][1]
         end_x = start_x + radius * np.cos(angle_rad)
@@ -493,7 +520,8 @@ def draw_sgd(G, pos, ccw_orderings, ccw_angles, save_filepath=None):
         nbrs = list(ccw_orderings[node].keys())
         for nbr in nbrs:
             angle = ccw_angles[node][nbr]
-            radius = 0.05  # Distance from the node position to place the label
+            # radius = 0.05  # Distance from the node position to place the label
+            radius = 0.3
             angle_rad = angle
             label_x = pos[node][0] + radius * np.cos(angle_rad)
             label_y = pos[node][1] + radius * np.sin(angle_rad)

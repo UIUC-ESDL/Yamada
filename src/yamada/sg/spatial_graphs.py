@@ -249,6 +249,7 @@ class SpatialGraph:
         e1 /= np.linalg.norm(e1)
         e2 = np.cross(n, e1)
         e2 /= np.linalg.norm(e2)
+        # return e1, e2, n
         return e1, e2, n
 
     def _project_points(self, pos3d_dict, normal):
@@ -609,7 +610,7 @@ class SpatialGraph:
 
             return sgd
 
-    def plot(self):
+    def plot(self, show_index_labels=True):
         from ..utils.visualization import draw_spatial_graph_3d, draw_spatial_graph_2d
 
         plotter = pv.Plotter(shape=(1, 2), window_size=[2000, 1000])
@@ -623,7 +624,7 @@ class SpatialGraph:
         # Plot the 2D Projection in the second subplot
         plotter.subplot(0, 1)
         plotter.add_title("2D Projection")
-        draw_spatial_graph_2d(plotter, self.H.nodes, self.H.edges, self.pos2d,self.ccw_orderings, self.ccw_angles)
+        draw_spatial_graph_2d(plotter, self.H.nodes, self.H.edges, self.pos2d,self.ccw_orderings, self.ccw_angles, show_index_labels=show_index_labels)
 
         plotter.show()
         plotter.close()
