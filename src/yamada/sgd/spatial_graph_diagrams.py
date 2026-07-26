@@ -698,8 +698,8 @@ class SpatialGraphDiagram:
         G.check_structure()
         return G
 
-    def plot(self, show=True, filename=None, label_map=None, color_map=None, off_screen=False):
-        plotter = plot_spatial_graph_diagram(self, label_map=label_map, color_map=color_map, off_screen=off_screen)
+    def plot(self, show=True, filename=None, label_map=None, color_map=None, off_screen=False,show_labels=True):
+        plotter = plot_spatial_graph_diagram(self, label_map=label_map, color_map=color_map, off_screen=off_screen, show_labels=show_labels)
 
         if filename is not None:
             # plotter.show(screenshot=filename, auto_close=True)

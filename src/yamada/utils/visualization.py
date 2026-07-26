@@ -164,7 +164,7 @@ def position_spatial_graph_in_3d(G, z_height=20):
 
     return nodes, node_positions, segments
 
-def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=False):
+def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=False, show_labels=True):
     """
     Plots the spatial graph diagram in 3D using PyVista.
     Labels intermediate edges with index numbers and intermediate nodes with full index assignments.
@@ -184,12 +184,12 @@ def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=F
     for node in sgd.data.values():
         node_label = node.label
         if node in sgd.vertices:
-            node_sizes[node_label]  = 7
+            node_sizes[node_label]  = 9
             node_colors[node_label] = "blue"
             node_types[node_label]  = "Vertex"
         elif node in sgd.crossings:
-            node_sizes[node_label + "+"]  = 7
-            node_sizes[node_label + "-"]  = 7
+            node_sizes[node_label + "+"]  = 9
+            node_sizes[node_label + "-"]  = 9
             # node_colors[node_label + "+"] = "lightgreen"
             # node_colors[node_label + "-"] = "lightgreen"
             node_colors[node_label + "+"] = "gray"
@@ -225,32 +225,33 @@ def plot_spatial_graph_diagram(sgd, label_map=None, color_map=None, off_screen=F
         plotter.add_mesh(line.tube(radius=1.0), color="black", line_width=6)
 
     # Add node labels
-    LABEL_OFFSET = np.array([1.3, 1.3, 1.3])
-    for node, coords in zip(nodes, node_positions):
+    if show_labels:
+        LABEL_OFFSET = np.array([1.3, 1.3, 1.3])
+        for node, coords in zip(nodes, node_positions):
 
-        if node_types[node] == "Edge":
-            continue  # Skip labeling edges here
+            if node_types[node] == "Edge":
+                continue  # Skip labeling edges here
 
-        label     = node
-        label_pos = coords + LABEL_OFFSET
+            label     = node
+            label_pos = coords + LABEL_OFFSET
 
-        if label_map is not None:
-            label = label_map.get(label, label)
+            if label_map is not None:
+                label = label_map.get(label, label)
 
-        plotter.add_point_labels(
-            [label_pos],
-            [label],
-            point_size=22,
-            font_size=24,
-            bold=True,
-            text_color="black",
-            # shape_color="white",
-            # shape_opacity=0.5,
-            background_color=None,
-            background_opacity=0.0,
-            always_visible=True,
-            shape=None,
-        )
+            plotter.add_point_labels(
+                [label_pos],
+                [label],
+                point_size=22,
+                font_size=24,
+                bold=True,
+                text_color="black",
+                # shape_color="white",
+                # shape_opacity=0.5,
+                background_color=None,
+                background_opacity=0.0,
+                always_visible=True,
+                shape=None,
+            )
 
     return plotter
 
